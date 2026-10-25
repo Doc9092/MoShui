@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Lora', 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Lora', 'Cormorant Garamond', Georgia, serif;
+  --font-chinese: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
+  --font-hanzi: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
+}
+
+@layer base {
+  html {
+    font-size: 16px;
+  }
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+}
+
+.font-display,
+.font-serif {
+  font-family: 'Lora', 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-chinese,
+.font-hanzi {
+  font-family: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
+}
+
+.font-calligraphy {
+  font-family: 'Ma Shan Zheng', 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
+}
+
+.font-hanzi-sans {
+  font-family: 'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', system-ui, sans-serif;
+}
+
+.font-mono-tabular {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}

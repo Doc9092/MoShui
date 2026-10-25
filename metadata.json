@@ -1,0 +1,6 @@
+{
+  "name": "MoShui (墨水) — Интерактивный китайский язык и прописи",
+  "description": "MoShui (墨水) — умный словарь и конструктор прописей китайского языка: разбор слов по графемам и ключам, порядок черт, тренажер письма и генератор PDF-прописей формата А4.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
