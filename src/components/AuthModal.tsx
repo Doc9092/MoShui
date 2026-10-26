@@ -59,40 +59,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto print:hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#18181B]/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto print:hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="relative bg-white border border-slate-200 rounded-2xl shadow-xl w-[95vw] max-w-md overflow-hidden my-auto">
+      <div className="relative bg-white border border-[#EAE3D5] rounded-2xl shadow-xl w-[95vw] max-w-md overflow-hidden my-auto">
         {/* Кнопка закрытия в правом верхнем углу */}
         <button
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
           aria-label="Закрыть окно авторизации"
-          className="absolute right-3.5 top-3.5 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-50 rounded-xl transition-colors cursor-pointer z-10"
+          className="absolute right-3.5 top-3.5 p-2 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer z-10"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Брендированная шапка с крупным логотипом по центру */}
-        <div className="px-4 sm:px-6 pt-6 pb-4 border-b border-slate-200 text-center bg-slate-50/60">
+        <div className="px-4 sm:px-6 pt-6 pb-4 border-b border-[#EAE3D5] text-center bg-[#FAF7F2]">
           <img
             src={MOSHUI_LOGO_SRC}
             alt="MoShui 墨水"
             data-testid="auth-modal-logo"
             style={{ height: '120px' }}
-            className="h-[96px] sm:h-[120px] w-auto object-contain mx-auto rounded-2xl border border-slate-200/80 bg-[#FAF9F6] p-1.5 shadow-2xs"
+            className="h-[96px] sm:h-[120px] w-auto object-contain mx-auto rounded-full mix-blend-multiply"
           />
           <h2
             id="auth-modal-title"
-            className="mt-3.5 font-display text-xl sm:text-2xl font-bold text-slate-900"
+            className="mt-3 font-display text-xl sm:text-2xl font-bold text-[#18181B]"
           >
             MoShui (<span className="font-chinese">墨水</span>) — Кабинет преподавателя
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-slate-600 inline-flex items-center justify-center gap-1.5">
-            <CloudCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <p className="mt-1 text-xs sm:text-sm text-[#52525B] inline-flex items-center justify-center gap-1.5">
+            <CloudCheck className="w-4 h-4 text-[#15803D] shrink-0" />
             <span>Облачная синхронизация прописей и папок (Supabase)</span>
           </p>
         </div>
@@ -102,7 +102,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div
             role="tablist"
             aria-label="Режим входа или регистрации"
-            className="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 rounded-xl"
+            className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
           >
             <button
               role="tab"
@@ -115,8 +115,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }}
               className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
                 mode === 'login'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
+                  : 'text-[#52525B] hover:text-[#18181B]'
               }`}
             >
               <span className="hidden sm:inline">Вход в систему</span>
@@ -134,8 +134,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }}
               className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
                 mode === 'register'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
+                  : 'text-[#52525B] hover:text-[#18181B]'
               }`}
             >
               <span className="hidden sm:inline">Регистрация преподавателя</span>
@@ -150,9 +150,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div
               role="alert"
               data-testid="auth-error-banner"
-              className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-sm font-medium text-rose-700"
+              className="p-3.5 bg-[#FDF2F0] border border-[#F5D0C8] rounded-xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
             >
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#C83E31]" />
               <span>{error}</span>
             </div>
           )}
@@ -161,7 +161,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-name-input"
-                className="block text-sm font-semibold text-slate-700 mb-1.5"
+                className="block text-sm font-semibold text-[#18181B] mb-1.5"
               >
                 Имя / Обращение *
               </label>
@@ -173,7 +173,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Например: Лилия Лаоши"
-                className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600 disabled:opacity-60"
+                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
               />
             </div>
           )}
@@ -181,7 +181,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div>
             <label
               htmlFor="teacher-email-input"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
+              className="block text-sm font-semibold text-[#18181B] mb-1.5"
             >
               Email *
             </label>
@@ -193,14 +193,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="teacher@school.edu"
-              className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600 disabled:opacity-60"
+              className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
             />
           </div>
 
           <div>
             <label
               htmlFor="teacher-password-input"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
+              className="block text-sm font-semibold text-[#18181B] mb-1.5"
             >
               Пароль *
             </label>
@@ -213,7 +213,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Минимум 6 символов"
-              className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600 disabled:opacity-60"
+              className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
             />
           </div>
 
@@ -221,7 +221,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-school-input"
-                className="block text-sm font-semibold text-slate-700 mb-1.5"
+                className="block text-sm font-semibold text-[#18181B] mb-1.5"
               >
                 Название школы / курса (необязательно)
               </label>
@@ -232,7 +232,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={schoolOrTitle}
                 onChange={(e) => setSchoolOrTitle(e.target.value)}
                 placeholder="Например: Языковой центр «Поднебесная»"
-                className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600 disabled:opacity-60"
+                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
               />
             </div>
           )}
@@ -242,7 +242,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="submit"
               disabled={isSubmitting}
               data-testid="auth-submit-button"
-              className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 text-base font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl shadow-2xs transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 h-12 text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -253,12 +253,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </>
               ) : mode === 'login' ? (
                 <>
-                  <LogIn className="w-5 h-5" />
+                  <LogIn className="w-5 h-5 text-[#F5D0C8]" />
                   <span>Войти в кабинет</span>
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-5 h-5" />
+                  <UserPlus className="w-5 h-5 text-[#F5D0C8]" />
                   <span>Создать кабинет преподавателя</span>
                 </>
               )}

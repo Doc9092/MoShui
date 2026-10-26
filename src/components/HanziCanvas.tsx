@@ -64,16 +64,16 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           padding: 16,
           showOutline: true,
           showCharacter: true,
-          strokeColor: '#0F172A',
-          radicalColor: '#E11D48',
-          outlineColor: '#CBD5E1',
-          drawingColor: '#E11D48',
+          strokeColor: '#18181B',
+          radicalColor: '#C83E31',
+          outlineColor: '#D6CEB8',
+          drawingColor: '#C83E31',
           drawingWidth: 18,
           strokeAnimationSpeed: 1.15,
           delayBetweenStrokes: 220,
           showHintAfterMisses: 2,
           highlightOnComplete: true,
-          highlightColor: '#059669',
+          highlightColor: '#15803D',
           charDataLoader: (_loadedChar, onComplete) => {
             onComplete(strokeData as never);
           },
@@ -227,118 +227,120 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
 
   return (
     <div className="flex flex-col items-center w-full">
-      {/* Квадратный холст с классической сеткой Мицзыгэ (米字格) - центрирован, touch-action: none */}
-      <div
-        className="relative bg-white border-2 border-rose-700/80 rounded-2xl shadow-xs overflow-hidden mx-auto select-none touch-none"
-        style={{
-          width: size,
-          height: size,
-          maxWidth: '100%',
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-        }}
-        data-testid={`hanzi-canvas-${singleChar}`}
-      >
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          aria-hidden="true"
+      {/* Двойная рамка настольного планшета мастера каллиграфии (рисовая бумага + киноварная сетка Мицзыгэ) */}
+      <div className="border-2 border-[#D6CEB8] p-3 rounded-2xl bg-[#FFFEFA] shadow-inner mx-auto">
+        <div
+          className="relative bg-white border-2 border-[#C83E31]/80 rounded-xl shadow-2xs overflow-hidden mx-auto select-none touch-none"
+          style={{
+            width: size,
+            height: size,
+            maxWidth: '100%',
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
+          data-testid={`hanzi-canvas-${singleChar}`}
         >
-          {/* Внешняя тонкая рамка */}
-          <rect
-            x="2"
-            y="2"
-            width="96"
-            height="96"
-            fill="none"
-            stroke="#FECDD3"
-            strokeWidth="0.75"
-          />
-          {/* Горизонтальная и вертикальная оси (Тяньцзыгэ) */}
-          <line
-            x1="0"
-            y1="50"
-            x2="100"
-            y2="50"
-            stroke="#FDA4AF"
-            strokeWidth="0.9"
-            strokeDasharray="3,3"
-          />
-          <line
-            x1="50"
-            y1="0"
-            x2="50"
-            y2="100"
-            stroke="#FDA4AF"
-            strokeWidth="0.9"
-            strokeDasharray="3,3"
-          />
-          {/* Диагональные линии (Мицзыгэ) */}
-          <line
-            x1="0"
-            y1="0"
-            x2="100"
-            y2="100"
-            stroke="#FECDD3"
-            strokeWidth="0.75"
-            strokeDasharray="2.5,3.5"
-          />
-          <line
-            x1="100"
-            y1="0"
-            x2="0"
-            y2="100"
-            stroke="#FECDD3"
-            strokeWidth="0.75"
-            strokeDasharray="2.5,3.5"
-          />
-        </svg>
-
-        {/* Текстовый каллиграфический fallback (KaiTi / Noto Serif SC), если знака нет в hanzi-writer-data */}
-        {isFallbackGlyph ? (
-          <div
-            data-testid="hanzi-canvas-fallback"
-            className="relative z-10 w-full h-full flex items-center justify-center select-none"
-            style={{
-              fontFamily: '"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif',
-              fontSize: `${Math.round(size * 0.68)}px`,
-              lineHeight: 1,
-              color: showOutline ? '#0F172A' : '#CBD5E1',
-              transition: 'color 150ms ease',
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-            }}
-            aria-label={`Каллиграфическое начертание знака ${singleChar}`}
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            aria-hidden="true"
           >
-            {singleChar}
-          </div>
-        ) : (
-          /* Контейнер HanziWriter */
-          <div
-            ref={containerRef}
-            className="relative z-10 w-full h-full cursor-crosshair select-none touch-none"
-            style={{
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-            }}
-            aria-label={`Холст для написания иероглифа ${singleChar}`}
-          />
-        )}
+            {/* Внешняя тонкая рамка */}
+            <rect
+              x="2"
+              y="2"
+              width="96"
+              height="96"
+              fill="none"
+              stroke="#F5D0C8"
+              strokeWidth="0.75"
+            />
+            {/* Горизонтальная и вертикальная оси (Тяньцзыгэ) */}
+            <line
+              x1="0"
+              y1="50"
+              x2="100"
+              y2="50"
+              stroke="#E6A195"
+              strokeWidth="0.9"
+              strokeDasharray="3,3"
+            />
+            <line
+              x1="50"
+              y1="0"
+              x2="50"
+              y2="100"
+              stroke="#E6A195"
+              strokeWidth="0.9"
+              strokeDasharray="3,3"
+            />
+            {/* Диагональные линии (Мицзыгэ) */}
+            <line
+              x1="0"
+              y1="0"
+              x2="100"
+              y2="100"
+              stroke="#F5D0C8"
+              strokeWidth="0.75"
+              strokeDasharray="2.5,3.5"
+            />
+            <line
+              x1="100"
+              y1="0"
+              x2="0"
+              y2="100"
+              stroke="#F5D0C8"
+              strokeWidth="0.75"
+              strokeDasharray="2.5,3.5"
+            />
+          </svg>
+
+          {/* Текстовый каллиграфический fallback (KaiTi / Noto Serif SC), если знака нет в hanzi-writer-data */}
+          {isFallbackGlyph ? (
+            <div
+              data-testid="hanzi-canvas-fallback"
+              className="relative z-10 w-full h-full flex items-center justify-center select-none"
+              style={{
+                fontFamily: '"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif',
+                fontSize: `${Math.round(size * 0.68)}px`,
+                lineHeight: 1,
+                color: showOutline ? '#18181B' : '#D6CEB8',
+                transition: 'color 150ms ease',
+                touchAction: 'none',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              }}
+              aria-label={`Каллиграфическое начертание знака ${singleChar}`}
+            >
+              {singleChar}
+            </div>
+          ) : (
+            /* Контейнер HanziWriter */
+            <div
+              ref={containerRef}
+              className="relative z-10 w-full h-full cursor-crosshair select-none touch-none"
+              style={{
+                touchAction: 'none',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              }}
+              aria-label={`Холст для написания иероглифа ${singleChar}`}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Панель управления под холстом: на мобильных сетка на всю ширину с touch-зонами не менее 44px */}
+      {/* Панель управления под холстом: крупные кнопки (h-12) для пальцев и стилуса */}
       <div className="mt-4 grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center gap-2.5 w-full max-w-[320px] sm:max-w-none">
         <button
           type="button"
           onClick={handleAnimate}
           disabled={isFallbackGlyph}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm font-semibold rounded-xl transition-colors whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
             mode === 'animate' && !isFallbackGlyph
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm'
+              : 'bg-[#FAF7F2] text-[#18181B] border border-[#EAE3D5] hover:bg-[#EAE3D5]/60'
           }`}
         >
           <Play className="w-4 h-4" />
@@ -349,10 +351,10 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           type="button"
           onClick={handleStartQuiz}
           disabled={isFallbackGlyph}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm font-semibold rounded-xl transition-colors whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
             mode === 'quiz' && !isFallbackGlyph
-              ? 'bg-rose-600 text-white shadow-xs'
-              : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+              ? 'bg-[#C83E31] text-white shadow-sm'
+              : 'bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] hover:bg-[#F5D0C8]/50'
           }`}
         >
           <PenTool className="w-4 h-4" />
@@ -362,17 +364,17 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
         <button
           type="button"
           onClick={handleToggleOutline}
-          className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors whitespace-nowrap cursor-pointer"
+          className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-medium text-[#18181B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FAF7F2] transition-all whitespace-nowrap cursor-pointer"
           aria-pressed={showOutline}
         >
           {showOutline ? (
             <>
-              <EyeOff className="w-4 h-4 text-slate-500" />
+              <EyeOff className="w-4 h-4 text-[#71717A]" />
               <span>Скрыть контур</span>
             </>
           ) : (
             <>
-              <Eye className="w-4 h-4 text-slate-500" />
+              <Eye className="w-4 h-4 text-[#71717A]" />
               <span>Показать контур</span>
             </>
           )}
@@ -384,7 +386,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
             onClick={handleStartQuiz}
             title="Начать практику заново"
             aria-label="Сбросить практику письма"
-            className="col-span-2 sm:col-span-1 inline-flex items-center justify-center p-3 min-h-[44px] text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
+            className="col-span-2 sm:col-span-1 inline-flex items-center justify-center p-3 h-12 min-h-[48px] text-sm font-medium text-[#52525B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FAF7F2] transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4 mr-1.5 sm:mr-0" />
             <span className="sm:hidden">Сбросить черты</span>
@@ -396,25 +398,25 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
       <div
         className={`mt-3 w-full max-w-[300px] text-center px-4 py-2.5 rounded-xl text-sm leading-relaxed border ${
           feedback.type === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#15803D]'
             : feedback.type === 'mistake'
-            ? 'bg-amber-50 border-amber-200 text-amber-900'
-            : 'bg-slate-50 border-slate-200/80 text-slate-600'
+            ? 'bg-[#FDF2F0] border-[#F5D0C8] text-[#C83E31]'
+            : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
         }`}
         role="status"
         aria-live="polite"
       >
         <div className="flex items-center justify-center gap-2">
           {feedback.type === 'success' && (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
           )}
           {feedback.type === 'mistake' && (
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#C83E31] shrink-0" />
           )}
           <span>{feedback.message}</span>
         </div>
         {mode === 'quiz' && mistakeCount > 0 && (
-          <div className="mt-1 text-xs text-slate-500 font-mono-tabular">
+          <div className="mt-1 text-xs text-[#71717A] font-mono-tabular">
             Ошибок за попытку: {mistakeCount}
           </div>
         )}

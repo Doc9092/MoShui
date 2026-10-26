@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif: 'Lora', 'Cormorant Garamond', Georgia, serif;
-  --font-display: 'Lora', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Lora', 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+  --font-display: 'Lora', 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
   --font-chinese: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
   --font-hanzi: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
 }
@@ -11,16 +11,20 @@
 @layer base {
   html {
     font-size: 16px;
+    background-color: #FAF7F2;
+    color: #18181B;
   }
   body {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', system-ui, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
+    background-color: #FAF7F2;
+    color: #18181B;
   }
 }
 
 .font-sans {
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', system-ui, sans-serif;
 }
 
 .font-display,
@@ -49,10 +53,23 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm;
+    margin: 0;
   }
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+  }
+  .printable-a4-page {
+    page-break-after: always;
+    break-after: page;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+  .printable-a4-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
   }
 }

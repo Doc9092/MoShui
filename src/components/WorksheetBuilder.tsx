@@ -66,7 +66,10 @@ interface WorksheetBuilderProps {
     folder: string;
     description?: string;
   }) => Promise<SavedWorksheet | null> | SavedWorksheet | null;
-  onCreateFolder?: (name: string, color?: string) => Promise<TeacherFolder | null> | TeacherFolder | null;
+  onCreateFolder?: (
+    name: string,
+    color?: string
+  ) => Promise<TeacherFolder | null> | TeacherFolder | null;
   onDetachSavedWorksheet?: () => void;
 }
 
@@ -108,6 +111,8 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [workspaceToast, setWorkspaceToast] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
+
+  const showPreview = mobileTab === 'preview';
 
   useEffect(() => {
     if (activeSavedWorksheet) {
@@ -253,14 +258,17 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     }
 
     setIsEnrichingAi(true);
-    setStatusNote(`Добавлено слов: ${addedItems.length}. Загружаем переводы...`);
+    setStatusNote(`Добавлено слов: ${addedItems.length}. Загружаем русские переводы...`);
+
     try {
       const batchMap = await translateWordsBatch(addedWordsList);
-      onUpdateWorksheetList(applyBatchTranslations(nextList, batchMap, true));
-      setStatusNote(`Добавлено новых позиций в пропись: ${addedItems.length}.`);
+      onUpdateWorksheetList(applyBatchTranslations(nextList, batchMap, false));
+      setStatusNote(
+        `Добавлено слов: ${addedItems.length} (${addedWordsList.join(', ')}). Переводы подтянуты автоматически.`
+      );
     } catch {
       setStatusNote(
-        `Добавлено слов: ${addedItems.length}. Вы можете вписать или уточнить перевод в поле под словом.`
+        `Добавлено слов: ${addedItems.length}. Вы можете отредактировать перевод каждого слова вручную.`
       );
     } finally {
       setIsEnrichingAi(false);
@@ -270,73 +278,47 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   const handleEnrichTranslationsViaAi = async () => {
     if (worksheetList.length === 0 || isEnrichingAi) return;
     setIsEnrichingAi(true);
-    setStatusNote('Обновляем переводы и значения знаков через Gemini AI...');
+    setStatusNote('Запрашиваем точные переводы и посимвольный разбор через ИИ...');
 
     try {
-      const allWords = worksheetList.map((item) => item.word);
-      const batchMap = await translateWordsBatch(allWords);
-      const batchUpdated = applyBatchTranslations(worksheetList, batchMap, true);
+      const wordsToTranslate = worksheetList.map((item) => item.word);
+      const batchMap = await translateWordsBatch(wordsToTranslate);
+      let updatedList = applyBatchTranslations(worksheetList, batchMap, true);
 
-      // Дополнительно обогащаем разбор черт/графем, если требуется
-      const fullyUpdated: WordItem[] = [];
-      for (const item of batchUpdated) {
-        try {
-          const enriched = await analyzeChineseInput(item.word);
-          const resolvedTranslation =
-            !isPlaceholderTranslation(item.translation) && item.translation
-              ? item.translation
-              : !isPlaceholderTranslation(enriched.translation)
-              ? enriched.translation
-              : item.translation;
-          fullyUpdated.push({
-            ...enriched,
-            id: item.id,
-            translation: resolvedTranslation,
-            characters: enriched.characters.map((chObj, cIdx) => ({
-              ...chObj,
-              meaning:
-                item.characters[cIdx]?.meaning &&
-                !isPlaceholderTranslation(item.characters[cIdx].meaning)
-                  ? item.characters[cIdx].meaning
-                  : chObj.meaning,
-            })),
-          });
-        } catch {
-          fullyUpdated.push(item);
+      // Дополнительное глубокое обогащение для слов, которые не нашлись в пакетном ответе
+      const stillMissing = updatedList.filter(
+        (item) => !item.translation || isPlaceholderTranslation(item.translation)
+      );
+
+      if (stillMissing.length > 0) {
+        const deepUpdated: WordItem[] = [];
+        for (const item of updatedList) {
+          if (!item.translation || isPlaceholderTranslation(item.translation)) {
+            try {
+              const analyzed = await analyzeChineseInput(item.word);
+              deepUpdated.push({ ...analyzed, id: item.id });
+            } catch {
+              deepUpdated.push(item);
+            }
+          } else {
+            deepUpdated.push(item);
+          }
         }
+        updatedList = deepUpdated;
       }
 
-      onUpdateWorksheetList(fullyUpdated);
-      setStatusNote('Переводы полных слов и значения иероглифов успешно обновлены.');
+      onUpdateWorksheetList(updatedList);
+      setStatusNote('Русские переводы и пиньинь успешно обновлены для всех слов.');
     } catch {
-      setStatusNote('Не удалось обновить часть слов через ИИ, сохранены текущие переводы.');
+      setStatusNote('Не удалось обновить часть переводов. Проверьте соединение.');
     } finally {
       setIsEnrichingAi(false);
     }
   };
 
-  const handleExportJson = () => {
-    if (worksheetList.length === 0) return;
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const filename = `moshui-words-${dateStr}.json`;
-    const blob = new Blob([JSON.stringify(worksheetList, null, 2)], {
-      type: 'application/json;charset=utf-8',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    setStatusNote(`Коллекция экспортирована в файл ${filename}`);
-  };
-
   const handleMoveItem = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= worksheetList.length) return;
-
     const copy = [...worksheetList];
     const [moved] = copy.splice(index, 1);
     copy.splice(targetIndex, 0, moved);
@@ -355,51 +337,45 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   const handleDownloadPdf = async () => {
     if (worksheetList.length === 0 || isExportingPdf) return;
     setIsExportingPdf(true);
-    setStatusNote('Формируем PDF-документ высокого разрешения (А4)...');
+    setStatusNote('Генерация PDF-файла А4... Пожалуйста, подождите.');
     try {
-      const filename =
-        activeSavedWorksheet?.title || config.sheetTitle || 'Учебная пропись MoShui';
-      await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, filename);
-      showToast(`Готовый PDF-файл «${filename}.pdf» успешно сохранен.`);
-      setStatusNote(null);
+      const pdfName = activeSavedWorksheet?.title || config.sheetTitle || 'moshui-worksheet';
+      await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, pdfName);
+      setStatusNote(`PDF-файл «${pdfName}.pdf» успешно сформирован и скачан.`);
+      showToast(`Файл «${pdfName}.pdf» сохранен на ваше устройство.`);
     } catch (err) {
-      setStatusNote(
-        err instanceof Error ? err.message : 'Не удалось сформировать PDF-файл прописи.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось сформировать PDF-файл.';
+      setStatusNote(msg);
     } finally {
       setIsExportingPdf(false);
     }
   };
 
   const handlePrintSheet = () => {
-    if (worksheetList.length === 0) return;
-    try {
-      const sheetTitle =
-        activeSavedWorksheet?.title || config.sheetTitle || 'Учебная пропись MoShui (墨水)';
-      printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
-    } catch (err) {
-      setStatusNote(
-        err instanceof Error
-          ? err.message
-          : 'Не удалось открыть окно печати. Используйте кнопку «Скачать PDF».'
-      );
-    }
+    const sheetTitle = activeSavedWorksheet?.title || config.sheetTitle || 'Пропись MoShui';
+    printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
+  };
+
+  const handleExportJson = () => {
+    const payload = JSON.stringify({ config, words: worksheetList }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `moshui-worksheet-${ new Date().toISOString().slice(0, 10) }.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleOpenSaveModal = (mode: 'new' | 'copy' | 'update') => {
     if (!currentTeacher) {
-      onOpenAuthModal?.();
+      if (onOpenAuthModal) onOpenAuthModal();
       return;
     }
-    if (worksheetList.length === 0) {
-      setStatusNote('Добавьте хотя бы одно слово в пропись перед сохранением в кабинет.');
-      return;
-    }
-
     setSaveError(null);
     setSaveMode(mode);
     if (mode === 'copy' && activeSavedWorksheet) {
-      setSheetTitleInput(`${activeSavedWorksheet.title} (копия)`);
+      setSheetTitleInput(`${activeSavedWorksheet.title} (Копия)`);
       setSelectedFolder(activeSavedWorksheet.folder);
       setDescriptionInput(activeSavedWorksheet.description || '');
     } else if (mode === 'update' && activeSavedWorksheet) {
@@ -407,20 +383,20 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       setSelectedFolder(activeSavedWorksheet.folder);
       setDescriptionInput(activeSavedWorksheet.description || '');
     } else {
-      setSheetTitleInput(
-        config.sheetTitle && config.sheetTitle !== 'Учебная пропись MoShui (墨水)'
-          ? config.sheetTitle
-          : `Урок (${worksheetList.map((w) => w.word).slice(0, 3).join(', ')})`
-      );
-      setSelectedFolder(folders[0]?.name || 'HSK 1');
+      setSheetTitleInput(config.sheetTitle || 'Урок 1. Базовая лексика');
+      setSelectedFolder(activeSavedWorksheet?.folder || folders[0]?.name || 'HSK 1');
     }
     setIsSaveModalOpen(true);
   };
 
   const handleQuickUpdateSavedWorksheet = async () => {
-    if (!currentTeacher || !activeSavedWorksheet || !onSaveToWorkspace || isSavingToCloud) return;
+    if (!currentTeacher) {
+      if (onOpenAuthModal) onOpenAuthModal();
+      return;
+    }
+    if (!activeSavedWorksheet || !onSaveToWorkspace || isSavingToCloud) return;
+
     setIsSavingToCloud(true);
-    setSaveError(null);
     try {
       const saved = await onSaveToWorkspace({
         id: activeSavedWorksheet.id,
@@ -429,11 +405,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         description: activeSavedWorksheet.description,
       });
       if (saved) {
-        showToast(`Лист «${saved.title}» синхронизирован с облаком в папке «${saved.folder}».`);
+        showToast(
+          `Изменения сохранены в облаке: «${saved.title}» (папка «${saved.folder}»)`
+        );
       }
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : 'Ошибка при обновлении прописи в облаке Supabase.'
+      setStatusNote(
+        err instanceof Error ? err.message : 'Ошибка обновления прописи в облаке Supabase.'
       );
     } finally {
       setIsSavingToCloud(false);
@@ -443,7 +421,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   const handleCreateInlineFolderSubmit = async () => {
     const trimmed = newFolderName.trim();
     if (!trimmed || !onCreateFolder) return;
-    setIsSavingToCloud(true);
+    setSaveError(null);
     try {
       const created = await onCreateFolder(trimmed, 'rose');
       if (created) {
@@ -453,8 +431,6 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       }
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Не удалось создать папку в облаке.');
-    } finally {
-      setIsSavingToCloud(false);
     }
   };
 
@@ -462,31 +438,33 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     e.preventDefault();
     if (!onSaveToWorkspace || isSavingToCloud) return;
 
-    const cleanTitle = sheetTitleInput.trim() || 'Учебная пропись MoShui';
-    const cleanFolder = selectedFolder.trim() || 'Общая папка';
-
-    if (config.sheetTitle !== cleanTitle) {
-      onUpdateConfig({ ...config, sheetTitle: cleanTitle });
-    }
-
-    setIsSavingToCloud(true);
     setSaveError(null);
+    setIsSavingToCloud(true);
 
     try {
+      let folderToUse = selectedFolder;
+      if (isCreatingInlineFolder && newFolderName.trim() && onCreateFolder) {
+        const created = await onCreateFolder(newFolderName.trim(), 'rose');
+        if (created) {
+          folderToUse = created.name;
+        }
+        setNewFolderName('');
+        setIsCreatingInlineFolder(false);
+      }
+
+      const finalTitle = sheetTitleInput.trim() || config.sheetTitle || 'Учебная пропись';
+      onUpdateConfig({ ...config, sheetTitle: finalTitle });
+
       const saved = await onSaveToWorkspace({
         id: saveMode === 'update' && activeSavedWorksheet ? activeSavedWorksheet.id : undefined,
-        title: cleanTitle,
-        folder: cleanFolder,
-        description: descriptionInput.trim() || undefined,
+        title: finalTitle,
+        folder: folderToUse || 'Общие прописи',
+        description: descriptionInput.trim(),
       });
 
       if (saved) {
         setIsSaveModalOpen(false);
-        showToast(
-          saveMode === 'update'
-            ? `Изменения в прописи «${saved.title}» сохранены в облаке.`
-            : `Пропись «${saved.title}» сохранена в папку «${saved.folder}».`
-        );
+        showToast(`Пропись «${saved.title}» сохранена в папку «${saved.folder}»!`);
       }
     } catch (err) {
       setSaveError(
@@ -498,35 +476,35 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Панель управления и настроек (скрывается при печати через print:hidden) */}
-      <div className="print:hidden space-y-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs flex flex-col gap-6">
+    <div className="space-y-6">
+      {/* Верхняя шапка конструктора и панель быстрых действий (скрывается при печати) */}
+      <div className="print:hidden space-y-5">
+        <div className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 flex flex-col gap-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="max-w-3xl">
-              <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-balance">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
                 Конструктор PDF-прописей MoShui формата А4
               </h1>
-              <p className="mt-2 text-base sm:text-lg text-slate-600 leading-relaxed">
+              <p className="mt-2 text-base sm:text-lg text-[#52525B] leading-relaxed">
                 Поддержка как одиночных иероглифов, так и многосложных слов целиком в одной строке с
                 векторными контурами черт.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-[#EAE3D5]">
             {/* Кнопка сохранения в Личный кабинет преподавателя */}
             <button
               type="button"
               onClick={() => handleOpenSaveModal('new')}
               disabled={worksheetList.length === 0 || isSavingToCloud}
               data-testid="save-to-workspace-button"
-              className="inline-flex items-center gap-2.5 px-5 py-3 text-sm sm:text-base font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-5 py-3 h-12 text-sm sm:text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isSavingToCloud ? (
-                <Loader2 className="w-5 h-5 animate-spin text-rose-400" />
+                <Loader2 className="w-5 h-5 animate-spin text-[#F5D0C8]" />
               ) : (
-                <BookmarkCheck className="w-5 h-5 text-rose-400" />
+                <BookmarkCheck className="w-5 h-5 text-[#F5D0C8]" />
               )}
               <span>Сохранить в Личный кабинет</span>
             </button>
@@ -535,9 +513,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               type="button"
               onClick={handleExportJson}
               disabled={worksheetList.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-3 text-sm sm:text-base font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-3 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <Download className="w-5 h-5 text-slate-600" />
+              <Download className="w-5 h-5 text-[#52525B]" />
               <span>Экспорт JSON</span>
             </button>
 
@@ -545,16 +523,16 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               type="button"
               onClick={handleEnrichTranslationsViaAi}
               disabled={isEnrichingAi || worksheetList.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-3 text-sm sm:text-base font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-3 h-12 text-sm sm:text-base font-semibold text-[#C83E31] bg-[#FDF2F0] border border-[#F5D0C8] hover:bg-[#FCE6E2] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isEnrichingAi ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin text-rose-600" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[#C83E31]" />
                   <span>Загрузка переводов...</span>
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-5 h-5 text-rose-600" />
+                  <Wand2 className="w-5 h-5 text-[#C83E31]" />
                   <span>Подтянуть переводы через ИИ</span>
                 </>
               )}
@@ -565,10 +543,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               onClick={handlePrintSheet}
               disabled={worksheetList.length === 0 || isExportingPdf}
               data-testid="print-sheet-button"
-              className="inline-flex items-center gap-2 px-5 py-3 text-sm sm:text-base font-semibold text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-6 py-3 h-12 text-base font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <Printer className="w-5 h-5 text-slate-700" />
-              <span>Печать листа</span>
+              <Printer className="w-4 h-4" />
+              <span>Печать</span>
             </button>
 
             <button
@@ -576,16 +554,16 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               onClick={() => void handleDownloadPdf()}
               disabled={worksheetList.length === 0 || isExportingPdf}
               data-testid="download-pdf-button"
-              className="inline-flex items-center gap-2.5 px-6 py-3 text-base font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#E6E0D6] hover:bg-[#EAE3D5] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isExportingPdf ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Генерация PDF...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
+                  <span>Создание PDF...</span>
                 </>
               ) : (
                 <>
-                  <FileDown className="w-5 h-5" />
+                  <FileDown className="w-4 h-4 text-[#52525B]" />
                   <span>Скачать PDF</span>
                 </>
               )}
@@ -597,26 +575,26 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         {activeSavedWorksheet && currentTeacher && (
           <div
             data-testid="active-saved-worksheet-banner"
-            className="bg-rose-50/70 border border-rose-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            className="bg-[#FDF2F0] border border-[#F5D0C8] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-11 h-11 rounded-xl bg-[#C83E31] text-white flex items-center justify-center shrink-0 mt-0.5">
                 <Folder className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="text-sm font-bold uppercase tracking-wider text-rose-700">
+                  <span className="text-sm font-bold uppercase tracking-wider text-[#C83E31]">
                     Открыта сохраненная пропись:
                   </span>
-                  <span className="text-base font-bold text-slate-900">
+                  <span className="text-base font-bold text-[#18181B]">
                     {activeSavedWorksheet.title}
                   </span>
-                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-white border border-rose-200 text-rose-800 rounded-md">
+                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-white border border-[#F5D0C8] text-[#C83E31] rounded-md">
                     {activeSavedWorksheet.folder}
                   </span>
                 </div>
                 {activeSavedWorksheet.description && (
-                  <p className="text-sm text-slate-600 mt-1">
+                  <p className="text-sm text-[#52525B] mt-1">
                     {activeSavedWorksheet.description}
                   </p>
                 )}
@@ -629,7 +607,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 onClick={() => void handleQuickUpdateSavedWorksheet()}
                 disabled={worksheetList.length === 0 || isSavingToCloud}
                 data-testid="update-saved-worksheet-button"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 rounded-xl transition-all active:scale-[0.98] cursor-pointer"
               >
                 {isSavingToCloud ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -644,9 +622,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 onClick={() => handleOpenSaveModal('copy')}
                 disabled={worksheetList.length === 0 || isSavingToCloud}
                 data-testid="save-as-copy-button"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
               >
-                <Copy className="w-4 h-4 text-slate-600" />
+                <Copy className="w-4 h-4 text-[#52525B]" />
                 <span>Сохранить как копию</span>
               </button>
 
@@ -654,7 +632,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <button
                   type="button"
                   onClick={onDetachSavedWorksheet}
-                  className="px-3 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="px-3 py-2.5 text-sm font-medium text-[#71717A] hover:text-[#18181B] transition-colors cursor-pointer"
                   title="Создать новый лист без перезаписи текущего урока"
                 >
                   Новый черновик
@@ -669,35 +647,35 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           <div
             role="status"
             data-testid="workspace-save-toast"
-            className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-5 py-4 text-sm font-semibold flex items-center justify-between gap-3"
+            className="bg-[#F0FDF4] border border-[#BBF7D0] text-[#15803D] rounded-xl px-5 py-4 text-sm font-semibold flex items-center justify-between gap-3"
           >
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-[#15803D] shrink-0" />
               <span>{workspaceToast}</span>
             </div>
             <button
               type="button"
               onClick={() => setWorkspaceToast(null)}
-              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
+              className="text-[#15803D] hover:text-[#14532D] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         )}
 
-        {/* Мобильный переключатель экранов: «1. Слова и Настройки» | «2. Предпросмотр А4» */}
-        <div className="lg:hidden flex items-center p-1.5 bg-slate-100 rounded-2xl mb-4 border border-slate-200">
+        {/* Мобильный переключатель экранов (< 768px): «1. Слова и Настройки» | «2. Предпросмотр А4» */}
+        <div className="md:hidden flex items-center p-1.5 bg-[#FAF7F2] rounded-2xl border border-[#EAE3D5]">
           <button
             type="button"
             onClick={() => setMobileTab('editor')}
             data-testid="mobile-worksheet-tab-editor"
             className={`flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
-              mobileTab === 'editor'
-                ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                : 'text-slate-600 hover:text-slate-900'
+              !showPreview
+                ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm font-bold'
+                : 'text-[#52525B] hover:text-[#18181B]'
             }`}
           >
-            <Settings2 className="w-4 h-4 text-rose-600" />
+            <Settings2 className="w-4 h-4 text-[#C83E31]" />
             <span>1. Слова и Настройки ({worksheetList.length})</span>
           </button>
           <button
@@ -705,34 +683,41 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             onClick={() => setMobileTab('preview')}
             data-testid="mobile-worksheet-tab-preview"
             className={`flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
-              mobileTab === 'preview'
-                ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                : 'text-slate-600 hover:text-slate-900'
+              showPreview
+                ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm font-bold'
+                : 'text-[#52525B] hover:text-[#18181B]'
             }`}
           >
-            <FileText className="w-4 h-4 text-rose-600" />
+            <FileText className="w-4 h-4 text-[#C83E31]" />
             <span>2. Предпросмотр А4</span>
           </button>
         </div>
+      </div>
 
-        {/* Двухколоночная панель настройки: Слева — Список слов и быстрый ввод, Справа — Настройки сетки */}
+      {/* Главный двухколоночный макет (Side-by-Side) для планшетов (md:) и ПК (lg:) */}
+      <div
+        data-testid="worksheet-side-by-side-grid"
+        className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start"
+      >
+        {/* ЛЕВАЯ КОЛОНКА (Настройки и слова): всегда видна на md: и выше, на мобильных — когда !showPreview */}
         <div
-          className={`${
-            mobileTab === 'preview' ? 'hidden lg:grid' : 'grid'
-          } grid-cols-1 lg:grid-cols-12 gap-6 items-start`}
+          data-testid="worksheet-left-column"
+          className={`md:col-span-5 lg:col-span-4 space-y-6 print:hidden ${
+            showPreview ? 'hidden md:block' : 'block'
+          }`}
         >
-          {/* Левая колонка: Быстрый ввод списком + управление очередью слов */}
-          <section className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-2xs space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                <ListPlus className="w-5 h-5 text-rose-600" />
+          {/* Карточка 1: Список слов и быстрый ввод */}
+          <section className="bg-white border border-[#EAE3D5] rounded-2xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 space-y-5">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-[#18181B] flex items-center gap-2">
+                <ListPlus className="w-5 h-5 text-[#C83E31]" />
                 <span>Слова в прописи ({worksheetList.length})</span>
               </h2>
               {worksheetList.length > 0 && (
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#71717A] hover:text-[#C83E31] transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Очистить список</span>
@@ -744,35 +729,47 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             <form onSubmit={handleBatchAdd} className="space-y-2.5">
               <label
                 htmlFor="batch-words-input"
-                className="block text-sm font-semibold text-slate-700"
+                className="block text-sm font-semibold text-[#18181B]"
               >
                 Быстрый ввод списком (через запятую или пробел)
               </label>
-              <div className="flex gap-2.5">
+              <div className="flex gap-2">
                 <input
                   id="batch-words-input"
                   type="text"
                   value={batchInput}
                   onChange={(e) => setBatchInput(e.target.value)}
                   placeholder="Введите слова через запятую..."
-                  className="flex-1 px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600 font-hanzi-sans"
+                  className="flex-1 min-w-0 px-3.5 py-2.5 h-11 text-sm sm:text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] font-hanzi-sans"
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-3 text-sm sm:text-base font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 h-11 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Добавить</span>
                 </button>
               </div>
-              {statusNote && <p className="text-sm text-slate-600">{statusNote}</p>}
+              {statusNote && <p className="text-xs sm:text-sm text-[#52525B]">{statusNote}</p>}
             </form>
 
             {/* Список добавленных слов с изменением порядка и удалением */}
-            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
               {worksheetList.length === 0 ? (
-                <div className="p-6 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-sm text-slate-500">
-                  Очередь слов пуста. Добавьте иероглифы или слова через поле быстрого ввода выше.
+                <div className="p-5 text-center bg-[#FAF7F2] border border-dashed border-[#EAE3D5] rounded-xl text-sm text-[#71717A] space-y-3">
+                  <p>
+                    Очередь слов пуста. Добавьте иероглифы или слова через поле быстрого ввода выше.
+                  </p>
+                  {onNavigateToDictionary && (
+                    <button
+                      type="button"
+                      onClick={onNavigateToDictionary}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-lg transition-colors cursor-pointer"
+                    >
+                      <BookOpen className="w-4 h-4 text-[#C83E31]" />
+                      <span>Перейти в «Словарь»</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 worksheetList.map((item, idx) => {
@@ -783,18 +780,18 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   return (
                     <div
                       key={item.id}
-                      className="flex items-start justify-between gap-3.5 p-4 bg-slate-50 border border-slate-200/80 rounded-xl"
+                      className="flex items-start justify-between gap-2.5 p-3.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
                     >
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <span className="font-mono-tabular text-sm font-semibold text-slate-400 w-6 shrink-0 pt-1">
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <span className="font-mono-tabular text-xs font-semibold text-[#71717A] w-5 shrink-0 pt-1">
                           {idx + 1}.
                         </span>
                         <div className="min-w-0 flex-1 space-y-2">
-                          <div className="flex items-baseline gap-2.5 flex-wrap">
-                            <span className="font-chinese text-2xl font-bold text-slate-900 shrink-0">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <span className="font-chinese text-xl font-bold text-[#18181B] shrink-0">
                               {item.word}
                             </span>
-                            <span className="text-sm font-mono-tabular font-semibold text-rose-700 truncate">
+                            <span className="text-xs font-mono-tabular font-semibold text-[#C83E31] truncate">
                               {item.pinyin}
                             </span>
                           </div>
@@ -807,18 +804,18 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                               handleManualTranslationChange(item.id, e.target.value)
                             }
                             placeholder="Введите перевод..."
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 hover:border-slate-300 focus:border-rose-600 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none transition-colors"
+                            className="w-full px-3 py-1.5 text-xs sm:text-sm bg-white border border-[#EAE3D5] hover:border-[#D6CEB8] focus:border-[#C83E31] rounded-lg text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none transition-colors"
                           />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                      <div className="flex items-center gap-0.5 shrink-0 pt-0.5">
                         <button
                           type="button"
                           onClick={() => handleMoveItem(idx, 'up')}
                           disabled={idx === 0}
                           aria-label={`Переместить ${item.word} вверх`}
-                          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#EAE3D5]/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
                         >
                           <ArrowUp className="w-4 h-4" />
                         </button>
@@ -827,7 +824,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           onClick={() => handleMoveItem(idx, 'down')}
                           disabled={idx === worksheetList.length - 1}
                           aria-label={`Переместить ${item.word} вниз`}
-                          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#EAE3D5]/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
                         >
                           <ArrowDown className="w-4 h-4" />
                         </button>
@@ -835,7 +832,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           type="button"
                           onClick={() => handleRemoveItem(item.id)}
                           aria-label={`Удалить ${item.word} из прописи`}
-                          className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -847,192 +844,228 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             </div>
           </section>
 
-          {/* Правая колонка: Панель настроек дизайна прописи (WorksheetConfig) */}
-          <section className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-2xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                <Settings2 className="w-5 h-5 text-rose-600" />
-                <span>Настройки макета и сетки прописи</span>
-              </h2>
+          {/* Карточка 2: Панель настроек дизайна прописи (WorksheetConfig) */}
+          <section className="bg-white border border-[#EAE3D5] rounded-2xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 space-y-5">
+            <h2 className="text-lg font-bold text-[#18181B] flex items-center gap-2">
+              <Settings2 className="w-5 h-5 text-[#C83E31]" />
+              <span>Настройки макета и сетки</span>
+            </h2>
 
-              <div className="flex items-center gap-2.5">
-                <label htmlFor="sheet-title-inline" className="text-sm font-medium text-slate-600">
-                  Заголовок А4:
-                </label>
-                <input
-                  id="sheet-title-inline"
-                  type="text"
-                  value={config.sheetTitle}
-                  onChange={(e) => onUpdateConfig({ ...config, sheetTitle: e.target.value })}
-                  placeholder="Заголовок прописи..."
-                  className="px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:bg-white focus:border-rose-600"
-                />
-              </div>
+            {/* Заголовок листа А4 */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="sheet-title-inline"
+                className="block text-sm font-semibold text-[#18181B]"
+              >
+                Заголовок А4:
+              </label>
+              <input
+                id="sheet-title-inline"
+                type="text"
+                value={config.sheetTitle}
+                onChange={(e) => onUpdateConfig({ ...config, sheetTitle: e.target.value })}
+                placeholder="Заголовок прописи..."
+                className="w-full px-3.5 py-2.5 text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31] font-hanzi-sans"
+              />
             </div>
 
-            {/* КЛЮЧЕВАЯ ФИЧА: Режим компоновки строк */}
-            <div className="space-y-3">
-              <div className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-slate-500" />
+            {/* Режим компоновки строк */}
+            <div className="space-y-2.5 pt-3 border-t border-[#EAE3D5]">
+              <div className="text-sm font-semibold text-[#18181B] flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#71717A]" />
                 <span>Режим компоновки строк</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-2.5">
                 <button
                   type="button"
                   onClick={() => onUpdateConfig({ ...config, layoutMode: 'by-character' })}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     config.layoutMode === 'by-character'
-                      ? 'bg-rose-50/70 border-rose-600 ring-1 ring-rose-600'
-                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#FDF2F0] border-[#C83E31] ring-1 ring-[#C83E31]'
+                      : 'bg-[#FAF7F2] border-[#EAE3D5] hover:bg-[#F3EFE6]'
                   }`}
                 >
-                  <div className="text-sm sm:text-base font-bold text-slate-900">
+                  <div className="text-sm font-bold text-[#18181B]">
                     Режим А: Посимвольный разбор
                   </div>
-                  <div className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-                    1 иероглиф = 1 блок. Многосложное слово разбивается на отдельные учебные секции с
-                    пошаговым порядком черт.
+                  <div className="mt-1 text-xs text-[#52525B] leading-relaxed">
+                    1 иероглиф = 1 блок с индивидуальным пиньинем и порядком черт.
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onUpdateConfig({ ...config, layoutMode: 'whole-word' })}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     config.layoutMode === 'whole-word'
-                      ? 'bg-rose-50/70 border-rose-600 ring-1 ring-rose-600'
-                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#FDF2F0] border-[#C83E31] ring-1 ring-[#C83E31]'
+                      : 'bg-[#FAF7F2] border-[#EAE3D5] hover:bg-[#F3EFE6]'
                   }`}
                 >
-                  <div className="text-sm sm:text-base font-bold text-slate-900">
+                  <div className="text-sm font-bold text-[#18181B]">
                     Режим Б: Словарный режим (Слово целиком)
                   </div>
-                  <div className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-                    Чередование иероглифов слова в одной строке сетки: образец, затем пары для
-                    обводки и пустые клетки.
+                  <div className="mt-1 text-xs text-[#52525B] leading-relaxed">
+                    Чередование иероглифов слова в одной строке сетки: образец, обводка и практика.
                   </div>
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-slate-200">
-              {/* Тип сетки */}
-              <div className="space-y-2.5">
-                <span className="block text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <Grid className="w-4 h-4 text-slate-500" />
-                  <span>Тип каллиграфической сетки</span>
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      { id: 'mizi', label: 'Мицзыгэ 米字格' },
-                      { id: 'tianzi', label: 'Тяньцзыгэ 田字格' },
-                      { id: 'kouzi', label: 'Квадрат 口字格' },
-                    ] as const
-                  ).map((g) => (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => onUpdateConfig({ ...config, gridType: g.id })}
-                      className={`px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                        config.gridType === g.id
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      {g.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Цвет сетки */}
-              <div className="space-y-2.5">
-                <span className="block text-sm font-semibold text-slate-700">Цвет линий сетки</span>
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      { id: 'red', label: 'Классический красный', swatch: 'bg-red-600' },
-                      { id: 'green', label: 'Изумрудный зеленый', swatch: 'bg-emerald-600' },
-                      { id: 'gray', label: 'Серый графит', swatch: 'bg-slate-600' },
-                    ] as const
-                  ).map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => onUpdateConfig({ ...config, gridColor: c.id })}
-                      className={`inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                        config.gridColor === c.id
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className={`w-3 h-3 rounded-xs ${c.swatch}`} />
-                      <span>{c.label}</span>
-                    </button>
-                  ))}
-                </div>
+            {/* Тип сетки */}
+            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
+              <span className="block text-sm font-semibold text-[#18181B] flex items-center gap-2">
+                <Grid className="w-4 h-4 text-[#71717A]" />
+                <span>Тип каллиграфической сетки</span>
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { id: 'mizi', label: 'Мицзыгэ 米字格' },
+                    { id: 'tianzi', label: 'Тяньцзыгэ 田字格' },
+                    { id: 'kouzi', label: 'Квадрат 口字格' },
+                  ] as const
+                ).map((g) => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => onUpdateConfig({ ...config, gridType: g.id })}
+                    className={`flex-1 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer font-hanzi-sans ${
+                      config.gridType === g.id
+                        ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
+                        : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-5 border-t border-slate-200">
-              {/* Ползунок количества серых контуров для обводки (0 - 10) */}
-              <div className="space-y-2.5">
-                <label
-                  htmlFor="trace-count-slider"
-                  className="flex items-center justify-between text-sm font-semibold text-slate-700"
-                >
-                  <span>Контуров для обводки:</span>
-                  <span className="font-mono-tabular text-rose-700 font-bold">
-                    {config.traceCount} шт.
-                  </span>
-                </label>
-                <input
-                  id="trace-count-slider"
-                  type="range"
-                  min={0}
-                  max={10}
-                  step={1}
-                  value={config.traceCount}
-                  onChange={(e) =>
-                    onUpdateConfig({ ...config, traceCount: parseInt(e.target.value, 10) })
-                  }
-                  className="w-full accent-rose-600 cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-slate-400 font-mono-tabular">
-                  <span>0</span>
-                  <span>5</span>
-                  <span>10</span>
-                </div>
+            {/* Цвет сетки */}
+            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
+              <span className="block text-sm font-semibold text-[#18181B]">Цвет линий сетки</span>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { id: 'red', label: 'Классический красный', swatch: 'bg-[#C83E31]' },
+                    { id: 'green', label: 'Изумрудный зеленый', swatch: 'bg-[#15803D]' },
+                    { id: 'gray', label: 'Серый графит', swatch: 'bg-[#52525B]' },
+                  ] as const
+                ).map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => onUpdateConfig({ ...config, gridColor: c.id })}
+                    className={`inline-flex items-center gap-2 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      config.gridColor === c.id
+                        ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
+                        : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
+                    }`}
+                  >
+                    <span className={`w-3 h-3 rounded-xs ${c.swatch}`} />
+                    <span>{c.label}</span>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {/* Количество строк клеток на элемент (1 или 2 строки по 10 клеток) */}
-              <div className="space-y-2.5">
-                <span className="block text-sm font-semibold text-slate-700">
-                  Строк на элемент (по 10 клеток)
-                </span>
-                <div className="flex gap-2">
-                  {([1, 2] as const).map((rows) => (
+            {/* Количество клеток (10 кл = 1 строка, 20 кл = 2 строки, 30 кл = 3 строки по 10 клеток) */}
+            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
+              <span className="block text-sm font-semibold text-[#18181B]">Количество клеток</span>
+              <div className="flex gap-2">
+                {([10, 20, 30] as const).map((cellCount) => {
+                  const activeTotalCells =
+                    config.rowsPerItem === 3 || config.cellsPerRow === 30
+                      ? 30
+                      : config.rowsPerItem === 2 || config.cellsPerRow === 20
+                      ? 20
+                      : 10;
+                  const isActive = activeTotalCells === cellCount;
+                  const nextRowsPerItem = (cellCount / 10) as 1 | 2 | 3;
+                  return (
                     <button
-                      key={rows}
+                      key={cellCount}
                       type="button"
-                      onClick={() => onUpdateConfig({ ...config, rowsPerItem: rows })}
-                      className={`flex-1 py-2.5 px-3 text-sm font-semibold rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                        config.rowsPerItem === rows
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      data-testid={`cells-per-row-btn-${cellCount}`}
+                      onClick={() =>
+                        onUpdateConfig({
+                          ...config,
+                          cellsPerRow: 10,
+                          rowsPerItem: nextRowsPerItem,
+                        })
+                      }
+                      className={`flex-1 py-2.5 px-3 min-h-[42px] text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-[#18181B] text-white rounded-lg'
+                          : 'bg-[#FAF7F2] text-[#18181B] border border-[#E6E0D6] hover:bg-[#EAE3D5] rounded-lg transition-colors'
                       }`}
                     >
-                      {rows === 1 ? '1 строка (10 кл.)' : '2 строки (20 кл.)'}
+                      {cellCount} кл
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* Пошаговый порядок черт (Stroke Order Header) */}
-              <div className="space-y-2.5">
-                <span className="block text-sm font-semibold text-slate-700">
+            {/* Контуры для обводки (ползунок от 0 до 30 и быстрые кнопки 5, 10, 20, 30, Все клетки) */}
+            <div className="space-y-2.5 pt-3 border-t border-[#EAE3D5]">
+              <label
+                htmlFor="trace-count-slider"
+                className="flex items-center justify-between text-sm font-semibold text-[#18181B]"
+              >
+                <span>Контуры для обводки:</span>
+                <span className="font-mono-tabular text-[#C83E31] font-bold">
+                  {config.traceCount >= 30 ? 'Все клетки (30)' : `${config.traceCount} шт.`}
+                </span>
+              </label>
+              <input
+                id="trace-count-slider"
+                type="range"
+                min={0}
+                max={30}
+                step={1}
+                value={config.traceCount}
+                onChange={(e) =>
+                  onUpdateConfig({ ...config, traceCount: parseInt(e.target.value, 10) })
+                }
+                className="w-full accent-[#C83E31] cursor-pointer"
+              />
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {(
+                  [
+                    { label: '0', value: 0 },
+                    { label: '5', value: 5 },
+                    { label: '10', value: 10 },
+                    { label: '20', value: 20 },
+                    { label: '30 / Все клетки', value: 30 },
+                  ] as const
+                ).map((preset) => {
+                  const isActivePreset = config.traceCount === preset.value;
+                  return (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      data-testid={`trace-preset-btn-${preset.value}`}
+                      onClick={() => onUpdateConfig({ ...config, traceCount: preset.value })}
+                      className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-colors cursor-pointer ${
+                        isActivePreset
+                          ? 'bg-[#18181B] text-white border-[#18181B]'
+                          : 'bg-[#FAF7F2] text-[#18181B] border-[#E6E0D6] hover:bg-[#EAE3D5]'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Пошаговый порядок черт и Поля "Имя" и "Дата" для ученика */}
+            <div className="space-y-3 pt-3 border-t border-[#EAE3D5]">
+              <div className="space-y-2">
+                <span className="block text-sm font-semibold text-[#18181B]">
                   Пошаговый порядок черт
                 </span>
                 <button
@@ -1042,33 +1075,105 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     onUpdateConfig({ ...config, showStrokeOrder: !config.showStrokeOrder })
                   }
                   aria-pressed={Boolean(config.showStrokeOrder)}
-                  className={`w-full py-2.5 px-3 text-sm font-semibold rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`w-full py-2.5 px-3 min-h-[42px] text-sm font-semibold rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     config.showStrokeOrder
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
+                      ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
+                      : 'bg-[#FAF7F2] text-[#52525B] border-[#EAE3D5]'
                   }`}
                 >
                   {config.showStrokeOrder ? 'Включен (в шапке)' : 'Выключен'}
                 </button>
               </div>
+
+              <label
+                htmlFor="toggle-student-info-checkbox"
+                data-testid="toggle-student-info-label"
+                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none"
+              >
+                <span className="text-sm font-semibold text-[#18181B]">
+                  Поля &laquo;Имя&raquo; и &laquo;Дата&raquo; для ученика
+                </span>
+                <input
+                  id="toggle-student-info-checkbox"
+                  data-testid="toggle-student-info-checkbox"
+                  type="checkbox"
+                  checked={config.showStudentInfo !== false}
+                  onChange={(e) =>
+                    onUpdateConfig({ ...config, showStudentInfo: e.target.checked })
+                  }
+                  className="w-4 h-4 accent-[#C83E31] rounded cursor-pointer"
+                />
+              </label>
             </div>
           </section>
+        </div>
+
+        {/* ПРАВАЯ КОЛОНКА (Превью А4 и экспорт): ВСЕГДА рендерится на экранах md: и выше */}
+        <div
+          data-testid="worksheet-right-column"
+          className={`md:col-span-7 lg:col-span-8 space-y-4 ${
+            showPreview ? 'block' : 'hidden md:block'
+          }`}
+        >
+          {/* Информационная карточка пустого списка (при пустой очереди слов), не блокирующая рендер листа А4 ниже */}
+          {worksheetList.length === 0 && (
+            <section
+              aria-label="Пустое состояние конструктора прописей"
+              data-testid="worksheet-empty-state"
+              className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] print:hidden"
+            >
+              <div className="max-w-lg mx-auto flex flex-col items-center">
+                <img
+                  src={MOSHUI_LOGO_SRC}
+                  alt="MoShui 墨水"
+                  data-testid="worksheet-empty-logo"
+                  className="h-16 w-16 object-contain rounded-full mix-blend-multiply opacity-85 mb-3"
+                />
+                <h2 className="font-display text-xl font-bold text-[#18181B]">
+                  Список слов для прописи пока пуст
+                </h2>
+                <p className="mt-1.5 text-sm text-[#52525B] leading-relaxed">
+                  Добавьте китайские слова через поле быстрого ввода слева или отправьте их сюда из
+                  вкладки «Словарь». Ниже отображается живой макет листа А4.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {/* Внешний контейнер-вьюпорт для просмотра чистого белого листа А4 */}
+          <div
+            className="bg-[#F3EFE6]/80 border border-[#EAE3D5] rounded-2xl p-2 sm:p-5 overflow-x-auto touch-pan-x overscroll-x-contain shadow-inner"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            <div className="flex items-center justify-end text-xs text-[#52525B] mb-3 px-2 print:hidden">
+              <span className="px-2.5 py-0.5 font-mono-tabular font-semibold text-[#C83E31] bg-white/90 border border-[#EAE3D5] rounded-md">
+                A4
+              </span>
+            </div>
+            <div style={{ minWidth: '794px' }} className="mx-auto flex justify-center">
+              <PrintableSheet
+                worksheetList={worksheetList}
+                config={config}
+                teacherName={currentTeacher?.name}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Модальное окно «Сохранить в Личный кабинет» */}
       {isSaveModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 print:hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#18181B]/60 backdrop-blur-xs p-4 print:hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby="save-worksheet-modal-title"
           data-testid="save-worksheet-modal"
         >
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="bg-white border border-[#EAE3D5] rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
+            <div className="px-6 py-4 bg-[#18181B] text-[#FAF7F2] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <BookmarkCheck className="w-5 h-5 text-rose-400" />
+                <BookmarkCheck className="w-5 h-5 text-[#F5D0C8]" />
                 <h3 id="save-worksheet-modal-title" className="text-lg font-bold">
                   {saveMode === 'copy'
                     ? 'Сохранить копию прописи в облако'
@@ -1081,7 +1186,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 type="button"
                 disabled={isSavingToCloud}
                 onClick={() => setIsSaveModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-[#A1A1AA] hover:text-white rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1091,9 +1196,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               {saveError && (
                 <div
                   role="alert"
-                  className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-sm font-medium text-rose-700"
+                  className="p-3.5 bg-[#FDF2F0] border border-[#F5D0C8] rounded-xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
                 >
-                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#C83E31]" />
                   <span>{saveError}</span>
                 </div>
               )}
@@ -1101,7 +1206,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <div>
                 <label
                   htmlFor="save-worksheet-title"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Название листа прописи *
                 </label>
@@ -1114,7 +1219,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   value={sheetTitleInput}
                   onChange={(e) => setSheetTitleInput(e.target.value)}
                   placeholder="Например: Урок 4. Семья и профессии"
-                  className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
 
@@ -1122,7 +1227,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="save-worksheet-folder"
-                    className="block text-sm font-semibold text-slate-700"
+                    className="block text-sm font-semibold text-[#18181B]"
                   >
                     Папка / Учебная группа *
                   </label>
@@ -1130,7 +1235,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     type="button"
                     disabled={isSavingToCloud}
                     onClick={() => setIsCreatingInlineFolder((prev) => !prev)}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-600 hover:text-rose-700 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C83E31] hover:text-[#B03226] cursor-pointer"
                   >
                     <FolderPlus className="w-4 h-4" />
                     <span>{isCreatingInlineFolder ? 'Отмена' : 'Создать новую папку'}</span>
@@ -1145,13 +1250,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                       value={newFolderName}
                       onChange={(e) => setNewFolderName(e.target.value)}
                       placeholder="Название новой папки (например: HSK 3)"
-                      className="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                      className="flex-1 px-4 py-2.5 text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                     />
                     <button
                       type="button"
                       disabled={isSavingToCloud}
                       onClick={() => void handleCreateInlineFolderSubmit()}
-                      className="px-4 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl cursor-pointer"
+                      className="px-4 py-2.5 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl cursor-pointer"
                     >
                       Добавить
                     </button>
@@ -1163,7 +1268,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     disabled={isSavingToCloud}
                     value={selectedFolder}
                     onChange={(e) => setSelectedFolder(e.target.value)}
-                    className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                    className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                   >
                     {folders.map((f) => (
                       <option key={f.id} value={f.name}>
@@ -1178,7 +1283,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <div>
                 <label
                   htmlFor="save-worksheet-description"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Краткая заметка к уроку (необязательно)
                 </label>
@@ -1190,13 +1295,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   value={descriptionInput}
                   onChange={(e) => setDescriptionInput(e.target.value)}
                   placeholder="Например: Домашнее задание для вторничной группы, повторить порядок черт..."
-                  className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600 resize-none"
+                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31] resize-none"
                 />
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-600 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-[#FAF7F2] border border-[#EAE3D5] text-sm text-[#52525B] flex items-center justify-between">
                 <span>Слов в сохраняемом листе:</span>
-                <span className="font-mono-tabular font-bold text-slate-900">
+                <span className="font-mono-tabular font-bold text-[#18181B]">
                   {worksheetList.length} ({worksheetList.map((w) => w.word).join(', ')})
                 </span>
               </div>
@@ -1206,7 +1311,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   type="button"
                   disabled={isSavingToCloud}
                   onClick={() => setIsSaveModalOpen(false)}
-                  className="px-5 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                  className="px-5 py-3 text-sm font-semibold text-[#52525B] hover:text-[#18181B] bg-[#FAF7F2] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
                 >
                   Отмена
                 </button>
@@ -1214,7 +1319,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   type="submit"
                   disabled={isSavingToCloud}
                   data-testid="confirm-save-worksheet-button"
-                  className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 rounded-xl shadow-2xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 >
                   {isSavingToCloud ? (
                     <>
@@ -1223,7 +1328,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
+                      <Save className="w-4 h-4 text-[#F5D0C8]" />
                       <span>Сохранить в кабинет</span>
                     </>
                   )}
@@ -1234,81 +1339,35 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         </div>
       )}
 
-      {/* Если список пуст — выводим информационную карточку Empty State с приглушенным логотипом MoShui (высотой 96px) */}
-      {worksheetList.length === 0 ? (
-        <section
-          aria-label="Пустое состояние конструктора прописей"
-          data-testid="worksheet-empty-state"
-          className="bg-white border border-slate-200 rounded-2xl p-12 sm:p-16 text-center shadow-2xs print:hidden"
-        >
-          <div className="max-w-lg mx-auto flex flex-col items-center">
-            <img
-              src={MOSHUI_LOGO_SRC}
-              alt="MoShui 墨水"
-              data-testid="worksheet-empty-logo"
-              className="h-24 w-24 object-contain rounded-2xl opacity-75 mb-5 border border-slate-200/70 bg-[#FAF9F6] p-1.5"
-            />
-            <h2 className="font-display text-2xl font-bold text-slate-900">
-              Список слов для прописи пока пуст
-            </h2>
-            <p className="mt-2.5 text-base text-slate-600 leading-relaxed">
-              Список слов для прописи пока пуст. Добавьте слова через поле быстрого ввода слева или
-              отправьте их сюда из вкладки «Словарь».
-            </p>
-            {onNavigateToDictionary && (
-              <button
-                type="button"
-                onClick={onNavigateToDictionary}
-                className="mt-6 inline-flex items-center gap-2.5 px-6 py-3.5 text-base font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>Перейти во вкладку «Словарь и Практика»</span>
-              </button>
-            )}
-          </div>
-        </section>
-      ) : (
-        <div className={`mt-8 ${mobileTab === 'editor' ? 'hidden lg:block' : 'block'}`}>
-          {/* Внешний контейнер-вьюпорт со свайпом/скроллом, предотвращающий переполнение экрана на смартфонах */}
-          <div
-            className="bg-slate-100/70 border border-slate-200 rounded-2xl p-2 sm:p-6 overflow-x-auto touch-pan-x overscroll-x-contain shadow-2xs"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-2 px-2 lg:hidden">
-              <span>Лист формата А4 (794px). Смахните вправо для просмотра:</span>
-              <span className="font-mono-tabular font-semibold text-rose-700">794 × 1123 px</span>
-            </div>
-            <div style={{ minWidth: '794px' }} className="mx-auto flex justify-center">
-              <PrintableSheet
-                worksheetList={worksheetList}
-                config={config}
-                teacherName={currentTeacher?.name}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Мобильная плавающая панель быстрых действий (Скачать PDF и Сохранить) над нижней навигацией */}
+      {/* Мобильная плавающая панель быстрых действий (Печать и Скачать PDF) над нижней навигацией */}
       {worksheetList.length > 0 && (
-        <div className="lg:hidden fixed bottom-16 left-3 right-3 z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2 shadow-lg flex items-center gap-2 print:hidden">
+        <div className="md:hidden fixed bottom-16 left-3 right-3 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border border-[#E6E0D6] rounded-2xl p-2 shadow-lg flex items-center gap-2 print:hidden">
+          <button
+            type="button"
+            onClick={handlePrintSheet}
+            disabled={isExportingPdf}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 rounded-xl shadow-sm transition-all cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Печать</span>
+          </button>
           <button
             type="button"
             onClick={() => void handleDownloadPdf()}
             disabled={isExportingPdf}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#E6E0D6] hover:bg-[#EAE3D5] disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
           >
-            <FileDown className="w-4 h-4" />
-            <span>{isExportingPdf ? 'Генерация...' : 'Скачать PDF'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOpenSaveModal('new')}
-            disabled={isSavingToCloud}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
-          >
-            <BookmarkCheck className="w-4 h-4 text-slate-700" />
-            <span>В кабинет</span>
+            {isExportingPdf ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
+                <span>Создание PDF...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4 text-[#52525B]" />
+                <span>Скачать PDF</span>
+              </>
+            )}
           </button>
         </div>
       )}

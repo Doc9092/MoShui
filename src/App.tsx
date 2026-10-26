@@ -34,11 +34,10 @@ import {
   importTeacherWorkspaceBackupToCloud,
   translateSupabaseError,
 } from './services/authStorageService';
-import { Navbar } from './components/Navbar';
+import { Navbar, MOSHUI_LOGO_SRC } from './components/Navbar';
 import { DictionaryView } from './components/DictionaryView';
 import { WorksheetBuilder } from './components/WorksheetBuilder';
 import { RadicalsView } from './components/RadicalsView';
-import { GamesView } from './components/GamesView';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { AuthModal } from './components/AuthModal';
 import {
@@ -55,6 +54,7 @@ const DEFAULT_WORKSHEET_CONFIG: WorksheetConfig = {
   gridType: 'mizi',
   gridColor: 'red',
   showStrokeOrder: true,
+  showStudentInfo: true,
   traceCount: 3,
   rowsPerItem: 1,
   cellsPerRow: 10,
@@ -239,20 +239,6 @@ export default function App() {
     }
   };
 
-  const handleQuickPrint = () => {
-    if (worksheetList.length === 0) return;
-    const filename =
-      activeSavedWorksheet?.title || worksheetConfig.sheetTitle || 'Учебная пропись MoShui';
-    if (activeTab !== 'worksheet') {
-      setActiveTab('worksheet');
-      setTimeout(() => {
-        void downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, filename);
-      }, 450);
-    } else {
-      void downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, filename);
-    }
-  };
-
   // --- Обработчики Личного кабинета преподавателя (Supabase Cloud) ---
 
   const handleAuthSuccess = (teacher: TeacherProfile) => {
@@ -417,17 +403,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#18181B]">
       <Navbar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         worksheetCount={worksheetList.length}
-        onQuickPrint={handleQuickPrint}
         currentTeacher={currentTeacher}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="flex-1 max-w-[1380px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 pb-24 md:pb-10 print:p-0 print:max-w-none">
+      <main className="flex-1 max-w-[1380px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 pb-24 md:pb-12 print:p-0 print:max-w-none">
         {activeTab === 'dictionary' && (
           <DictionaryView
             currentWord={currentWord}
@@ -460,14 +445,6 @@ export default function App() {
             worksheetList={worksheetList}
             onAddToWorksheet={handleAddToWorksheet}
             onPracticeRadical={(ch) => void handlePracticeCharacterFromRadicals(ch)}
-          />
-        )}
-
-        {activeTab === 'games' && (
-          <GamesView
-            worksheetList={worksheetList}
-            onNavigateToDictionary={() => setActiveTab('dictionary')}
-            onNavigateToWorksheet={() => setActiveTab('worksheet')}
           />
         )}
 
@@ -509,20 +486,55 @@ export default function App() {
         onSuccess={handleAuthSuccess}
       />
 
-      <footer className="border-t border-slate-200 bg-white py-6 px-4 sm:px-6 lg:px-8 text-sm text-slate-600 print:hidden">
-        <div className="max-w-[1380px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+      {/* Минималистичный однострочный футер в стиле «Warm Oriental Minimalism» */}
+      <footer
+        data-testid="app-footer"
+        className="hidden md:block print:hidden py-4 px-6 border-t border-[#E6E0D6] bg-[#FAF7F2]/90 text-[#18181B]/70 text-sm"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
             <img
-              src="/assets/aistudio/image_0_0a6a2fe2.png"
-              alt="Логотип MoShui"
-              className="w-7 h-7 rounded-md object-contain"
+              src={MOSHUI_LOGO_SRC}
+              alt="MoShui"
+              className="w-7 h-7 rounded-full object-contain mix-blend-multiply"
             />
-            <span className="font-medium text-slate-700">
-              MoShui (<span className="font-chinese">墨水</span>) — Умный словарь, интерактивная каллиграфия и конструктор прописей А4
-            </span>
+            <span className="font-display font-semibold text-[#18181B]">MoShui</span>
+            <span aria-hidden="true">·</span>
+            <span>Интерактивная каллиграфия и конструктор прописей</span>
           </div>
-          <div className="text-slate-500">
-            Словарь · Конструктор прописей · 214 ключей Канси · Игры · Облачный кабинет (Supabase)
+
+          <div className="flex items-center gap-3">
+            <a
+              href="https://t.me/lia_iakubova_chinese"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="footer-telegram-link"
+              className="flex items-center gap-1.5 text-[#18181B]/70 hover:text-[#C83E31] transition-colors font-medium"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4 shrink-0"
+                aria-hidden="true"
+              >
+                <path d="M21.73 2.27a1 1 0 0 0-1.05-.2L2.6 9.3a1 1 0 0 0 .06 1.88l4.75 1.58 1.88 5.65a1 1 0 0 0 1.72.34l2.72-2.72 4.55 3.32a1 1 0 0 0 1.57-.63L22 3.22a1 1 0 0 0-.27-.95Z" />
+                <path d="m7.41 12.76 13.3-9.5" />
+              </svg>
+              <span>@lia_iakubova_chinese</span>
+            </a>
+
+            <span aria-hidden="true">·</span>
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-chinese text-[#C83E31] border border-[#C83E31]/50 rounded-xs bg-[#FDF2F0]">
+                墨
+              </span>
+              <span>© 2026 MoShui</span>
+            </div>
           </div>
         </div>
       </footer>

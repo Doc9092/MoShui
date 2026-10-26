@@ -38,8 +38,9 @@ export interface WorksheetConfig {
   gridType: 'mizi' | 'tianzi' | 'kouzi';
   gridColor: 'red' | 'green' | 'gray';
   showStrokeOrder: boolean;
+  showStudentInfo?: boolean;
   traceCount: number;
-  rowsPerItem: 1 | 2;
+  rowsPerItem: 1 | 2 | 3;
   cellsPerRow: number;
 }
 
@@ -80,4 +81,4 @@ export interface SavedWorksheet {
   updatedAt: number;
 }
 
-export type AppTab = 'dictionary' | 'worksheet' | 'radicals' | 'games' | 'dashboard';
+export type AppTab = 'dictionary' | 'worksheet' | 'radicals' | 'dashboard';

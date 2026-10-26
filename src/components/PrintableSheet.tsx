@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { pinyin } from 'pinyin-pro';
+import logoSrc from '../assets/image_0.png';
 import type { WordItem, WorksheetConfig } from '../types/hanzi';
 import {
   buildWorksheetCells,
@@ -10,7 +11,6 @@ import {
   COMMON_WORD_TRANSLATIONS,
   KNOWN_CHARACTERS,
   COMMON_CHAR_MEANINGS,
-  type WorksheetCellSpec,
 } from '../utils/hanziUtils';
 import { loadHanziStrokes, type CharacterStrokeData } from '../utils/strokeDataLoader';
 
@@ -25,7 +25,7 @@ const GRID_PALETTES: Record<
   { border: string; guide: string; headerBg: string; badgeText: string }
 > = {
   red: {
-    border: '#DC2626',
+    border: '#C83E31',
     guide: '#FCA5A5',
     headerBg: '#FEF2F2',
     badgeText: '#B91C1C',
@@ -44,172 +44,42 @@ const GRID_PALETTES: Record<
   },
 };
 
-const CELL_SIZE = 68;
-const CHAR_PADDING = 6;
-const CHAR_INNER_SIZE = CELL_SIZE - CHAR_PADDING * 2; // 56px
-const HANZI_SCALE = Number((CHAR_INNER_SIZE / 1024).toFixed(6)); // 0.054688
-const HANZI_Y_OFFSET = Number((CHAR_PADDING + 900 * (CHAR_INNER_SIZE / 1024)).toFixed(3)); // 55.219
-
-interface SvgWorksheetRowProps {
-  rowCells: WorksheetCellSpec[];
-  rowIndex: number;
-  cellsPerRow: number;
-  gridType: WorksheetConfig['gridType'];
-  palette: { border: string; guide: string };
-  strokeMap: Record<string, CharacterStrokeData | null>;
-}
+/**
+ * Фиксированная ширина рабочей области листа А4 внутри .printable-a4-page:
+ * 794px (ширина листа А4) - 2 * 40px (боковые поля) = 714px.
+ * В одной горизонтальной строке ВСЕГДА ровно 10 клеток (~71.4px каждая).
+ */
+const WORKSHEET_INNER_WIDTH = 714;
+const COLS_PER_ROW = 10;
 
 /**
- * Единый целостный векторный SVG-ряд клеток прописи (10 клеток по 68x68 = 680x68).
- * Исключает любые сдвиги HTML-рамок при рендеринге через html2canvas и при прямой печати А4.
+ * Генерирует легкий Data URI (`data:image/svg+xml;utf8,...`) для внутренней пунктирной разлиновки
+ * одной клетки (Мицзыгэ 米字格, Тяньцзыгэ 田字格 или Квадрат 口字格).
  */
-const SvgWorksheetRow: React.FC<SvgWorksheetRowProps> = ({
-  rowCells,
-  rowIndex,
-  cellsPerRow,
-  gridType,
-  palette,
-  strokeMap,
-}) => {
-  const rowWidth = cellsPerRow * CELL_SIZE; // 680 при 10 клетках
-  const rowHeight = CELL_SIZE; // 68
+function buildCellGuideDataUri(
+  gridType: WorksheetConfig['gridType'],
+  guideColor: string
+): string {
+  if (gridType === 'kouzi') {
+    return 'none';
+  }
 
-  return (
-    <svg
-      viewBox={`0 0 ${rowWidth} ${rowHeight}`}
-      width="100%"
-      height={rowHeight}
-      style={{
-        display: 'block',
-        width: '100%',
-        height: `${rowHeight}px`,
-        backgroundColor: '#ffffff',
-        overflow: 'hidden',
-      }}
-      data-testid={`worksheet-svg-row-${rowIndex}`}
-      aria-label={`Ряд клеток прописи ${rowIndex + 1}`}
-    >
-      {/* Фон ряда */}
-      <rect x="0" y="0" width={rowWidth} height={rowHeight} fill="#ffffff" />
+  const lines: string[] = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">`,
+    `<line x1="0" y1="50" x2="100" y2="50" stroke="${guideColor}" stroke-dasharray="4,4" stroke-width="1.2"/>`,
+    `<line x1="50" y1="0" x2="50" y2="100" stroke="${guideColor}" stroke-dasharray="4,4" stroke-width="1.2"/>`,
+  ];
 
-      {/* Направляющие линии и иероглифы внутри каждой из клеток ряда */}
-      {rowCells.map((cell, colIdx) => {
-        const x0 = colIdx * CELL_SIZE;
-        const centerX = x0 + CELL_SIZE / 2;
-        const centerY = CELL_SIZE / 2;
-        const fillColor = cell.mode === 'sample' ? '#111827' : '#D1D5DB';
-        const strokeData = cell.char ? strokeMap[cell.char] : null;
-        const translateX = Number((x0 + CHAR_PADDING).toFixed(2));
+  if (gridType === 'mizi') {
+    lines.push(
+      `<line x1="0" y1="0" x2="100" y2="100" stroke="${guideColor}" stroke-dasharray="4,4" stroke-width="1"/>`,
+      `<line x1="100" y1="0" x2="0" y2="100" stroke="${guideColor}" stroke-dasharray="4,4" stroke-width="1"/>`
+    );
+  }
 
-        return (
-          <g key={colIdx}>
-            {/* Линии Тяньцзыгэ (крест) — для mizi и tianzi */}
-            {(gridType === 'mizi' || gridType === 'tianzi') && (
-              <>
-                <line
-                  x1={x0}
-                  y1={centerY}
-                  x2={x0 + CELL_SIZE}
-                  y2={centerY}
-                  stroke={palette.guide}
-                  strokeDasharray="3,3"
-                  strokeWidth="0.8"
-                />
-                <line
-                  x1={centerX}
-                  y1={0}
-                  x2={centerX}
-                  y2={CELL_SIZE}
-                  stroke={palette.guide}
-                  strokeDasharray="3,3"
-                  strokeWidth="0.8"
-                />
-              </>
-            )}
-
-            {/* Диагонали Мицзыгэ — только для mizi */}
-            {gridType === 'mizi' && (
-              <>
-                <line
-                  x1={x0}
-                  y1={0}
-                  x2={x0 + CELL_SIZE}
-                  y2={CELL_SIZE}
-                  stroke={palette.guide}
-                  strokeDasharray="3,3"
-                  strokeWidth="0.8"
-                />
-                <line
-                  x1={x0 + CELL_SIZE}
-                  y1={0}
-                  x2={x0}
-                  y2={CELL_SIZE}
-                  stroke={palette.guide}
-                  strokeDasharray="3,3"
-                  strokeWidth="0.8"
-                />
-              </>
-            )}
-
-            {/* Векторные контуры черт иероглифа (из HanziWriter.loadCharacterData) */}
-            {cell.char && cell.mode !== 'empty' && (
-              <>
-                {strokeData && strokeData.strokes.length > 0 ? (
-                  <g
-                    transform={`translate(${translateX}, ${HANZI_Y_OFFSET}) scale(${HANZI_SCALE}, -${HANZI_SCALE})`}
-                  >
-                    {strokeData.strokes.map((pathD, strokeIdx) => (
-                      <path key={strokeIdx} d={pathD} fill={fillColor} />
-                    ))}
-                  </g>
-                ) : (
-                  <text
-                    x={centerX}
-                    y={centerY + 2}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill={fillColor}
-                    fontSize="44"
-                    fontFamily='"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif'
-                  >
-                    {cell.char}
-                  </text>
-                )}
-              </>
-            )}
-          </g>
-        );
-      })}
-
-      {/* Вертикальные разделители между клетками */}
-      {Array.from({ length: cellsPerRow - 1 }).map((_, divIdx) => {
-        const dividerX = (divIdx + 1) * CELL_SIZE;
-        return (
-          <line
-            key={`div-${divIdx}`}
-            x1={dividerX}
-            y1={0}
-            x2={dividerX}
-            y2={rowHeight}
-            stroke={palette.border}
-            strokeWidth="1.5"
-          />
-        );
-      })}
-
-      {/* Внешняя рамка всего ряда */}
-      <rect
-        x="0.75"
-        y="0.75"
-        width={rowWidth - 1.5}
-        height={rowHeight - 1.5}
-        fill="none"
-        stroke={palette.border}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-};
+  lines.push(`</svg>`);
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(lines.join(''))}")`;
+}
 
 interface StrokeOrderHeaderProps {
   char: string;
@@ -220,9 +90,7 @@ interface StrokeOrderHeaderProps {
 }
 
 /**
- * Ряд мини-квадратов пошагового порядка черт фиксированного размера 28x28px с чистыми inline-стилями.
- * Если символ отсутствует в hanzi-writer-data (редкий иероглиф, латиница, пунктуация),
- * рендерит аккуратный текстовый fallback шрифтом KaiTi / Noto Serif SC.
+ * Ряд мини-квадратов пошагового порядка черт с объединенными SVG-путями.
  */
 const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
   char,
@@ -231,6 +99,8 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
   borderColor,
   showCharPrefix = false,
 }) => {
+  const boxSize = 26;
+
   if (!strokeData || strokeData.strokes.length === 0) {
     if (!isLoaded) {
       return (
@@ -239,7 +109,7 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
           style={{
             fontSize: '11px',
             color: '#64748B',
-            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', sans-serif",
             paddingTop: '2px',
           }}
         >
@@ -248,7 +118,6 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
       );
     }
 
-    // Fallback для ультра-редких иероглифов, латиницы или символов вне базы hanzi-writer-data
     return (
       <div
         data-testid={`stroke-order-row-${char}`}
@@ -257,8 +126,9 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
           flexWrap: 'wrap',
           alignItems: 'center',
           gap: '6px',
-          paddingTop: '3px',
+          paddingTop: '2px',
           paddingBottom: '2px',
+          maxWidth: '100%',
         }}
         aria-label={`Эталонное начертание знака ${char}`}
       >
@@ -277,13 +147,13 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
           </span>
         )}
         <svg
-          width="28"
-          height="28"
+          width={boxSize}
+          height={boxSize}
           viewBox="0 0 1024 1024"
           data-testid="stroke-order-box"
           style={{
-            width: '28px',
-            height: '28px',
+            width: `${boxSize}px`,
+            height: `${boxSize}px`,
             display: 'block',
             backgroundColor: '#ffffff',
             border: `1px solid ${borderColor}`,
@@ -291,8 +161,6 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
             flexShrink: 0,
           }}
         >
-          <line x1="0" y1="512" x2="1024" y2="512" stroke="#F1F5F9" strokeWidth="28" />
-          <line x1="512" y1="0" x2="512" y2="1024" stroke="#F1F5F9" strokeWidth="28" />
           <text
             x="512"
             y="540"
@@ -309,7 +177,7 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
           style={{
             fontSize: '11px',
             color: '#64748B',
-            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', sans-serif",
           }}
         >
           Каллиграфический образец (KaiTi / Noto Serif SC)
@@ -317,6 +185,8 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
       </div>
     );
   }
+
+  const combinedAllStrokes = strokeData.strokes.join(' ');
 
   return (
     <div
@@ -326,8 +196,9 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: '4px',
-        paddingTop: '3px',
+        paddingTop: '2px',
         paddingBottom: '2px',
+        maxWidth: '100%',
       }}
       aria-label={`Пошаговый порядок черт для иероглифа ${char} (${strokeData.strokes.length} черт)`}
     >
@@ -345,58 +216,108 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
           {char}:
         </span>
       )}
-      {strokeData.strokes.map((_, stepIndex) => (
-        <svg
-          key={stepIndex}
-          width="28"
-          height="28"
-          viewBox="0 0 1024 1024"
-          data-testid="stroke-order-box"
-          style={{
-            width: '28px',
-            height: '28px',
-            display: 'block',
-            backgroundColor: '#ffffff',
-            border: `1px solid ${borderColor}`,
-            borderRadius: '2px',
-            flexShrink: 0,
-          }}
-        >
-          <title>{`${char} — черта ${stepIndex + 1} из ${strokeData.strokes.length}`}</title>
-          {/* Тонкие направляющие оси в мини-клетке */}
-          <line x1="0" y1="512" x2="1024" y2="512" stroke="#F1F5F9" strokeWidth="28" />
-          <line x1="512" y1="0" x2="512" y2="1024" stroke="#F1F5F9" strokeWidth="28" />
-          <g transform="scale(1, -1) translate(0, -900)">
-            {/* Контур всех черт бледно-серым фоном */}
-            {strokeData.strokes.map((d, sIdx) => (
-              <path key={`bg-${sIdx}`} d={d} fill="#E2E8F0" />
-            ))}
-            {/* Уже написанные черты до текущего шага */}
-            {strokeData.strokes.slice(0, stepIndex).map((d, sIdx) => (
-              <path key={`prev-${sIdx}`} d={d} fill="#334155" />
-            ))}
-            {/* Текущая добавленная черта выделена красным (#EF4444) */}
-            <path d={strokeData.strokes[stepIndex]} fill="#EF4444" />
-          </g>
-        </svg>
-      ))}
+      {strokeData.strokes.map((currentStrokeD, stepIndex) => {
+        const completedStrokesD =
+          stepIndex > 0 ? strokeData.strokes.slice(0, stepIndex).join(' ') : '';
+        return (
+          <svg
+            key={stepIndex}
+            width={boxSize}
+            height={boxSize}
+            viewBox="0 0 1024 1024"
+            data-testid="stroke-order-box"
+            style={{
+              width: `${boxSize}px`,
+              height: `${boxSize}px`,
+              display: 'block',
+              backgroundColor: '#ffffff',
+              border: `1px solid ${borderColor}`,
+              borderRadius: '2px',
+              flexShrink: 0,
+            }}
+          >
+            <g transform="scale(1, -1) translate(0, -900)">
+              <path d={combinedAllStrokes} fill="#E2E8F0" />
+              {completedStrokesD && <path d={completedStrokesD} fill="#334155" />}
+              <path d={currentStrokeD} fill="#EF4444" />
+            </g>
+          </svg>
+        );
+      })}
     </div>
   );
 };
 
 interface PracticeBlockItem {
   id: string;
+  globalIndex: number;
   mode: 'by-character' | 'whole-word';
   chars: string[];
-  // Для посимвольного режима
   char?: string;
   charPinyin?: string;
   charMeaning?: string;
   isMultiCharWord?: boolean;
-  // Ссылки на полное родительское слово (никогда не теряются при итерации)
   parentWord: string;
   parentPinyin: string;
   parentTranslation: string;
+}
+
+/**
+ * Оценивает высоту одного блока прописи в пикселях для точной автоматической пагинации по листам А4.
+ * При 10 клетках: ~110px (плюс ряд черт, если включен), при 20 клетках: ~185px, при 30 клетках: ~260px.
+ */
+function estimateBlockHeightPx(
+  block: PracticeBlockItem,
+  totalCells: number,
+  showStrokeOrder: boolean
+): number {
+  const rowsCount = Math.ceil(totalCells / COLS_PER_ROW);
+  const baseHeight = rowsCount === 1 ? 112 : rowsCount === 2 ? 185 : 258;
+  const uniqueCharsCount = new Set(block.chars).size;
+  const strokeOrderExtra = showStrokeOrder ? uniqueCharsCount * 32 : 0;
+  return baseHeight + strokeOrderExtra;
+}
+
+/**
+ * Разбивает массив учебных блоков на отдельные листы А4 (794x1123px),
+ * чтобы ни один блок не разрезался посередине между страницами.
+ */
+function paginatePracticeBlocks(
+  blocks: PracticeBlockItem[],
+  totalCells: number,
+  showStrokeOrder: boolean
+): PracticeBlockItem[][] {
+  if (blocks.length === 0) return [[]];
+
+  // Доступная высота под блоки на 1-й странице (с полной шапкой) и на последующих страницах (с компактным колонтитулом)
+  const firstPageMaxHeight = 895;
+  const nextPageMaxHeight = 935;
+  const blockGap = 18;
+
+  const pages: PracticeBlockItem[][] = [];
+  let currentPage: PracticeBlockItem[] = [];
+  let usedHeight = 0;
+
+  for (const block of blocks) {
+    const blockH = estimateBlockHeightPx(block, totalCells, showStrokeOrder);
+    const maxPageHeight = pages.length === 0 ? firstPageMaxHeight : nextPageMaxHeight;
+    const neededHeight = currentPage.length === 0 ? blockH : blockH + blockGap;
+
+    if (currentPage.length > 0 && usedHeight + neededHeight > maxPageHeight) {
+      pages.push(currentPage);
+      currentPage = [block];
+      usedHeight = blockH;
+    } else {
+      currentPage.push(block);
+      usedHeight += neededHeight;
+    }
+  }
+
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
+  }
+
+  return pages;
 }
 
 export const PrintableSheet: React.FC<PrintableSheetProps> = ({
@@ -406,7 +327,6 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
   const [strokeMap, setStrokeMap] = useState<Record<string, CharacterStrokeData | null>>({});
   const [loadedCharsMap, setLoadedCharsMap] = useState<Record<string, boolean>>({});
 
-  // Загружаем данные черт через HanziWriter.loadCharacterData для всех уникальных символов в списке
   useEffect(() => {
     let isMounted = true;
     const uniqueChars = new Set<string>();
@@ -447,13 +367,34 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
   }, [worksheetList]);
 
   const palette = GRID_PALETTES[config.gridColor];
-  const cellsPerRow = config.cellsPerRow || 10;
-  const totalCells = config.rowsPerItem * cellsPerRow;
-  const shouldShowStrokeOrder = Boolean(config.showStrokeOrder);
 
-  // Формируем список учебных секций, строго сохраняя item.word, item.pinyin и item.translation
-  const practiceBlocks = React.useMemo<PracticeBlockItem[]>(() => {
+  // В одной горизонтальной строке ВСЕГДА 10 клеток (~71.4px).
+  // Кнопки «10 кл», «20 кл», «30 кл» задают общее число клеток на элемент (1, 2 или 3 строки по 10 клеток).
+  const totalCells =
+    config.rowsPerItem === 3 || config.cellsPerRow === 30
+      ? 30
+      : config.rowsPerItem === 2 || config.cellsPerRow === 20
+      ? 20
+      : 10;
+
+  // Количество контуров для обводки ограничено Math.min(config.traceCount, totalCells - 1)
+  const effectiveTraceCount = Math.min(
+    Math.max(0, config.traceCount ?? 3),
+    Math.max(0, totalCells - 1)
+  );
+
+  const shouldShowStrokeOrder = Boolean(config.showStrokeOrder);
+  const shouldShowStudentInfo = config.showStudentInfo !== false;
+  const cellSize = WORKSHEET_INNER_WIDTH / COLS_PER_ROW;
+
+  const cellGuideBkgUrl = useMemo(
+    () => buildCellGuideDataUri(config.gridType, palette.guide),
+    [config.gridType, palette.guide]
+  );
+
+  const practiceBlocks = useMemo<PracticeBlockItem[]>(() => {
     const blocks: PracticeBlockItem[] = [];
+    let counter = 0;
 
     for (const item of worksheetList) {
       const normalized = normalizeWordItem(item, item.word);
@@ -463,7 +404,6 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
         normalized.pinyin ||
         pinyin(parentWord, { toneType: 'symbol' });
 
-      // Извлекаем точный перевод полного слова (из пользовательского поля item.translation или словарей)
       const explicitUserTranslation =
         item.translation && !isPlaceholderTranslation(item.translation)
           ? item.translation.trim()
@@ -478,7 +418,6 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
       const safeChars = chars.length > 0 ? chars : [parentWord];
 
       if (config.layoutMode === 'by-character') {
-        // Режим А: Посимвольный разбор — передаем parentWord, parentPinyin, parentTranslation в каждый иероглиф
         safeChars.forEach((ch, idx) => {
           const charObj =
             item.characters?.find((c) => c.char === ch) ||
@@ -495,6 +434,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
 
           blocks.push({
             id: `${item.id}-char-${ch}-${idx}`,
+            globalIndex: counter++,
             mode: 'by-character',
             chars: [ch],
             char: ch,
@@ -507,9 +447,9 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
           });
         });
       } else {
-        // Режим Б: Словарный режим (слово целиком в строке)
         blocks.push({
           id: `${item.id}-word`,
+          globalIndex: counter++,
           mode: 'whole-word',
           chars: safeChars,
           parentWord,
@@ -522,421 +462,547 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
     return blocks;
   }, [worksheetList, config.layoutMode]);
 
+  const pages = useMemo(
+    () => paginatePracticeBlocks(practiceBlocks, totalCells, shouldShowStrokeOrder),
+    [practiceBlocks, totalCells, shouldShowStrokeOrder]
+  );
+
+  const sheetTitleText = config.sheetTitle || 'Пропись китайских иероглифов и слов';
+
   return (
     <div
       id="printable-sheet-area"
       data-testid="printable-a4-sheet"
       style={{
         width: '794px',
-        minHeight: '1123px',
-        padding: '40px',
-        backgroundColor: '#ffffff',
-        color: '#111827',
-        boxSizing: 'border-box',
-        fontFamily: '"Noto Serif SC", "KaiTi", sans-serif',
         margin: '0 auto',
-        border: '1px solid #E2E8F0',
-        borderRadius: '8px',
+        fontFamily: '"Noto Serif SC", "KaiTi", sans-serif',
       }}
     >
-      {/* Чистая учебная шапка листа прописи А4 с фирменным логотипом 40x40px, заголовком урока и полями Имя / Дата шрифтом 'Lora', serif */}
-      <div
-        data-testid="printable-sheet-header"
-        style={{
-          paddingBottom: '14px',
-          marginBottom: '22px',
-          borderBottom: '2px solid #0F172A',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          fontFamily: "'Lora', serif",
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            minWidth: 0,
-          }}
-        >
-          <img
-            src="/assets/aistudio/image_0_0a6a2fe2.png"
-            alt="MoShui"
-            width={40}
-            height={40}
-            data-testid="printable-sheet-logo"
+      {pages.map((pageBlocks, pageIdx) => {
+        const isLastPage = pageIdx === pages.length - 1;
+
+        return (
+          <div
+            key={pageIdx}
+            data-testid={`printable-a4-page-${pageIdx}`}
+            className="printable-a4-page bg-white shadow-md mb-8 last:mb-0 mx-auto"
             style={{
-              width: '40px',
-              height: '40px',
-              objectFit: 'contain',
-              borderRadius: '6px',
+              width: '794px',
+              minHeight: '1123px',
+              padding: '40px',
+              backgroundColor: '#FFFFFF',
+              color: '#111827',
+              boxSizing: 'border-box',
+              fontFamily: '"Noto Serif SC", "KaiTi", sans-serif',
+              WebkitFontSmoothing: 'antialiased',
+              textRendering: 'geometricPrecision',
               border: '1px solid #E2E8F0',
-              backgroundColor: '#FAF9F6',
-              flexShrink: 0,
-              display: 'block',
-            }}
-          />
-          <h2
-            style={{
-              margin: 0,
-              fontSize: '22px',
-              fontWeight: 700,
-              color: '#0F172A',
-              lineHeight: 1.25,
-              letterSpacing: '-0.01em',
-              fontFamily: "'Lora', serif",
+              borderRadius: '8px',
+              pageBreakAfter: isLastPage ? 'auto' : 'always',
+              breakAfter: isLastPage ? 'auto' : 'page',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
             }}
           >
-            {config.sheetTitle || 'Пропись китайских иероглифов и слов'}
-          </h2>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '22px',
-            fontSize: '13px',
-            color: '#1E293B',
-            fontFamily: "'Lora', serif",
-            fontWeight: 600,
-            flexShrink: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <span>Имя: ___________________</span>
-          <span>Дата: ____________</span>
-        </div>
-      </div>
-
-      {/* Секции прописи */}
-      {practiceBlocks.length === 0 ? (
-        <div
-          style={{
-            paddingTop: '64px',
-            paddingBottom: '64px',
-            textAlign: 'center',
-            color: '#64748B',
-            fontSize: '14px',
-            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-          }}
-        >
-          Список слов для прописи пуст. Добавьте слова слева или выберите быстрый набор.
-        </div>
-      ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-          }}
-        >
-          {practiceBlocks.map((block, blockIdx) => {
-            const cells = buildWorksheetCells(
-              block.chars,
-              config.layoutMode,
-              totalCells,
-              config.traceCount
-            );
-
-            // Уникальные иероглифы текущего блока (1 в посимвольном режиме, 1..N в словарном режиме)
-            const uniqueBlockChars = Array.from(new Set(block.chars));
-
-            // Разбиваем плоский массив клеток на ряды по cellsPerRow (по 10 клеток)
-            const rows: WorksheetCellSpec[][] = [];
-            for (let r = 0; r < config.rowsPerItem; r++) {
-              rows.push(cells.slice(r * cellsPerRow, (r + 1) * cellsPerRow));
-            }
-
-            return (
-              <div
-                key={block.id}
-                style={{
-                  breakInside: 'avoid',
-                  pageBreakInside: 'avoid',
-                  width: '100%',
-                }}
-                data-testid={`worksheet-block-${blockIdx}`}
-              >
-                {/* Шапка иероглифического / словарного блока */}
+            <div>
+              {/* Шапка страницы: полная на 1-м листе, компактный колонтитул на 2-м и следующих листах */}
+              {pageIdx === 0 ? (
                 <div
+                  data-testid="printable-sheet-header"
+                  className="flex items-end justify-between border-b-2 border-[#18181B] pb-4 mb-6"
                   style={{
-                    padding: '8px 12px',
-                    backgroundColor: palette.headerBg,
-                    borderTop: `1.5px solid ${palette.border}`,
-                    borderLeft: `1.5px solid ${palette.border}`,
-                    borderRight: `1.5px solid ${palette.border}`,
-                    borderTopLeftRadius: '6px',
-                    borderTopRightRadius: '6px',
+                    paddingBottom: '16px',
+                    marginBottom: '22px',
+                    borderBottom: '2px solid #18181B',
                     display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    boxSizing: 'border-box',
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    fontFamily: "'Lora', serif",
                   }}
                 >
-                  {block.mode === 'whole-word' ? (
-                    /* СЛОВАРНЫЙ РЕЖИМ (Слово целиком): {item.word} | {item.pinyin} — {item.translation || 'без перевода'} */
-                    <div
+                  <div
+                    className="flex items-center gap-3"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      minWidth: 0,
+                    }}
+                  >
+                    <img
+                      src={
+                        typeof window !== 'undefined' && logoSrc.startsWith('/')
+                          ? `${window.location.origin}${logoSrc}`
+                          : logoSrc
+                      }
+                      alt="MoShui Logo"
+                      data-testid="printable-sheet-logo"
+                      crossOrigin="anonymous"
+                      className="w-12 h-12 object-contain shrink-0 block mix-blend-multiply print:mix-blend-normal"
                       style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        alignItems: 'baseline',
-                        justifyContent: 'space-between',
-                        gap: '8px',
+                        width: '48px',
+                        height: '48px',
+                        objectFit: 'contain',
+                        flexShrink: 0,
+                        display: 'block',
+                        printColorAdjust: 'exact',
+                        WebkitPrintColorAdjust: 'exact',
                       }}
-                    >
-                      <div
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <h2
                         style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          alignItems: 'baseline',
-                          gap: '10px',
+                          margin: 0,
+                          fontSize: '24px',
+                          fontWeight: 700,
+                          color: '#18181B',
+                          lineHeight: 1.2,
+                          letterSpacing: '-0.01em',
+                          fontFamily: "'Lora', 'Noto Serif SC', serif",
                         }}
                       >
-                        <span
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: '#94A3B8',
-                          }}
-                        >
-                          {String(blockIdx + 1).padStart(2, '0')}.
-                        </span>
-                        <span
-                          data-testid={`block-title-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Noto Serif SC', serif",
-                            fontSize: '24px',
-                            fontWeight: 700,
-                            color: '#0F172A',
-                            letterSpacing: '0.03em',
-                            lineHeight: 1.1,
-                          }}
-                        >
-                          {block.parentWord}
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '15px',
-                            color: '#94A3B8',
-                            fontWeight: 600,
-                          }}
-                          aria-hidden="true"
-                        >
-                          |
-                        </span>
-                        <span
-                          data-testid={`block-pinyin-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '15px',
-                            fontWeight: 600,
-                            color: palette.badgeText,
-                          }}
-                        >
-                          {block.parentPinyin}
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '15px',
-                            color: '#0F172A',
-                            fontWeight: 700,
-                          }}
-                          aria-hidden="true"
-                        >
-                          —
-                        </span>
-                        <strong
-                          data-testid={`block-translation-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '15px',
-                            fontWeight: 700,
-                            color: '#0F172A',
-                          }}
-                        >
-                          {block.parentTranslation || 'без перевода'}
-                        </strong>
-                      </div>
+                        {sheetTitleText}
+                      </h2>
                     </div>
-                  ) : (
-                    /* ПОСИМВОЛЬНЫЙ РЕЖИМ (Каждый иероглиф на отдельной строке) */
+                  </div>
+
+                  {shouldShowStudentInfo && (
                     <div
+                      data-testid="printable-sheet-student-info"
                       style={{
                         display: 'flex',
-                        flexWrap: 'wrap',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '8px',
+                        gap: '20px',
+                        fontSize: '13px',
+                        color: '#18181B',
+                        fontFamily: "'Lora', serif",
+                        fontWeight: 600,
+                        flexShrink: 0,
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          alignItems: 'baseline',
-                          gap: '8px',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: '#94A3B8',
-                          }}
-                        >
-                          {String(blockIdx + 1).padStart(2, '0')}.
-                        </span>
-                        <span
-                          data-testid={`block-title-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Noto Serif SC', serif",
-                            fontSize: '24px',
-                            fontWeight: 700,
-                            color: '#0F172A',
-                            letterSpacing: '0.03em',
-                            lineHeight: 1.1,
-                          }}
-                        >
-                          {block.char}
-                        </span>
-                        <span
-                          data-testid={`block-pinyin-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: palette.badgeText,
-                          }}
-                        >
-                          ({block.charPinyin})
-                        </span>
-                        <span
-                          data-testid={`block-translation-${blockIdx}`}
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#1E293B',
-                          }}
-                        >
-                          —{' '}
-                          {block.isMultiCharWord
-                            ? block.charMeaning || block.parentTranslation || 'без перевода'
-                            : block.parentTranslation || block.charMeaning || 'без перевода'}
-                        </span>
-                      </div>
-
-                      {/* Для слов из 2+ иероглифов сразу правее выводим жирную цветную плашку полного слова */}
-                      {block.isMultiCharWord && (
-                        <strong
-                          data-testid={`block-parent-word-${blockIdx}`}
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: palette.badgeText,
-                            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                            backgroundColor: '#ffffff',
-                            padding: '3px 9px',
-                            borderRadius: '4px',
-                            border: `1.5px solid ${palette.guide}`,
-                          }}
-                        >
-                          [Слово:{' '}
-                          <span style={{ fontFamily: "'Noto Serif SC', serif" }}>
-                            {block.parentWord}
-                          </span>{' '}
-                          ({block.parentPinyin}) — {block.parentTranslation || 'без перевода'}]
-                        </strong>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Пошаговый порядок черт (работает как в Посимвольном, так и в Словарном режиме) */}
-                  {shouldShowStrokeOrder && uniqueBlockChars.length > 0 && (
-                    <div
-                      data-testid={`block-stroke-order-container-${blockIdx}`}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        paddingTop: '2px',
-                      }}
-                    >
-                      {uniqueBlockChars.map((ch) => (
-                        <StrokeOrderProgressionRow
-                          key={ch}
-                          char={ch}
-                          strokeData={strokeMap[ch]}
-                          isLoaded={Boolean(loadedCharsMap[ch])}
-                          borderColor={palette.guide}
-                          showCharPrefix={
-                            config.layoutMode === 'whole-word' && uniqueBlockChars.length > 1
-                          }
-                        />
-                      ))}
+                      <span>Имя: ____________</span>
+                      <span>Дата: ____________</span>
                     </div>
                   )}
                 </div>
-
-                {/* Единые векторные SVG-ряды клеток (по 10 клеток 68x68 в каждом ряду) */}
+              ) : (
                 <div
+                  data-testid={`printable-sheet-compact-header-${pageIdx}`}
                   style={{
-                    width: '100%',
+                    paddingBottom: '10px',
+                    marginBottom: '18px',
+                    borderBottom: '1.5px solid #18181B',
                     display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: '#ffffff',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    fontFamily: "'Lora', 'Noto Serif SC', serif",
                   }}
                 >
-                  {rows.map((rowCells, rIdx) => (
-                    <div
-                      key={rIdx}
-                      style={{
-                        width: '100%',
-                        marginTop: rIdx > 0 ? '-1.5px' : '0px',
-                      }}
-                    >
-                      <SvgWorksheetRow
-                        rowCells={rowCells}
-                        rowIndex={rIdx}
-                        cellsPerRow={cellsPerRow}
-                        gridType={config.gridType}
-                        palette={palette}
-                        strokeMap={strokeMap}
-                      />
-                    </div>
-                  ))}
+                  <span
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      color: '#18181B',
+                    }}
+                  >
+                    {sheetTitleText}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#52525B',
+                    }}
+                  >
+                    Стр. {pageIdx + 1}
+                  </span>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              )}
 
-      {/* Нижний колонтитул печатного листа А4 */}
-      <div
-        style={{
-          marginTop: '32px',
-          paddingTop: '12px',
-          borderTop: '1px solid #E2E8F0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '11px',
-          color: '#94A3B8',
-          fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-        }}
-      >
-        <span>MoShui (墨水) — Учебная пропись китайских иероглифов и слов</span>
-        <span>Лист А4</span>
-      </div>
+              {/* Секции прописи на текущем листе А4 */}
+              {pageBlocks.length === 0 ? (
+                <div
+                  style={{
+                    paddingTop: '64px',
+                    paddingBottom: '64px',
+                    textAlign: 'center',
+                    color: '#64748B',
+                    fontSize: '14px',
+                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                  }}
+                >
+                  Список слов для прописи пуст. Добавьте слова слева или выберите быстрый набор.
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '18px',
+                    width: `${WORKSHEET_INNER_WIDTH}px`,
+                    maxWidth: `${WORKSHEET_INNER_WIDTH}px`,
+                  }}
+                >
+                  {pageBlocks.map((block) => {
+                    const blockIdx = block.globalIndex;
+                    const cells = buildWorksheetCells(
+                      block.chars,
+                      config.layoutMode,
+                      totalCells,
+                      effectiveTraceCount
+                    );
+
+                    const uniqueBlockChars = Array.from(new Set(block.chars));
+
+                    return (
+                      <div
+                        key={block.id}
+                        style={{
+                          breakInside: 'avoid',
+                          pageBreakInside: 'avoid',
+                          width: `${WORKSHEET_INNER_WIDTH}px`,
+                          maxWidth: `${WORKSHEET_INNER_WIDTH}px`,
+                          boxSizing: 'border-box',
+                        }}
+                        data-testid={`worksheet-block-${blockIdx}`}
+                      >
+                        {/* Шапка иероглифического / словарного блока */}
+                        <div
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: palette.headerBg,
+                            borderTop: `1.5px solid ${palette.border}`,
+                            borderLeft: `1.5px solid ${palette.border}`,
+                            borderRight: `1.5px solid ${palette.border}`,
+                            borderTopLeftRadius: '6px',
+                            borderTopRightRadius: '6px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            boxSizing: 'border-box',
+                            width: '100%',
+                          }}
+                        >
+                          {block.mode === 'whole-word' ? (
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                alignItems: 'baseline',
+                                justifyContent: 'space-between',
+                                gap: '8px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  flexWrap: 'wrap',
+                                  alignItems: 'baseline',
+                                  gap: '10px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    color: '#94A3B8',
+                                  }}
+                                >
+                                  {String(blockIdx + 1).padStart(2, '0')}.
+                                </span>
+                                <span
+                                  data-testid={`block-title-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Noto Serif SC', serif",
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    color: '#0F172A',
+                                    letterSpacing: '0.03em',
+                                    lineHeight: 1.1,
+                                  }}
+                                >
+                                  {block.parentWord}
+                                </span>
+                                <span
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '15px',
+                                    color: '#94A3B8',
+                                    fontWeight: 600,
+                                  }}
+                                  aria-hidden="true"
+                                >
+                                  |
+                                </span>
+                                <span
+                                  data-testid={`block-pinyin-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '15px',
+                                    fontWeight: 600,
+                                    color: palette.badgeText,
+                                  }}
+                                >
+                                  {block.parentPinyin}
+                                </span>
+                                <span
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '15px',
+                                    color: '#0F172A',
+                                    fontWeight: 700,
+                                  }}
+                                  aria-hidden="true"
+                                >
+                                  —
+                                </span>
+                                <strong
+                                  data-testid={`block-translation-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '15px',
+                                    fontWeight: 700,
+                                    color: '#0F172A',
+                                  }}
+                                >
+                                  {block.parentTranslation || 'без перевода'}
+                                </strong>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '8px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  flexWrap: 'wrap',
+                                  alignItems: 'baseline',
+                                  gap: '8px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    color: '#94A3B8',
+                                  }}
+                                >
+                                  {String(blockIdx + 1).padStart(2, '0')}.
+                                </span>
+                                <span
+                                  data-testid={`block-title-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Noto Serif SC', serif",
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    color: '#0F172A',
+                                    letterSpacing: '0.03em',
+                                    lineHeight: 1.1,
+                                  }}
+                                >
+                                  {block.char}
+                                </span>
+                                <span
+                                  data-testid={`block-pinyin-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: palette.badgeText,
+                                  }}
+                                >
+                                  ({block.charPinyin})
+                                </span>
+                                <span
+                                  data-testid={`block-translation-${blockIdx}`}
+                                  style={{
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#1E293B',
+                                  }}
+                                >
+                                  —{' '}
+                                  {block.isMultiCharWord
+                                    ? block.charMeaning || block.parentTranslation || 'без перевода'
+                                    : block.parentTranslation || block.charMeaning || 'без перевода'}
+                                </span>
+                              </div>
+
+                              {block.isMultiCharWord && (
+                                <strong
+                                  data-testid={`block-parent-word-${blockIdx}`}
+                                  style={{
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    color: palette.badgeText,
+                                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                                    backgroundColor: '#ffffff',
+                                    padding: '3px 9px',
+                                    borderRadius: '4px',
+                                    border: `1px solid ${palette.guide}`,
+                                  }}
+                                >
+                                  [Слово:{' '}
+                                  <span style={{ fontFamily: "'Noto Serif SC', serif" }}>
+                                    {block.parentWord}
+                                  </span>{' '}
+                                  ({block.parentPinyin}) —{' '}
+                                  {block.parentTranslation || 'без перевода'}]
+                                </strong>
+                              )}
+                            </div>
+                          )}
+
+                          {shouldShowStrokeOrder && uniqueBlockChars.length > 0 && (
+                            <div
+                              data-testid={`block-stroke-order-container-${blockIdx}`}
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '2px',
+                                paddingTop: '2px',
+                              }}
+                            >
+                              {uniqueBlockChars.map((ch) => (
+                                <StrokeOrderProgressionRow
+                                  key={ch}
+                                  char={ch}
+                                  strokeData={strokeMap[ch]}
+                                  isLoaded={Boolean(loadedCharsMap[ch])}
+                                  borderColor={palette.guide}
+                                  showCharPrefix={
+                                    config.layoutMode === 'whole-word' &&
+                                    uniqueBlockChars.length > 1
+                                  }
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Железобетонная CSS Grid сетка на 10 колонок: 10 кл = 1 ряд, 20 кл = 2 ряда, 30 кл = 3 ряда */}
+                        <div
+                          data-testid={`worksheet-grid-${blockIdx}`}
+                          data-cell-size={cellSize.toFixed(2)}
+                          data-total-cells={totalCells}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(10, minmax(0, 1fr))',
+                            width: '100%',
+                            maxWidth: `${WORKSHEET_INNER_WIDTH}px`,
+                            borderTop: `1.5px solid ${palette.border}`,
+                            borderLeft: `1.5px solid ${palette.border}`,
+                            backgroundColor: '#ffffff',
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          {cells.map((cell, idx) => {
+                            const hasChar = Boolean(cell.char && cell.mode !== 'empty');
+                            const fillColor = cell.mode === 'sample' ? '#18181B' : '#D4D4D8';
+                            const strokeData = cell.char ? strokeMap[cell.char] : null;
+
+                            return (
+                              <div
+                                key={idx}
+                                data-testid={`worksheet-cell-${blockIdx}-${idx}`}
+                                style={{
+                                  aspectRatio: '1 / 1',
+                                  borderRight: `1.5px solid ${palette.border}`,
+                                  borderBottom: `1.5px solid ${palette.border}`,
+                                  position: 'relative',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundImage: cellGuideBkgUrl,
+                                  backgroundSize: '100% 100%',
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundColor: '#ffffff',
+                                  boxSizing: 'border-box',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {hasChar && cell.char && (
+                                  <svg
+                                    viewBox="0 0 1024 1024"
+                                    width="82%"
+                                    height="82%"
+                                    style={{
+                                      display: 'block',
+                                      width: '82%',
+                                      height: '82%',
+                                      position: 'relative',
+                                      zIndex: 1,
+                                    }}
+                                  >
+                                    {strokeData && strokeData.strokes.length > 0 ? (
+                                      <g transform="scale(1, -1) translate(0, -900)">
+                                        <path d={strokeData.strokes.join(' ')} fill={fillColor} />
+                                      </g>
+                                    ) : (
+                                      <text
+                                        x="512"
+                                        y="540"
+                                        textAnchor="middle"
+                                        dominantBaseline="central"
+                                        fill={fillColor}
+                                        fontSize="760"
+                                        fontFamily='"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif'
+                                      >
+                                        {cell.char}
+                                      </text>
+                                    )}
+                                  </svg>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Нижний колонтитул печатного листа А4 */}
+            <div
+              style={{
+                marginTop: '24px',
+                paddingTop: '12px',
+                borderTop: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                color: '#94A3B8',
+                fontFamily: "'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', sans-serif",
+              }}
+            >
+              <span>MoShui (墨水) — Учебная пропись китайских иероглифов и слов</span>
+              <span>
+                Лист А4 {pages.length > 1 ? `• Стр. ${pageIdx + 1} из ${pages.length}` : ''}
+              </span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

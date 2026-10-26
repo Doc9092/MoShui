@@ -75,13 +75,13 @@ const FOLDER_COLOR_STYLES: Record<
   { badge: string; dot: string; label: string }
 > = {
   rose: {
-    badge: 'bg-rose-50 text-rose-800 border-rose-200',
-    dot: 'bg-rose-600',
+    badge: 'bg-[#FDF2F0] text-[#C83E31] border-[#F5D0C8]',
+    dot: 'bg-[#C83E31]',
     label: 'Киноварь',
   },
   emerald: {
-    badge: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    dot: 'bg-emerald-600',
+    badge: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',
+    dot: 'bg-[#15803D]',
     label: 'Нефрит',
   },
   amber: {
@@ -95,9 +95,9 @@ const FOLDER_COLOR_STYLES: Record<
     label: 'Индиго',
   },
   slate: {
-    badge: 'bg-slate-100 text-slate-800 border-slate-300',
-    dot: 'bg-slate-600',
-    label: 'Графит',
+    badge: 'bg-[#FAF7F2] text-[#18181B] border-[#EAE3D5]',
+    dot: 'bg-[#52525B]',
+    label: 'Тушь',
   },
 };
 
@@ -206,7 +206,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       });
       printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
     } catch (err) {
-      // Если всплывающее окно заблокировано или произошла ошибка — предлагаем/запускаем прямое скачивание PDF
       setActionError(
         err instanceof Error ? err.message : 'Не удалось открыть окно печати.'
       );
@@ -219,18 +218,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       <section
         aria-label="Приглашение в Личный кабинет преподавателя"
         data-testid="teacher-dashboard-guest"
-        className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-14 text-center shadow-2xs max-w-3xl mx-auto my-4 sm:my-6"
+        className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-14 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 max-w-3xl mx-auto my-4 sm:my-6"
       >
         <img
           src={MOSHUI_LOGO_SRC}
           alt="MoShui 墨水"
           data-testid="dashboard-guest-logo"
-          className="h-24 w-24 sm:h-28 sm:w-28 object-contain mx-auto mb-4 sm:mb-5 drop-shadow-xs"
+          className="h-24 w-24 sm:h-28 sm:w-28 object-contain rounded-full mix-blend-multiply mx-auto mb-4 sm:mb-5"
         />
-        <h1 className="font-display text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+        <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#18181B] tracking-tight">
           Личный кабинет преподавателя MoShui (墨水)
         </h1>
-        <p className="mt-3 text-sm sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-3 text-sm sm:text-lg text-[#52525B] max-w-2xl mx-auto leading-relaxed">
           Войдите или создайте бесплатный аккаунт преподавателя в облаке Supabase, чтобы сохранять
           готовые прописи по учебным группам (HSK 1, Детская группа, Индивидуальные уроки),
           автоматически подписывать листы А4 своим именем и синхронизировать уроки между
@@ -242,18 +241,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             type="button"
             onClick={onOpenAuthModal}
             data-testid="guest-open-auth-button"
-            className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 min-h-[44px] text-sm sm:text-base font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 h-12 text-sm sm:text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
           >
-            <UserCheck className="w-5 h-5" />
+            <UserCheck className="w-5 h-5 text-[#F5D0C8]" />
             <span>Войти или зарегистрироваться</span>
           </button>
 
           <button
             type="button"
             onClick={onNavigateToBuilder}
-            className="inline-flex items-center justify-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 min-h-[44px] text-sm sm:text-base font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
           >
-            <FileText className="w-5 h-5" />
+            <FileText className="w-5 h-5 text-[#C83E31]" />
             <span>Перейти в конструктор без входа</span>
           </button>
         </div>
@@ -371,41 +370,41 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   return (
     <div className="space-y-6 print:hidden" data-testid="teacher-dashboard-view">
       {/* Верхняя карточка профиля преподавателя */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-8 shadow-2xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
+      <div className="bg-white border border-[#EAE3D5] rounded-2xl p-4 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
         <div className="flex items-start sm:items-center gap-3.5 sm:gap-4">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-900 text-white font-bold text-lg sm:text-xl flex items-center justify-center shrink-0 shadow-xs border border-slate-800">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#18181B] text-[#FAF7F2] font-bold text-lg sm:text-xl flex items-center justify-center shrink-0 shadow-xs border border-[#C83E31]/50">
             {initials || 'ПР'}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <h1
-                className="font-display text-xl sm:text-3xl font-bold text-slate-900 tracking-tight"
+                className="font-display text-xl sm:text-3xl font-bold text-[#18181B] tracking-tight"
                 data-testid="dashboard-teacher-name"
               >
                 {teacher.name}
               </h1>
               {teacher.schoolOrTitle && (
-                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-semibold bg-rose-50 text-rose-800 border border-rose-200 rounded-lg">
+                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-semibold bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] rounded-lg">
                   {teacher.schoolOrTitle}
                 </span>
               )}
               {(isCloudLoading || isMutating) && (
                 <span
                   data-testid="cloud-sync-indicator"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold bg-[#FAF7F2] text-[#52525B] border border-[#EAE3D5] rounded-lg"
                 >
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-600" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C83E31]" />
                   <span>Синхронизация...</span>
                 </span>
               )}
             </div>
-            <p className="mt-1 sm:mt-1.5 text-xs sm:text-base text-slate-600">
+            <p className="mt-1 sm:mt-1.5 text-xs sm:text-base text-[#52525B]">
               {teacher.email} · Прописей:{' '}
-              <span className="font-mono-tabular font-bold text-slate-900">
+              <span className="font-mono-tabular font-bold text-[#18181B]">
                 {savedWorksheets.length}
               </span>{' '}
               · Папок:{' '}
-              <span className="font-mono-tabular font-bold text-slate-900">{folders.length}</span>
+              <span className="font-mono-tabular font-bold text-[#18181B]">{folders.length}</span>
             </p>
           </div>
         </div>
@@ -417,7 +416,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               onClick={() => void onRefreshFromCloud()}
               disabled={isCloudLoading || isMutating}
               title="Обновить прописи из облака Supabase"
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 rounded-xl transition-colors cursor-pointer min-h-[42px]"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer min-h-[44px]"
             >
               <RefreshCw className={`w-4 h-4 ${isCloudLoading ? 'animate-spin' : ''}`} />
               <span>Обновить</span>
@@ -427,7 +426,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <button
             type="button"
             onClick={onNavigateToBuilder}
-            className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-2xs transition-colors cursor-pointer min-h-[42px]"
+            className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Создать пропись</span>
@@ -437,9 +436,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             type="button"
             onClick={onExportBackup}
             data-testid="export-workspace-backup-button"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer min-h-[42px]"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer min-h-[44px]"
           >
-            <Download className="w-4 h-4 text-slate-600" />
+            <Download className="w-4 h-4 text-[#52525B]" />
             <span>Резервная копия</span>
           </button>
 
@@ -447,7 +446,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             type="button"
             onClick={() => void onLogout()}
             data-testid="logout-teacher-button"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-rose-700 bg-slate-100 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer min-h-[42px]"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#52525B] hover:text-[#C83E31] bg-[#FAF7F2] hover:bg-[#FDF2F0] border border-[#EAE3D5] rounded-xl transition-colors cursor-pointer min-h-[44px]"
           >
             <LogOut className="w-4 h-4" />
             <span>Выйти</span>
@@ -456,15 +455,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       </div>
 
       {/* Вкладки внутри Личного кабинета со свайпом на смартфонах */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto flex-nowrap no-scrollbar py-1">
+      <div className="flex items-center gap-2 border-b border-[#EAE3D5] pb-3 overflow-x-auto flex-nowrap no-scrollbar py-1">
         <button
           type="button"
           onClick={() => setActiveSection('worksheets')}
           data-testid="dashboard-tab-worksheets"
-          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[42px] ${
+          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer min-h-[44px] ${
             activeSection === 'worksheets'
-              ? 'bg-slate-900 text-white'
-              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm border-b-2 border-[#C83E31]'
+              : 'bg-white text-[#52525B] border border-[#EAE3D5] hover:bg-[#FAF7F2]'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -475,10 +474,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           type="button"
           onClick={() => setActiveSection('folders')}
           data-testid="dashboard-tab-folders"
-          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[42px] ${
+          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer min-h-[44px] ${
             activeSection === 'folders'
-              ? 'bg-slate-900 text-white'
-              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm border-b-2 border-[#C83E31]'
+              : 'bg-white text-[#52525B] border border-[#EAE3D5] hover:bg-[#FAF7F2]'
           }`}
         >
           <Folder className="w-4 h-4" />
@@ -489,10 +488,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           type="button"
           onClick={() => setActiveSection('profile')}
           data-testid="dashboard-tab-profile"
-          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[42px] ${
+          className={`inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer min-h-[44px] ${
             activeSection === 'profile'
-              ? 'bg-slate-900 text-white'
-              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm border-b-2 border-[#C83E31]'
+              : 'bg-white text-[#52525B] border border-[#EAE3D5] hover:bg-[#FAF7F2]'
           }`}
         >
           <Settings className="w-4 h-4" />
@@ -503,9 +502,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       {(cloudError || actionError) && (
         <div
           role="alert"
-          className="bg-rose-50 border border-rose-200 text-rose-800 rounded-xl px-4 py-3 sm:px-5 sm:py-3.5 text-xs sm:text-sm font-medium flex items-center gap-2.5"
+          className="bg-[#FDF2F0] border border-[#F5D0C8] text-[#C83E31] rounded-xl px-4 py-3 sm:px-5 sm:py-3.5 text-xs sm:text-sm font-medium flex items-center gap-2.5"
         >
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          <AlertCircle className="w-5 h-5 text-[#C83E31] shrink-0" />
           <span>{actionError || cloudError}</span>
         </div>
       )}
@@ -514,9 +513,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         <div
           role="status"
           data-testid="dashboard-feedback-banner"
-          className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-4 py-3 sm:px-5 sm:py-3.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5"
+          className="bg-[#F0FDF4] border border-[#BBF7D0] text-[#15803D] rounded-xl px-4 py-3 sm:px-5 sm:py-3.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5"
         >
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="w-5 h-5 text-[#15803D] shrink-0" />
           <span>{feedbackBanner}</span>
         </div>
       )}
@@ -525,15 +524,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       {activeSection === 'worksheets' && (
         <div className="space-y-6">
           {/* Фильтр по папкам и поиск со свайпом */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white border border-[#EAE3D5] rounded-2xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 overflow-x-auto flex-nowrap no-scrollbar py-1">
               <button
                 type="button"
                 onClick={() => setSelectedFolderFilter('ALL')}
-                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[38px] ${
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[40px] ${
                   selectedFolderFilter === 'ALL'
-                    ? 'bg-rose-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-[#C83E31] text-white'
+                    : 'bg-[#FAF7F2] text-[#52525B] border border-[#EAE3D5] hover:bg-[#F3EFE6]'
                 }`}
               >
                 Все папки ({savedWorksheets.length})
@@ -548,10 +547,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     key={folder.id}
                     type="button"
                     onClick={() => setSelectedFolderFilter(folder.name)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[38px] ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-colors whitespace-nowrap shrink-0 cursor-pointer min-h-[40px] ${
                       isSelected
-                        ? 'bg-slate-900 text-white border-slate-900'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B]'
+                        : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${style.dot}`} />
@@ -563,43 +562,43 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
 
             <div className="relative w-full md:w-80 shrink-0">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[#71717A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск по названию или иероглифам..."
                 data-testid="dashboard-search-input"
-                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-600"
+                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31]"
               />
             </div>
           </div>
 
           {/* Карточки сохраненных прописей */}
           {isCloudLoading && savedWorksheets.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-2xs flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-rose-600" />
-              <p className="text-base font-medium text-slate-600">
+            <div className="bg-white border border-[#EAE3D5] rounded-2xl p-12 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-[#C83E31]" />
+              <p className="text-base font-medium text-[#52525B]">
                 Загружаем ваши сохраненные прописи и папки из облака Supabase...
               </p>
             </div>
           ) : filteredWorksheets.length === 0 ? (
             <div
               data-testid="dashboard-empty-worksheets"
-              className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-16 text-center shadow-2xs"
+              className="bg-white border border-[#EAE3D5] rounded-2xl p-8 sm:p-16 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)]"
             >
               <img
                 src={MOSHUI_LOGO_SRC}
                 alt="MoShui 墨水"
                 data-testid="dashboard-empty-logo"
-                className="h-20 w-20 sm:h-24 sm:w-24 object-contain opacity-75 mx-auto mb-4"
+                className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-full mix-blend-multiply opacity-85 mx-auto mb-4"
               />
-              <h3 className="font-display text-lg sm:text-2xl font-bold text-slate-900">
+              <h3 className="font-display text-lg sm:text-2xl font-bold text-[#18181B]">
                 {savedWorksheets.length === 0
                   ? 'У вас пока нет сохраненных прописей'
                   : 'Ничего не найдено по выбранному фильтру'}
               </h3>
-              <p className="mt-2 text-xs sm:text-base text-slate-600 max-w-lg mx-auto leading-relaxed">
+              <p className="mt-2 text-xs sm:text-base text-[#52525B] max-w-lg mx-auto leading-relaxed">
                 {savedWorksheets.length === 0
                   ? 'Добавьте нужные слова в конструкторе прописей и нажмите кнопку «Сохранить в Личный кабинет», чтобы сформировать свою библиотеку уроков.'
                   : 'Попробуйте выбрать другую папку или изменить поисковый запрос.'}
@@ -608,9 +607,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 <button
                   type="button"
                   onClick={onNavigateToBuilder}
-                  className="mt-6 inline-flex items-center gap-2.5 px-6 py-3 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                  className="mt-6 inline-flex items-center gap-2.5 px-6 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 text-[#F5D0C8]" />
                   <span>Открыть Конструктор прописей</span>
                 </button>
               )}
@@ -633,7 +632,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     onMouseEnter={() => setSelectedSheetForRender(sheet)}
                     onFocus={() => setSelectedSheetForRender(sheet)}
                     data-testid={`saved-worksheet-card-${sheet.id}`}
-                    className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs flex flex-col justify-between gap-5 hover:border-slate-300 transition-colors"
+                    className="bg-white border border-[#EAE3D5] rounded-2xl p-6 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] flex flex-col justify-between gap-5 hover:border-[#C83E31]/40 transition-all duration-300"
                   >
                     <div className="space-y-3.5">
                       <div className="flex items-start justify-between gap-3">
@@ -645,24 +644,24 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                               <span className={`w-2 h-2 rounded-full ${folderStyle.dot}`} />
                               <span>{sheet.folder}</span>
                             </span>
-                            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 font-mono-tabular">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-[#71717A] font-mono-tabular">
                               <Calendar className="w-3.5 h-3.5" />
                               <span>{formattedDate}</span>
                             </span>
                           </div>
 
-                          <h3 className="mt-2.5 font-display text-xl font-bold text-slate-900 leading-snug">
+                          <h3 className="mt-2.5 font-display text-xl font-bold text-[#18181B] leading-snug">
                             {sheet.title}
                           </h3>
                         </div>
 
-                        <span className="px-3 py-1 bg-slate-100 text-slate-700 font-mono-tabular text-sm font-bold rounded-lg shrink-0">
+                        <span className="px-3 py-1 bg-[#FAF7F2] border border-[#EAE3D5] text-[#18181B] font-mono-tabular text-sm font-bold rounded-lg shrink-0">
                           {sheet.words.length} сл.
                         </span>
                       </div>
 
                       {sheet.description && (
-                        <p className="text-sm text-slate-600 line-clamp-2">{sheet.description}</p>
+                        <p className="text-sm text-[#52525B] line-clamp-2">{sheet.description}</p>
                       )}
 
                       {/* Превью иероглифов и слов в сохраненном листе */}
@@ -670,25 +669,25 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         {sheet.words.slice(0, 10).map((w) => (
                           <span
                             key={w.id}
-                            className="inline-flex items-baseline gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200/90 rounded-lg"
+                            className="inline-flex items-baseline gap-1.5 px-3 py-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-lg"
                           >
-                            <span className="font-hanzi text-lg font-bold text-slate-900">
+                            <span className="font-chinese text-lg font-bold text-[#18181B]">
                               {w.word}
                             </span>
-                            <span className="text-xs font-mono-tabular text-rose-700 font-semibold">
+                            <span className="text-xs font-mono-tabular text-[#C83E31] font-semibold">
                               {w.pinyin}
                             </span>
                           </span>
                         ))}
                         {sheet.words.length > 10 && (
-                          <span className="inline-flex items-center px-2.5 py-1 text-sm font-mono-tabular text-slate-500">
+                          <span className="inline-flex items-center px-2.5 py-1 text-sm font-mono-tabular text-[#71717A]">
                             +{sheet.words.length - 10} ещё
                           </span>
                         )}
                       </div>
 
                       {/* Параметры сетки сохраненного листа */}
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono-tabular pt-1">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#71717A] font-mono-tabular pt-1">
                         <span>
                           {sheet.config.layoutMode === 'by-character'
                             ? 'Режим А: Посимвольный'
@@ -708,13 +707,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
 
                     {/* Кнопки управления прописью */}
-                    <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="pt-4 border-t border-[#EAE3D5] flex flex-wrap items-center justify-between gap-2.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => onOpenWorksheetInBuilder(sheet)}
                           data-testid={`open-worksheet-${sheet.id}`}
-                          className="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                         >
                           <ExternalLink className="w-4 h-4" />
                           <span>Открыть в конструкторе</span>
@@ -722,32 +721,32 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
                         <button
                           type="button"
-                          disabled={exportingSheetId === sheet.id}
-                          onClick={() => void handleDownloadSavedSheetPdf(sheet)}
-                          data-testid={`download-pdf-worksheet-${sheet.id}`}
-                          className="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 rounded-xl transition-colors cursor-pointer"
+                          onClick={() => handlePrintSavedSheetInWindow(sheet)}
+                          data-testid={`print-worksheet-${sheet.id}`}
+                          className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                         >
-                          {exportingSheetId === sheet.id ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>Генерация PDF...</span>
-                            </>
-                          ) : (
-                            <>
-                              <FileDown className="w-4 h-4" />
-                              <span>Скачать PDF</span>
-                            </>
-                          )}
+                          <Printer className="w-4 h-4" />
+                          <span>Печать</span>
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => handlePrintSavedSheetInWindow(sheet)}
-                          data-testid={`print-worksheet-${sheet.id}`}
-                          className="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-colors cursor-pointer"
+                          disabled={exportingSheetId === sheet.id}
+                          onClick={() => void handleDownloadSavedSheetPdf(sheet)}
+                          data-testid={`download-pdf-worksheet-${sheet.id}`}
+                          className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-[#18181B] bg-[#FAF7F2] hover:bg-[#EAE3D5] border border-[#E6E0D6] disabled:opacity-60 rounded-xl transition-colors cursor-pointer"
                         >
-                          <Printer className="w-4 h-4 text-slate-700" />
-                          <span>Печать листа</span>
+                          {exportingSheetId === sheet.id ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
+                              <span>Создание PDF...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FileDown className="w-4 h-4 text-[#52525B]" />
+                              <span>Скачать PDF</span>
+                            </>
+                          )}
                         </button>
                       </div>
 
@@ -767,7 +766,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           title="Дублировать пропись"
                           aria-label={`Дублировать ${sheet.title}`}
                           data-testid={`duplicate-worksheet-${sheet.id}`}
-                          className="p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                          className="p-2.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
@@ -787,7 +786,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           title="Удалить пропись"
                           aria-label={`Удалить ${sheet.title}`}
                           data-testid={`delete-worksheet-${sheet.id}`}
-                          className="p-2.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                          className="p-2.5 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-xl transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -804,12 +803,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       {/* СЕКЦИЯ 2: Папки и учебные группы */}
       {activeSection === 'folders' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <section className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-4">
-            <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <FolderPlus className="w-5 h-5 text-rose-600" />
+          <section className="lg:col-span-5 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-4">
+            <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
+              <FolderPlus className="w-5 h-5 text-[#C83E31]" />
               <span>Создать тематическую папку</span>
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-[#52525B] leading-relaxed">
               Группируйте прописи по уровням HSK, учебникам, возрастным группам или дням недели.
             </p>
 
@@ -817,7 +816,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div>
                 <label
                   htmlFor="new-folder-name-input"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Название папки или группы *
                 </label>
@@ -830,12 +829,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   placeholder="Например: HSK 3 · Вторник 18:00"
-                  className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
 
               <div>
-                <span className="block text-sm font-semibold text-slate-700 mb-2">
+                <span className="block text-sm font-semibold text-[#18181B] mb-2">
                   Цветовая метка папки
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -847,8 +846,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       onClick={() => setNewFolderColor(colorKey)}
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold border transition-colors cursor-pointer ${
                         newFolderColor === colorKey
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B]'
+                          : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
                       }`}
                     >
                       <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
@@ -862,7 +861,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 type="submit"
                 disabled={isMutating}
                 data-testid="create-folder-submit-button"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-60 rounded-xl transition-colors cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
               >
                 {isMutating ? (
                   <>
@@ -871,7 +870,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   </>
                 ) : (
                   <>
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-5 h-5 text-[#F5D0C8]" />
                     <span>Добавить папку</span>
                   </>
                 )}
@@ -879,9 +878,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </form>
           </section>
 
-          <section className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-4">
-            <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <Folder className="w-5 h-5 text-rose-600" />
+          <section className="lg:col-span-7 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-4">
+            <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
+              <Folder className="w-5 h-5 text-[#C83E31]" />
               <span>Активные папки ({folders.length})</span>
             </h2>
 
@@ -892,16 +891,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 return (
                   <div
                     key={folder.id}
-                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3"
+                    className="p-4 rounded-xl border border-[#EAE3D5] bg-[#FAF7F2] flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${style.dot}`} />
-                        <span className="text-base font-bold text-slate-900 truncate">
+                        <span className="text-base font-bold text-[#18181B] truncate">
                           {folder.name}
                         </span>
                       </div>
-                      <div className="mt-1 text-xs text-slate-500 font-mono-tabular">
+                      <div className="mt-1 text-xs text-[#71717A] font-mono-tabular">
                         Сохранено прописей: {count}
                       </div>
                     </div>
@@ -913,7 +912,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           setSelectedFolderFilter(folder.name);
                           setActiveSection('worksheets');
                         }}
-                        className="px-3 py-1.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                        className="px-3 py-1.5 text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-lg transition-colors cursor-pointer"
                       >
                         Открыть
                       </button>
@@ -931,7 +930,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             }
                           }}
                           aria-label={`Удалить папку ${folder.name}`}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-2 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -949,13 +948,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       {activeSection === 'profile' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Редактирование профиля преподавателя */}
-          <section className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-5">
+          <section className="lg:col-span-5 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-5">
             <div>
-              <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                <UserCheck className="w-5 h-5 text-rose-600" />
+              <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
+                <UserCheck className="w-5 h-5 text-[#C83E31]" />
                 <span>Личные данные преподавателя</span>
               </h2>
-              <p className="mt-1.5 text-sm text-slate-600">
+              <p className="mt-1.5 text-sm text-[#52525B]">
                 Ваше имя автоматически подставляется в правый верхний угол каждого печатного листа
                 А4 («Преподаватель: [Имя]»).
               </p>
@@ -965,7 +964,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div>
                 <label
                   htmlFor="profile-name-input"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Имя и отчество / Обращение *
                 </label>
@@ -977,14 +976,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   disabled={isMutating}
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="profile-email-input"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Электронная почта (Email)
                 </label>
@@ -995,14 +994,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   disabled
                   value={profileEmail}
                   onChange={(e) => setProfileEmail(e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed"
+                  className="w-full px-4 py-3 text-base bg-[#F3EFE6] border border-[#EAE3D5] rounded-xl text-[#71717A] cursor-not-allowed"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="profile-school-input"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
                   Учебное заведение / Статус
                 </label>
@@ -1013,7 +1012,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   value={profileSchool}
                   onChange={(e) => setProfileSchool(e.target.value)}
                   placeholder="Школа китайского языка, ВУЗ или частный репетитор"
-                  className="w-full px-4 py-3 text-base bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-rose-600"
+                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
 
@@ -1021,7 +1020,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 type="submit"
                 disabled={isMutating}
                 data-testid="save-profile-button"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-60 rounded-xl transition-colors cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
               >
                 {isMutating ? (
                   <>
@@ -1030,7 +1029,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 text-[#F5D0C8]" />
                     <span>Сохранить профиль преподавателя</span>
                   </>
                 )}
@@ -1038,11 +1037,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </form>
 
             {/* Резервное копирование кабинета (JSON) */}
-            <div className="pt-5 border-t border-slate-200 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <div className="pt-5 border-t border-[#EAE3D5] space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
                 Резервное копирование кабинета
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-[#52525B] leading-relaxed">
                 Скачайте полный архив своих папок, сохраненных прописей и настроек в один файл JSON
                 для резервного хранения.
               </p>
@@ -1050,7 +1049,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 <button
                   type="button"
                   onClick={onExportBackup}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>Скачать резервную копию кабинета (JSON)</span>
@@ -1060,7 +1059,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   type="button"
                   disabled={isMutating}
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#C83E31] bg-[#FDF2F0] hover:bg-[#FCE6E2] border border-[#F5D0C8] rounded-xl transition-colors cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
                   <span>Восстановить из файла</span>
@@ -1077,13 +1076,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           </section>
 
           {/* Настройки конструктора прописей по умолчанию */}
-          <section className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-5">
+          <section className="lg:col-span-7 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-5">
             <div>
-              <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-rose-600" />
+              <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-[#C83E31]" />
                 <span>Настройки прописей по умолчанию</span>
               </h2>
-              <p className="mt-1.5 text-sm text-slate-600">
+              <p className="mt-1.5 text-sm text-[#52525B]">
                 Выберите любимый тип сетки, цвет линий и режим компоновки, которые будут
                 применяться при создании новых листов прописи.
               </p>
@@ -1091,8 +1090,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
             <div className="space-y-5">
               <div>
-                <span className="block text-sm font-semibold text-slate-700 mb-2.5 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-slate-500" />
+                <span className="block text-sm font-semibold text-[#18181B] mb-2.5 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#71717A]" />
                   <span>Режим компоновки по умолчанию</span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1103,8 +1102,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     }
                     className={`p-4 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                       localDefaultConfig.layoutMode === 'by-character'
-                        ? 'bg-rose-50/70 border-rose-600 font-bold text-slate-900'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-[#FDF2F0] border-[#C83E31] font-bold text-[#18181B]'
+                        : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
                     }`}
                   >
                     Режим А: Посимвольный разбор (1 знак = 1 блок)
@@ -1116,8 +1115,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     }
                     className={`p-4 rounded-xl border text-left text-sm transition-all cursor-pointer ${
                       localDefaultConfig.layoutMode === 'whole-word'
-                        ? 'bg-rose-50/70 border-rose-600 font-bold text-slate-900'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-[#FDF2F0] border-[#C83E31] font-bold text-[#18181B]'
+                        : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
                     }`}
                   >
                     Режим Б: Словарный режим (Слово целиком в строке)
@@ -1125,10 +1124,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#EAE3D5]">
                 <div>
-                  <span className="block text-sm font-semibold text-slate-700 mb-2.5 flex items-center gap-2">
-                    <Grid className="w-4 h-4 text-slate-500" />
+                  <span className="block text-sm font-semibold text-[#18181B] mb-2.5 flex items-center gap-2">
+                    <Grid className="w-4 h-4 text-[#71717A]" />
                     <span>Тип сетки по умолчанию</span>
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -1147,8 +1146,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         }
                         className={`px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors cursor-pointer ${
                           localDefaultConfig.gridType === g.id
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-white text-slate-700 border-slate-200'
+                            ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B]'
+                            : 'bg-white text-[#52525B] border-[#EAE3D5]'
                         }`}
                       >
                         {g.label}
@@ -1158,7 +1157,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 </div>
 
                 <div>
-                  <span className="block text-sm font-semibold text-slate-700 mb-2.5">
+                  <span className="block text-sm font-semibold text-[#18181B] mb-2.5">
                     Цвет линий сетки
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -1177,8 +1176,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         }
                         className={`px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors cursor-pointer ${
                           localDefaultConfig.gridColor === c.id
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-white text-slate-700 border-slate-200'
+                            ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B]'
+                            : 'bg-white text-[#52525B] border-[#EAE3D5]'
                         }`}
                       >
                         {c.label}
@@ -1188,10 +1187,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-                <div className="text-sm text-slate-600">
+              <div className="pt-4 border-t border-[#EAE3D5] flex items-center justify-between">
+                <div className="text-sm text-[#52525B]">
                   Контуров для обводки по умолчанию:{' '}
-                  <strong className="font-mono-tabular text-slate-900">
+                  <strong className="font-mono-tabular text-[#18181B]">
                     {localDefaultConfig.traceCount} шт.
                   </strong>
                 </div>
@@ -1206,7 +1205,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       traceCount: parseInt(e.target.value, 10),
                     })
                   }
-                  className="w-44 accent-rose-600 cursor-pointer"
+                  className="w-44 accent-[#C83E31] cursor-pointer"
                 />
               </div>
 
@@ -1214,9 +1213,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 type="button"
                 onClick={handleSaveDefaultConfigClick}
                 data-testid="save-default-config-button"
-                className="inline-flex items-center gap-2.5 px-6 py-3 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2.5 px-6 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
               >
-                <CheckCircle2 className="w-5 h-5" />
+                <CheckCircle2 className="w-5 h-5 text-[#F5D0C8]" />
                 <span>Применить как настройки по умолчанию</span>
               </button>
             </div>
