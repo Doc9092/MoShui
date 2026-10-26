@@ -7,6 +7,7 @@ import {
   Grid,
 } from 'lucide-react';
 import type { AppTab, TeacherProfile } from '../types/hanzi';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -118,8 +119,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Правая зона: Личный кабинет преподавателя / Вход */}
+          {/* Правая зона: Установка PWA + Личный кабинет преподавателя / Вход */}
           <div className="flex items-center gap-2 shrink-0">
+            <PWAInstallButton />
             {currentTeacher ? (
               <button
                 type="button"

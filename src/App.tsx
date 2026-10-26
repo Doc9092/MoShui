@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import type {
   AppTab,
   WordItem,
@@ -61,6 +62,11 @@ const DEFAULT_WORKSHEET_CONFIG: WorksheetConfig = {
 };
 
 export default function App() {
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
   const [activeTab, setActiveTab] = useState<AppTab>('dictionary');
 
   // Авторизованный преподаватель и модальное окно входа/регистрации
@@ -538,6 +544,34 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Уведомление о доступности новой версии PWA */}
+      {needRefresh && (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="pwa-update-toast"
+          className="fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 z-50 print:hidden flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#18181B] text-[#FAF7F2] shadow-xl border border-[#C83E31]/40 text-xs sm:text-sm font-medium max-w-[92vw]"
+        >
+          <span>Доступна новая версия MoShui.</span>
+          <button
+            type="button"
+            onClick={() => void updateServiceWorker(true)}
+            data-testid="pwa-update-btn"
+            className="px-3 py-1.5 rounded-xl bg-[#C83E31] hover:bg-[#B23327] text-white font-semibold transition-colors cursor-pointer shrink-0"
+          >
+            Обновить
+          </button>
+          <button
+            type="button"
+            onClick={() => setNeedRefresh(false)}
+            aria-label="Скрыть уведомление"
+            className="px-2 py-1 rounded-lg text-[#FAF7F2]/70 hover:text-white transition-colors cursor-pointer shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
