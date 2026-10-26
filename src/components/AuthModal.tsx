@@ -138,8 +138,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-[#52525B] hover:text-[#18181B]'
               }`}
             >
-              <span className="hidden sm:inline">Регистрация преподавателя</span>
-              <span className="sm:hidden">Регистрация</span>
+              <span>Регистрация</span>
             </button>
           </div>
         </div>
@@ -248,7 +247,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>
-                    {mode === 'login' ? 'Вход в Supabase...' : 'Регистрация в Supabase...'}
+                    {mode === 'login' ? 'Вход в Supabase...' : 'Регистрация...'}
                   </span>
                 </>
               ) : mode === 'login' ? (
@@ -259,7 +258,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               ) : (
                 <>
                   <UserPlus className="w-5 h-5 text-[#F5D0C8]" />
-                  <span>Создать кабинет преподавателя</span>
+                  <span>Регистрация</span>
                 </>
               )}
             </button>
