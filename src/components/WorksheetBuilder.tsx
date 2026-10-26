@@ -922,9 +922,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    { id: 'mizi', label: 'Мицзыгэ 米字格' },
-                    { id: 'tianzi', label: 'Тяньцзыгэ 田字格' },
-                    { id: 'kouzi', label: 'Квадрат 口字格' },
+                    { id: 'mizi', label: 'Mizige 米字格' },
+                    { id: 'tianzi', label: 'Tianzige 田字格' },
+                    { id: 'kouzi', label: 'Kouzige 口字格' },
                   ] as const
                 ).map((g) => (
                   <button
