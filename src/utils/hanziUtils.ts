@@ -814,8 +814,332 @@ export function isPlaceholderTranslation(text?: string | null): boolean {
 }
 
 /**
+ * Структурное разбиение частотных иероглифов по графемам и ключам в строгом порядке написания
+ * (слева направо, сверху вниз, снаружи внутрь) для режима «Собери из ключей (部件)».
+ */
+export const CHAR_GRAPHEME_MAP: Record<string, Grapheme[]> = {
+  妈: [
+    { char: '女', pinyin: 'nǚ', meaning: 'женщина', type: 'radical' },
+    { char: '马', pinyin: 'mǎ', meaning: 'лошадь (фонетик mǎ)', type: 'component' },
+  ],
+  爸: [
+    { char: '父', pinyin: 'fù', meaning: 'отец', type: 'radical' },
+    { char: '巴', pinyin: 'bā', meaning: 'надеяться (фонетик bā)', type: 'component' },
+  ],
+  哥: [
+    { char: '可', pinyin: 'kě', meaning: 'верхний ярус (фонетик kě)', type: 'component' },
+    { char: '可', pinyin: 'kě', meaning: 'нижний ярус (рот и опора)', type: 'radical' },
+  ],
+  姐: [
+    { char: '女', pinyin: 'nǚ', meaning: 'женщина, сестра', type: 'radical' },
+    { char: '且', pinyin: 'qiě', meaning: 'алтарь предков (фонетик)', type: 'component' },
+  ],
+  弟: [
+    { char: '丷', pinyin: 'bā', meaning: 'верхние рожки / узел', type: 'component' },
+    { char: '弓', pinyin: 'gōng', meaning: 'изогнутый лук', type: 'radical' },
+    { char: '丨', pinyin: 'gǔn', meaning: 'вертикальное древко и откидная', type: 'component' },
+  ],
+  妹: [
+    { char: '女', pinyin: 'nǚ', meaning: 'женщина, сестра', type: 'radical' },
+    { char: '未', pinyin: 'wèi', meaning: 'молодые ветви (фонетик wèi)', type: 'component' },
+  ],
+  他: [
+    { char: '亻', pinyin: 'rén', meaning: 'человек', type: 'radical' },
+    { char: '也', pinyin: 'yě', meaning: 'также (фонетик)', type: 'component' },
+  ],
+  她: [
+    { char: '女', pinyin: 'nǚ', meaning: 'женщина', type: 'radical' },
+    { char: '也', pinyin: 'yě', meaning: 'также (фонетик)', type: 'component' },
+  ],
+  们: [
+    { char: '亻', pinyin: 'rén', meaning: 'человек', type: 'radical' },
+    { char: '门', pinyin: 'mén', meaning: 'ворота (фонетик mén)', type: 'component' },
+  ],
+  的: [
+    { char: '白', pinyin: 'bái', meaning: 'белый, ясный', type: 'radical' },
+    { char: '勺', pinyin: 'sháo', meaning: 'черпак, цель', type: 'component' },
+  ],
+  是: [
+    { char: '日', pinyin: 'rì', meaning: 'солнце сверху', type: 'radical' },
+    { char: '正', pinyin: 'zhèng', meaning: 'прямой, верный (нижняя основа)', type: 'component' },
+  ],
+  在: [
+    { char: '𠂇', pinyin: 'zuǒ', meaning: 'рука / направление', type: 'component' },
+    { char: '亻', pinyin: 'rén', meaning: 'вертикальная опора слева', type: 'component' },
+    { char: '土', pinyin: 'tǔ', meaning: 'земля, место', type: 'radical' },
+  ],
+  有: [
+    { char: '𠂇', pinyin: 'zuǒ', meaning: 'протянутая рука сверху', type: 'component' },
+    { char: '月', pinyin: 'ròu', meaning: 'мясо, достаток / луна', type: 'radical' },
+  ],
+  看: [
+    { char: '手', pinyin: 'shǒu', meaning: 'рука козырьком у лба', type: 'component' },
+    { char: '目', pinyin: 'mù', meaning: 'глаз, взор', type: 'radical' },
+  ],
+  听: [
+    { char: '口', pinyin: 'kǒu', meaning: 'рот, восприятие речи', type: 'radical' },
+    { char: '斤', pinyin: 'jīn', meaning: 'топор, вес слов (фонетик)', type: 'component' },
+  ],
+  说: [
+    { char: '讠', pinyin: 'yán', meaning: 'речь, слово', type: 'radical' },
+    { char: '兑', pinyin: 'duì', meaning: 'радость общения', type: 'component' },
+  ],
+  读: [
+    { char: '讠', pinyin: 'yán', meaning: 'речь, чтение вслух', type: 'radical' },
+    { char: '卖', pinyin: 'mài', meaning: 'передавать (фонетик)', type: 'component' },
+  ],
+  写: [
+    { char: '冖', pinyin: 'mì', meaning: 'крыша кабинета', type: 'radical' },
+    { char: '与', pinyin: 'yǔ', meaning: 'выводить линии кистью', type: 'component' },
+  ],
+  吃: [
+    { char: '口', pinyin: 'kǒu', meaning: 'рот', type: 'radical' },
+    { char: '乞', pinyin: 'qǐ', meaning: 'просить пищу (фонетик)', type: 'component' },
+  ],
+  饭: [
+    { char: '饣', pinyin: 'shí', meaning: 'еда, пища', type: 'radical' },
+    { char: '反', pinyin: 'fǎn', meaning: 'переворачивать (фонетик fǎn)', type: 'component' },
+  ],
+  买: [
+    { char: '乛', pinyin: 'zhé', meaning: 'верхний охват сети', type: 'component' },
+    { char: '头', pinyin: 'tóu', meaning: 'ценный товар внизу', type: 'radical' },
+  ],
+  家: [
+    { char: '宀', pinyin: 'mián', meaning: 'крыша дома', type: 'radical' },
+    { char: '豕', pinyin: 'shǐ', meaning: 'домашнее хозяйство под крышей', type: 'component' },
+  ],
+  校: [
+    { char: '木', pinyin: 'mù', meaning: 'дерево, постройка', type: 'radical' },
+    { char: '交', pinyin: 'jiāo', meaning: 'обмен знаниями (фонетик jiāo)', type: 'component' },
+  ],
+  店: [
+    { char: '广', pinyin: 'guǎng', meaning: 'широкий навес лавки', type: 'radical' },
+    { char: '占', pinyin: 'zhàn', meaning: 'занимать место (фонетик)', type: 'component' },
+  ],
+  机: [
+    { char: '木', pinyin: 'mù', meaning: 'деревянный станок', type: 'radical' },
+    { char: '几', pinyin: 'jī', meaning: 'столик (фонетик jī)', type: 'component' },
+  ],
+  明: [
+    { char: '日', pinyin: 'rì', meaning: 'солнце', type: 'radical' },
+    { char: '月', pinyin: 'yuè', meaning: 'луна', type: 'component' },
+  ],
+  昨: [
+    { char: '日', pinyin: 'rì', meaning: 'солнце, день', type: 'radical' },
+    { char: '乍', pinyin: 'zhà', meaning: 'только что прошедший (фонетик)', type: 'component' },
+  ],
+  早: [
+    { char: '日', pinyin: 'rì', meaning: 'восходящее солнце', type: 'radical' },
+    { char: '十', pinyin: 'shí', meaning: 'верхушка травы на рассвете', type: 'component' },
+  ],
+  晚: [
+    { char: '日', pinyin: 'rì', meaning: 'уходящее солнце', type: 'radical' },
+    { char: '免', pinyin: 'miǎn', meaning: 'клониться к закату (фонетик)', type: 'component' },
+  ],
+  时: [
+    { char: '日', pinyin: 'rì', meaning: 'движение солнца', type: 'radical' },
+    { char: '寸', pinyin: 'cùn', meaning: 'точная мера времени', type: 'component' },
+  ],
+  间: [
+    { char: '门', pinyin: 'mén', meaning: 'створки ворот', type: 'radical' },
+    { char: '日', pinyin: 'rì', meaning: 'свет солнца в проеме', type: 'component' },
+  ],
+  名: [
+    { char: '夕', pinyin: 'xī', meaning: 'вечерние сумерки', type: 'Component' as 'component' },
+    { char: '口', pinyin: 'kǒu', meaning: 'называть свое имя ртом', type: 'radical' },
+  ],
+  字: [
+    { char: '宀', pinyin: 'mián', meaning: 'крыша дома', type: 'radical' },
+    { char: '子', pinyin: 'zǐ', meaning: 'дитя, рождение знаков', type: 'component' },
+  ],
+  爱: [
+    { char: '爫', pinyin: 'zhǎo', meaning: 'заботливая рука сверху', type: 'radical' },
+    { char: '冖', pinyin: 'mì', meaning: 'теплый покров', type: 'component' },
+    { char: '友', pinyin: 'yǒu', meaning: 'дружеская рука', type: 'component' },
+  ],
+  想: [
+    { char: '木', pinyin: 'mù', meaning: 'дерево (левая верхняя часть)', type: 'component' },
+    { char: '目', pinyin: 'mù', meaning: 'глаз, образ (правая верхняя часть)', type: 'component' },
+    { char: '心', pinyin: 'xīn', meaning: 'сердце и мысль внизу', type: 'radical' },
+  ],
+  会: [
+    { char: '人', pinyin: 'rén', meaning: 'крыша собрания / человек', type: 'radical' },
+    { char: '云', pinyin: 'yún', meaning: 'облако, речь (нижняя часть)', type: 'component' },
+  ],
+  很: [
+    { char: '彳', pinyin: 'chì', meaning: 'шаг, движение вперед', type: 'radical' },
+    { char: '艮', pinyin: 'gèn', meaning: 'твердый, упорный (фонетик)', type: 'component' },
+  ],
+  和: [
+    { char: '禾', pinyin: 'hé', meaning: 'спелый колос злака', type: 'radical' },
+    { char: '口', pinyin: 'kǒu', meaning: 'рот, мирная беседа', type: 'component' },
+  ],
+  谢: [
+    { char: '讠', pinyin: 'yán', meaning: 'речь, слова благодарности', type: 'radical' },
+    { char: '身', pinyin: 'shēn', meaning: 'поклон корпусом тела', type: 'component' },
+    { char: '寸', pinyin: 'cùn', meaning: 'мера учтивости и жест руки', type: 'component' },
+  ],
+  请: [
+    { char: '讠', pinyin: 'yán', meaning: 'вежливая речь', type: 'radical' },
+    { char: '青', pinyin: 'qīng', meaning: 'чистый цвет весны (фонетик qīng)', type: 'component' },
+  ],
+  问: [
+    { char: '门', pinyin: 'mén', meaning: 'ворота, вход', type: 'radical' },
+    { char: '口', pinyin: 'kǒu', meaning: 'рот, задающий вопрос у входа', type: 'component' },
+  ],
+  休: [
+    { char: '亻', pinyin: 'rén', meaning: 'человек', type: 'radical' },
+    { char: '木', pinyin: 'mù', meaning: 'тенистое дерево для отдыха', type: 'component' },
+  ],
+  林: [
+    { char: '木', pinyin: 'mù', meaning: 'первое дерево слева', type: 'radical' },
+    { char: '木', pinyin: 'mù', meaning: 'второе дерево справа (роща)', type: 'component' },
+  ],
+  森: [
+    { char: '木', pinyin: 'mù', meaning: 'вершина леса сверху', type: 'radical' },
+    { char: '木', pinyin: 'mù', meaning: 'дерево слева внизу', type: 'component' },
+    { char: '木', pinyin: 'mù', meaning: 'дерево справа внизу', type: 'component' },
+  ],
+  墨: [
+    { char: '黑', pinyin: 'hēi', meaning: 'черный пигмент сажи', type: 'radical' },
+    { char: '土', pinyin: 'tǔ', meaning: 'спрессованный брусок глины и туши', type: 'component' },
+  ],
+  人: [
+    { char: '丿', pinyin: 'piě', meaning: 'откидная черта влево (опора шага)', type: 'radical' },
+    { char: '乀', pinyin: 'nà', meaning: 'откидная черта вправо (вторая нога)', type: 'component' },
+  ],
+  大: [
+    { char: '一', pinyin: 'yī', meaning: 'раскинутые в стороны руки', type: 'component' },
+    { char: '人', pinyin: 'rén', meaning: 'фигура стоящего человека', type: 'radical' },
+  ],
+  天: [
+    { char: '一', pinyin: 'yī', meaning: 'небесный свод над головой', type: 'radical' },
+    { char: '大', pinyin: 'dà', meaning: 'человек с раскинутыми руками', type: 'component' },
+  ],
+  口: [
+    { char: '丨', pinyin: 'gǔn', meaning: 'левая вертикальная стенка', type: 'component' },
+    { char: '𠃍', pinyin: 'zhé', meaning: 'верхний и правый контур с изгибом', type: 'component' },
+    { char: '一', pinyin: 'yī', meaning: 'нижняя замыкающая черта', type: 'radical' },
+  ],
+  日: [
+    { char: '冂', pinyin: 'jiōng', meaning: 'внешний контур солнечного диска', type: 'radical' },
+    { char: '二', pinyin: 'èr', meaning: 'внутренний луч и основание', type: 'component' },
+  ],
+  月: [
+    { char: '丿', pinyin: 'piě', meaning: 'левая дуга полумесяца', type: 'radical' },
+    { char: '𠃍', pinyin: 'zhé', meaning: 'правый контур с крюком', type: 'component' },
+    { char: '二', pinyin: 'èr', meaning: 'две внутренние перекладины', type: 'component' },
+  ],
+  木: [
+    { char: '十', pinyin: 'shí', meaning: 'ствол и ветви дерева', type: 'radical' },
+    { char: '八', pinyin: 'bā', meaning: 'расходящиеся корни влево и вправо', type: 'component' },
+  ],
+  火: [
+    { char: '丷', pinyin: 'bā', meaning: 'искры пламени по бокам', type: 'component' },
+    { char: '人', pinyin: 'rén', meaning: 'центральный язык костра', type: 'radical' },
+  ],
+  山: [
+    { char: '丨', pinyin: 'gǔn', meaning: 'центральный горный пик', type: 'radical' },
+    { char: '凵', pinyin: 'kǎn', meaning: 'боковые хребты долины', type: 'component' },
+  ],
+  土: [
+    { char: '十', pinyin: 'shí', meaning: 'росток, пробивающий почву', type: 'component' },
+    { char: '一', pinyin: 'yī', meaning: 'твердый пласт земли внизу', type: 'radical' },
+  ],
+  王: [
+    { char: '一', pinyin: 'yī', meaning: 'верхняя черта (Небо)', type: 'component' },
+    { char: '土', pinyin: 'tǔ', meaning: 'связь Человека и Земли', type: 'radical' },
+  ],
+  玉: [
+    { char: '王', pinyin: 'wáng', meaning: 'связка нефритовых пластин', type: 'radical' },
+    { char: '丶', pinyin: 'zhǔ', meaning: 'драгоценная капля-грань', type: 'component' },
+  ],
+  女: [
+    { char: 'ㄑ', pinyin: 'quǎn', meaning: 'скрещенные в поклоне руки', type: 'radical' },
+    { char: '丿', pinyin: 'piě', meaning: 'плавный изгиб осанки', type: 'component' },
+    { char: '一', pinyin: 'yī', meaning: 'горизонтальная черта равновесия', type: 'component' },
+  ],
+  子: [
+    { char: '了', pinyin: 'le', meaning: 'голова и тельце младенца', type: 'radical' },
+    { char: '一', pinyin: 'yī', meaning: 'раскинутые ручки ребенка', type: 'component' },
+  ],
+  上: [
+    { char: '丨', pinyin: 'gǔn', meaning: 'вертикальный указатель вверх', type: 'component' },
+    { char: '一', pinyin: 'yī', meaning: 'базовая линия горизонта внизу', type: 'radical' },
+  ],
+  下: [
+    { char: '一', pinyin: 'yī', meaning: 'верхняя линия горизонта', type: 'radical' },
+    { char: '卜', pinyin: 'bǔ', meaning: 'указатель, направленный вниз', type: 'component' },
+  ],
+  不: [
+    { char: '一', pinyin: 'yī', meaning: 'небесный предел сверху', type: 'radical' },
+    { char: '丿', pinyin: 'piě', meaning: 'крыло, устремленное влево', type: 'component' },
+    { char: '卜', pinyin: 'bǔ', meaning: 'вертикальная ось и правая точка', type: 'component' },
+  ],
+};
+
+/**
+ * Возвращает список из минимум 2 графем/ключей в порядке написания для тренажера «Собери из ключей (部件)».
+ */
+export function getCharacterGraphemesForPractice(charDetail: CharDetail): Grapheme[] {
+  const ch = charDetail.char;
+
+  // 1. Если в KNOWN_CHARACTERS или CHAR_GRAPHEME_MAP есть проверенная многокомпонентная структура
+  if (KNOWN_CHARACTERS[ch] && KNOWN_CHARACTERS[ch].graphemes.length >= 2) {
+    return KNOWN_CHARACTERS[ch].graphemes;
+  }
+  if (CHAR_GRAPHEME_MAP[ch] && CHAR_GRAPHEME_MAP[ch].length >= 2) {
+    return CHAR_GRAPHEME_MAP[ch];
+  }
+
+  // 2. Если у самого charDetail уже есть >= 2 осмысленных графем (например, от Gemini API)
+  if (Array.isArray(charDetail.graphemes) && charDetail.graphemes.length >= 2) {
+    return charDetail.graphemes;
+  }
+
+  // 3. Интеллектуальный разбор на базовый ключ + структурный компонент, чтобы в игре всегда было >= 2 шагов
+  const radicalChar = extractChineseChars(charDetail.radical || '')[0];
+  const radicalMatch =
+    RADICALS_DATA.find((r) => r.char === radicalChar || r.variant === radicalChar) ||
+    RADICALS_DATA.find((r) => r.examples.includes(ch));
+
+  if (radicalMatch && radicalMatch.char !== ch) {
+    return [
+      {
+        char: radicalMatch.variant || radicalMatch.char,
+        pinyin: radicalMatch.pinyin,
+        meaning: `ключ «${radicalMatch.meaning.split(',')[0]}»`,
+        type: 'radical',
+      },
+      {
+        char: ch,
+        pinyin: charDetail.pinyin,
+        meaning: `основа знака «${charDetail.meaning.split(',')[0]}»`,
+        type: 'component',
+      },
+    ];
+  }
+
+  // 4. Для базовых одиночных знаков: начальная черта + основная форма
+  return [
+    {
+      char: '一',
+      pinyin: 'yī',
+      meaning: 'начальная опорная черта',
+      type: 'component',
+    },
+    {
+      char: ch,
+      pinyin: charDetail.pinyin,
+      meaning: charDetail.meaning.split(',')[0] || 'основной знак',
+      type: 'radical',
+    },
+  ];
+}
+
+/**
  * Builds a complete fallback CharDetail for any Chinese character,
- * checking KNOWN_CHARACTERS, COMMON_CHAR_MEANINGS, and RADICALS_DATA first.
+ * checking KNOWN_CHARACTERS, CHAR_GRAPHEME_MAP, COMMON_CHAR_MEANINGS, and RADICALS_DATA first.
  */
 export function buildFallbackCharDetail(char: string): CharDetail {
   if (KNOWN_CHARACTERS[char]) {
@@ -824,6 +1148,7 @@ export function buildFallbackCharDetail(char: string): CharDetail {
   const radicalMatch = RADICALS_DATA.find((r) => r.char === char || r.variant === char);
   const { pinyin: py, tone } = getCharPinyinAndTone(char);
   const commonCharMeaning = COMMON_CHAR_MEANINGS[char];
+  const mappedGraphemes = CHAR_GRAPHEME_MAP[char];
 
   if (radicalMatch) {
     return {
@@ -833,33 +1158,43 @@ export function buildFallbackCharDetail(char: string): CharDetail {
       meaning: commonCharMeaning || radicalMatch.meaning,
       radical: `${radicalMatch.char} (ключ №${radicalMatch.number}, ${radicalMatch.meaning.split(',')[0]})`,
       strokeCount: radicalMatch.strokes,
-      graphemes: [
-        {
-          char: radicalMatch.char,
-          pinyin: radicalMatch.pinyin,
-          meaning: radicalMatch.meaning,
-          type: 'radical',
-        },
-      ],
+      graphemes:
+        mappedGraphemes && mappedGraphemes.length >= 2
+          ? mappedGraphemes
+          : [
+              {
+                char: radicalMatch.char,
+                pinyin: radicalMatch.pinyin,
+                meaning: radicalMatch.meaning,
+                type: 'radical',
+              },
+            ],
       etymology: `Базовый иероглифический ключ Канси №${radicalMatch.number} (${radicalMatch.strokes} черт): «${radicalMatch.meaning}». Часто встречается в знаках: ${radicalMatch.examples.join(', ')}.`,
     };
   }
+
+  const firstRadical = mappedGraphemes?.find((g) => g.type === 'radical') || mappedGraphemes?.[0];
 
   return {
     char,
     pinyin: py || char,
     tone,
     meaning: commonCharMeaning || `знак «${char}» (${py})`,
-    radical: `${char} (базовый ключ)`,
+    radical: firstRadical
+      ? `${firstRadical.char} (${firstRadical.meaning.split(',')[0]})`
+      : `${char} (базовый ключ)`,
     strokeCount: 8,
-    graphemes: [
-      {
-        char,
-        pinyin: py,
-        meaning: commonCharMeaning || 'основной структурный элемент',
-        type: 'radical',
-      },
-    ],
+    graphemes:
+      mappedGraphemes && mappedGraphemes.length > 0
+        ? mappedGraphemes
+        : [
+            {
+              char,
+              pinyin: py,
+              meaning: commonCharMeaning || 'основной структурный элемент',
+              type: 'radical',
+            },
+          ],
     etymology: `Иероглиф «${char}» произносится как «${py}» (${tone}-й тон) и входит в состав лексической единицы.`,
   };
 }

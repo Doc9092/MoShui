@@ -12,10 +12,14 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { WordItem, CharDetail } from '../types/hanzi';
-import { normalizeWordItem, isPlaceholderTranslation } from '../utils/hanziUtils';
+import {
+  normalizeWordItem,
+  isPlaceholderTranslation,
+  getHsk1StarterWords,
+} from '../utils/hanziUtils';
 import { analyzeChineseInput } from '../services/geminiService';
 import { speakChinese } from '../services/audioService';
-import { HanziCanvas } from './HanziCanvas';
+import { DictionaryPractice } from './DictionaryPractice';
 import { MOSHUI_LOGO_SRC } from './Navbar';
 
 interface DictionaryViewProps {
@@ -72,6 +76,32 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     void handleAnalyze(searchQuery);
+  };
+
+  // Плавный переход к следующему слову из текущего списка прописи или базового словаря HSK 1
+  const handleNextWord = () => {
+    const starterPool = getHsk1StarterWords();
+    const combinedPool: WordItem[] = [...worksheetList];
+
+    for (const item of starterPool) {
+      if (!combinedPool.some((w) => w.word === item.word)) {
+        combinedPool.push(item);
+      }
+    }
+
+    if (combinedPool.length === 0) return;
+
+    const currentIdx = currentWord
+      ? combinedPool.findIndex((w) => w.word === currentWord.word)
+      : -1;
+    const nextWord =
+      currentIdx >= 0
+        ? combinedPool[(currentIdx + 1) % combinedPool.length]
+        : combinedPool[0];
+
+    onWordChange(nextWord);
+    setSearchQuery(nextWord.word);
+    setSelectedCharIndex(0);
   };
 
   const activeChar: CharDetail | undefined = currentWord
@@ -152,8 +182,35 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             </h2>
             <p className="mt-2 text-sm sm:text-base text-[#52525B] leading-relaxed">
               Введите любой иероглиф или многосложное слово в строку поиска выше, чтобы получить
-              разбор графем, прослушать произношение и потренировать порядок черт.
+              разбор графем, прослушать произношение, потренировать порядок черт (笔画) или собрать
+              иероглиф из ключей (部件).
             </p>
+
+            {/* Быстрый выбор слова для мгновенного старта практики */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              {(worksheetList.length > 0
+                ? worksheetList.slice(0, 6)
+                : getHsk1StarterWords().slice(0, 6)
+              ).map((presetItem) => (
+                <button
+                  key={presetItem.word}
+                  type="button"
+                  onClick={() => {
+                    onWordChange(presetItem);
+                    setSearchQuery(presetItem.word);
+                    setSelectedCharIndex(0);
+                  }}
+                  className="inline-flex items-baseline gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF7F2] hover:bg-[#FDF2F0] border border-[#EAE3D5] hover:border-[#C83E31]/50 text-sm font-medium text-[#18181B] transition-all cursor-pointer shadow-2xs"
+                >
+                  <span className="font-chinese text-base font-bold text-[#18181B]">
+                    {presetItem.word}
+                  </span>
+                  <span className="text-xs font-mono-tabular text-[#C83E31]">
+                    {presetItem.pinyin}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
       ) : (
@@ -325,40 +382,14 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
           {/* Основная 2-зонная рабочая область посимвольного разбора (на планшетах md:grid-cols-12) */}
           {activeChar && (
             <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
-              {/* Левая колонка: Каллиграфический свиток / Настольный планшет мастера */}
-              <div className="md:col-span-5 flex flex-col items-center p-4 sm:p-6 bg-[#FAF7F2] border border-[#EAE3D5] rounded-2xl w-full shadow-2xs">
-                <div className="w-full flex items-center justify-between mb-5 pb-4 border-b border-[#EAE3D5]">
-                  <div>
-                    <div className="flex items-baseline gap-3">
-                      <span className="font-chinese text-4xl font-bold text-[#18181B]">
-                        {activeChar.char}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-lg text-base font-semibold bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] font-mono-tabular">
-                        {activeChar.pinyin}
-                      </span>
-                    </div>
-                    <div className="mt-1.5 text-sm text-[#52525B] font-mono-tabular">
-                      <span>Тон: {activeChar.tone}-й</span>
-                      <span className="mx-1.5" aria-hidden="true">
-                        ·
-                      </span>
-                      <span>Черт: {activeChar.strokeCount}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => speakChinese(activeChar.char)}
-                    aria-label={`Озвучить иероглиф ${activeChar.char}`}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FDF2F0] hover:border-[#F5D0C8] transition-all whitespace-nowrap shrink-0 cursor-pointer"
-                  >
-                    <Volume2 className="w-4 h-4 text-[#C83E31]" />
-                    <span>Слушать знак</span>
-                  </button>
-                </div>
-
-                <HanziCanvas char={activeChar.char} size={240} />
-              </div>
+              {/* Левая колонка: Интерактивная практика (Порядок черт 笔画 / Собери из ключей 部件) */}
+              <DictionaryPractice
+                currentWord={currentWord}
+                activeChar={activeChar}
+                selectedCharIndex={selectedCharIndex}
+                onSelectCharIndex={setSelectedCharIndex}
+                onNextWord={handleNextWord}
+              />
 
               {/* Правая колонка: Структурная декомпозиция, печати-штампы ключей, мнемоника и примеры */}
               <div className="md:col-span-7 space-y-6">

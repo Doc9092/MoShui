@@ -68,6 +68,19 @@ export default function App() {
     updateServiceWorker,
   } = useRegisterSW();
 
+  useEffect(() => {
+    if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          for (const registration of registrations) {
+            void registration.unregister();
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState<AppTab>('dictionary');
 
   // Авторизованный преподаватель и модальное окно входа/регистрации
