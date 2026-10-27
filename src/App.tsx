@@ -21,6 +21,7 @@ import {
   getTeacherSession,
   mapSupabaseUserToProfile,
   signOut,
+  clearAllLocalUserStorage,
   fetchTeacherFolders,
   createFolderInCloud,
   deleteFolderFromCloud,
@@ -141,6 +142,27 @@ export default function App() {
     }
   }, []);
 
+  // Полный сброс локального стейта и localStorage в чистый гостевой режим при логауте / SIGNED_OUT
+  const resetUserWorkspaceState = useCallback(() => {
+    setCurrentTeacher(null);
+    setTeacherFolders([]);
+    setSavedWorksheets([]);
+    setActiveSavedWorksheet(null);
+    setWorksheetList([]);
+    setWorksheetConfig(DEFAULT_WORKSHEET_CONFIG);
+    setCurrentWord(null);
+    setCloudError(null);
+    try {
+      localStorage.removeItem('moshui_worksheets');
+      localStorage.removeItem('moshui_current_words');
+      localStorage.removeItem(WORKSHEET_STORAGE_KEY);
+      localStorage.removeItem(CONFIG_STORAGE_KEY);
+      clearAllLocalUserStorage();
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Получение сессии supabase.auth.getSession() и подписка supabase.auth.onAuthStateChange
   useEffect(() => {
     let isMounted = true;
@@ -151,6 +173,11 @@ export default function App() {
       if (sessionProfile) {
         setCurrentTeacher(sessionProfile);
         void syncTeacherWorkspaceFromCloud(sessionProfile.id);
+      } else {
+        setCurrentTeacher(null);
+        setTeacherFolders([]);
+        setSavedWorksheets([]);
+        setActiveSavedWorksheet(null);
       }
     }
 
@@ -161,15 +188,12 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
 
-      if (session?.user) {
+      if (event === 'SIGNED_OUT') {
+        resetUserWorkspaceState();
+      } else if (session?.user) {
         const profile = mapSupabaseUserToProfile(session.user);
         setCurrentTeacher(profile);
         void syncTeacherWorkspaceFromCloud(profile.id);
-      } else if (event === 'SIGNED_OUT') {
-        setCurrentTeacher(null);
-        setTeacherFolders([]);
-        setSavedWorksheets([]);
-        setActiveSavedWorksheet(null);
       }
     });
 
@@ -177,7 +201,7 @@ export default function App() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [syncTeacherWorkspaceFromCloud]);
+  }, [syncTeacherWorkspaceFromCloud, resetUserWorkspaceState]);
 
   useEffect(() => {
     try {
@@ -257,16 +281,13 @@ export default function App() {
   };
 
   const handleLogoutTeacher = async () => {
+    resetUserWorkspaceState();
+    setActiveTab('dictionary');
     try {
       await signOut();
     } catch (err) {
       console.warn('Ошибка при выходе из Supabase:', err);
     }
-    setCurrentTeacher(null);
-    setTeacherFolders([]);
-    setSavedWorksheets([]);
-    setActiveSavedWorksheet(null);
-    setActiveTab('dictionary');
   };
 
   const handleSaveToWorkspace = async (payload: {

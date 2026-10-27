@@ -24,6 +24,8 @@ import {
   RefreshCw,
   AlertCircle,
   FileDown,
+  Eye,
+  X,
 } from 'lucide-react';
 import type {
   TeacherProfile,
@@ -34,10 +36,10 @@ import type {
 import {
   downloadWorksheetAsPDF,
   printWorksheetInNewWindow,
+  ensureImagesLoaded,
   PRINTABLE_SHEET_ELEMENT_ID,
 } from '../services/pdfExportService';
 import { PrintableSheet } from './PrintableSheet';
-import { MOSHUI_LOGO_SRC } from './Navbar';
 
 interface TeacherDashboardProps {
   teacher: TeacherProfile | null;
@@ -143,6 +145,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [selectedSheetForRender, setSelectedSheetForRender] = useState<SavedWorksheet | null>(
     savedWorksheets[0] || null
   );
+  const [previewSheet, setPreviewSheet] = useState<SavedWorksheet | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -155,7 +158,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     ) {
       setSelectedSheetForRender(savedWorksheets[0] || null);
     }
-  }, [savedWorksheets, selectedSheetForRender]);
+    if (previewSheet && !savedWorksheets.some((w) => w.id === previewSheet.id)) {
+      setPreviewSheet(null);
+    }
+  }, [savedWorksheets, selectedSheetForRender, previewSheet]);
 
   React.useEffect(() => {
     if (teacher) {
@@ -177,6 +183,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     }, 4500);
   };
 
+  const waitForPrintableSheetImages = async () => {
+    const printableContainer = document.getElementById(PRINTABLE_SHEET_ELEMENT_ID);
+    if (!printableContainer) return;
+    await ensureImagesLoaded(printableContainer);
+  };
+
   const handleDownloadSavedSheetPdf = async (sheet: SavedWorksheet) => {
     if (exportingSheetId) return;
     setExportingSheetId(sheet.id);
@@ -185,8 +197,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       flushSync(() => {
         setSelectedSheetForRender(sheet);
       });
-      // Даем HanziWriter время подгрузить SVG-контуры черт в #printable-sheet-area
+      // Даем HanziWriter время подгрузить SVG-контуры черт и дожидаемся загрузки всех <img> (включая логотип)
       await new Promise((resolve) => setTimeout(resolve, 450));
+      await waitForPrintableSheetImages();
       await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
       showFeedback(`Файл «${sheet.title}.pdf» успешно сформирован и скачан.`);
     } catch (err) {
@@ -198,13 +211,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     }
   };
 
-  const handlePrintSavedSheetInWindow = (sheet: SavedWorksheet) => {
+  const handlePrintSavedSheetInWindow = async (sheet: SavedWorksheet) => {
     setActionError(null);
     try {
       flushSync(() => {
         setSelectedSheetForRender(sheet);
       });
-      printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      await waitForPrintableSheetImages();
+      await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
     } catch (err) {
       setActionError(
         err instanceof Error ? err.message : 'Не удалось открыть окно печати.'
@@ -221,10 +236,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-14 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 max-w-3xl mx-auto my-4 sm:my-6"
       >
         <img
-          src={MOSHUI_LOGO_SRC}
+          src={`${window.location.origin}/image_0.png`}
+          crossOrigin="anonymous"
           alt="MoShui 墨水"
           data-testid="dashboard-guest-logo"
-          className="h-24 w-24 sm:h-28 sm:w-28 object-contain rounded-full mix-blend-multiply mx-auto mb-4 sm:mb-5"
+          className="h-24 w-24 sm:h-28 sm:w-28 object-contain rounded-full mix-blend-multiply print:mix-blend-normal mx-auto mb-4 sm:mb-5"
+          style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
         />
         <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#18181B] tracking-tight">
           Личный кабинет преподавателя MoShui (墨水)
@@ -588,10 +605,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               className="bg-white border border-[#EAE3D5] rounded-2xl p-8 sm:p-16 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)]"
             >
               <img
-                src={MOSHUI_LOGO_SRC}
+                src={`${window.location.origin}/image_0.png`}
+                crossOrigin="anonymous"
                 alt="MoShui 墨水"
                 data-testid="dashboard-empty-logo"
-                className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-full mix-blend-multiply opacity-85 mx-auto mb-4"
+                className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-full mix-blend-multiply print:mix-blend-normal opacity-85 mx-auto mb-4"
+                style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
               />
               <h3 className="font-display text-lg sm:text-2xl font-bold text-[#18181B]">
                 {savedWorksheets.length === 0
@@ -636,7 +655,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   >
                     <div className="space-y-3.5">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span
                               className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold border rounded-lg ${folderStyle.badge}`}
@@ -655,9 +674,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           </h3>
                         </div>
 
-                        <span className="px-3 py-1 bg-[#FAF7F2] border border-[#EAE3D5] text-[#18181B] font-mono-tabular text-sm font-bold rounded-lg shrink-0">
-                          {sheet.words.length} сл.
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <img
+                            src={`${window.location.origin}/image_0.png`}
+                            crossOrigin="anonymous"
+                            alt="MoShui 墨水"
+                            className="h-7 w-7 object-contain rounded-full mix-blend-multiply print:mix-blend-normal opacity-90"
+                            style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
+                          />
+                          <span className="px-3 py-1 bg-[#FAF7F2] border border-[#EAE3D5] text-[#18181B] font-mono-tabular text-sm font-bold rounded-lg">
+                            {sheet.words.length} сл.
+                          </span>
+                        </div>
                       </div>
 
                       {sheet.description && (
@@ -709,6 +737,19 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     {/* Кнопки управления прописью */}
                     <div className="pt-4 border-t border-[#EAE3D5] flex flex-wrap items-center justify-between gap-2.5">
                       <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedSheetForRender(sheet);
+                            setPreviewSheet(sheet);
+                          }}
+                          data-testid={`preview-worksheet-${sheet.id}`}
+                          className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-[#18181B] bg-[#FAF7F2] hover:bg-[#EAE3D5] border border-[#E6E0D6] rounded-xl transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4 text-[#C83E31]" />
+                          <span>Предпросмотр</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => onOpenWorksheetInBuilder(sheet)}
@@ -1223,15 +1264,128 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         </div>
       )}
 
+      {/* Модальное окно предпросмотра сохраненной прописи с единым шаблоном <PrintableSheet /> */}
+      {previewSheet && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Предпросмотр прописи ${previewSheet.title}`}
+          data-testid="saved-worksheet-preview-modal"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+          onClick={() => setPreviewSheet(null)}
+        >
+          <div
+            className="bg-[#FAF7F2] border border-[#EAE3D5] rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Шапка модального окна предпросмотра */}
+            <div className="px-4 sm:px-6 py-3.5 bg-white border-b border-[#EAE3D5] flex flex-wrap items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <img
+                  src={`${window.location.origin}/image_0.png`}
+                  crossOrigin="anonymous"
+                  alt="MoShui 墨水"
+                  className="h-9 w-9 object-contain rounded-full mix-blend-multiply print:mix-blend-normal shrink-0"
+                  style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-base sm:text-lg font-bold text-[#18181B] truncate">
+                      {previewSheet.title}
+                    </h3>
+                    <span className="px-2 py-0.5 text-[11px] font-mono-tabular font-bold uppercase tracking-wider bg-[#FAF7F2] text-[#71717A] border border-[#EAE3D5] rounded-md shrink-0">
+                      A4
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#71717A] truncate">
+                    Папка: {previewSheet.folder} · Слов: {previewSheet.words.length}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePrintSavedSheetInWindow(previewSheet)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl transition-colors cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Печать</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={exportingSheetId === previewSheet.id}
+                  onClick={() => void handleDownloadSavedSheetPdf(previewSheet)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-[#18181B] bg-[#FAF7F2] hover:bg-[#EAE3D5] border border-[#E6E0D6] disabled:opacity-60 rounded-xl transition-colors cursor-pointer"
+                >
+                  {exportingSheetId === previewSheet.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
+                      <span>Создание PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="w-4 h-4 text-[#52525B]" />
+                      <span>Скачать PDF</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = previewSheet;
+                    setPreviewSheet(null);
+                    onOpenWorksheetInBuilder(target);
+                  }}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl transition-colors cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>В конструктор</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPreviewSheet(null)}
+                  aria-label="Закрыть предпросмотр"
+                  className="p-2 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Область предпросмотра единого компонента <PrintableSheet /> */}
+            <div className="p-4 sm:p-6 overflow-auto flex-1 flex justify-center bg-[#F3EFE6]/60">
+              <div className="w-fit mx-auto">
+                <PrintableSheet
+                  worksheetList={previewSheet.words}
+                  config={{
+                    ...previewSheet.config,
+                    sheetTitle: previewSheet.title || previewSheet.config.sheetTitle,
+                  }}
+                  teacherName={teacher.name}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Скрытый контейнер рендеринга печатного листа А4 для мгновенного экспорта PDF и печати из кабинета */}
-      {selectedSheetForRender && (
+      {!previewSheet && selectedSheetForRender && (
         <div
           aria-hidden="true"
-          className="fixed -left-[9999px] top-0 w-[210mm] bg-white pointer-events-none overflow-hidden"
+          className="fixed left-0 top-0 -z-50 opacity-0 w-[210mm] bg-white pointer-events-none overflow-hidden"
         >
           <PrintableSheet
             worksheetList={selectedSheetForRender.words}
-            config={selectedSheetForRender.config}
+            config={{
+              ...selectedSheetForRender.config,
+              sheetTitle:
+                selectedSheetForRender.title || selectedSheetForRender.config.sheetTitle,
+            }}
             teacherName={teacher.name}
           />
         </div>

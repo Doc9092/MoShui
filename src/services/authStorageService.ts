@@ -305,10 +305,42 @@ export async function signIn(email: string, password: string): Promise<TeacherPr
 }
 
 /**
+ * Полная очистка всех локальных данных пользователя и черновиков прописей из localStorage.
+ */
+export function clearAllLocalUserStorage(): void {
+  removeLocalCache(PENDING_PROFILE_KEY);
+  removeLocalCache('moshui_worksheets');
+  removeLocalCache('moshui_current_words');
+  removeLocalCache('moshui_worksheet_list_v2');
+  removeLocalCache('moshui_worksheet_config_v1');
+
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (
+          key &&
+          (key.startsWith('moshui_cloud_worksheets_cache_') ||
+            key.startsWith('moshui_cloud_folders_cache_') ||
+            key.startsWith('moshui_default_config_'))
+        ) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+    }
+  } catch {
+    // ignore
+  }
+  memoryStore.clear();
+}
+
+/**
  * Выход из аккаунта преподавателя через Supabase Auth (signOut).
  */
 export async function signOut(): Promise<void> {
-  removeLocalCache(PENDING_PROFILE_KEY);
+  clearAllLocalUserStorage();
   const { error } = await supabase.auth.signOut();
   if (error) {
     throw new Error(translateSupabaseError(error));
@@ -321,13 +353,17 @@ export async function signOut(): Promise<void> {
 export async function getTeacherSession(): Promise<TeacherProfile | null> {
   try {
     const { data, error } = await supabase.auth.getSession();
-    if (!error && data.session?.user) {
-      const profile = mapSupabaseUserToProfile(data.session.user);
-      writeLocalCache(PENDING_PROFILE_KEY, JSON.stringify(profile));
-      return profile;
+    if (!error) {
+      if (data.session?.user) {
+        const profile = mapSupabaseUserToProfile(data.session.user);
+        writeLocalCache(PENDING_PROFILE_KEY, JSON.stringify(profile));
+        return profile;
+      }
+      removeLocalCache(PENDING_PROFILE_KEY);
+      return null;
     }
   } catch {
-    // fallback to cached profile if offline
+    // fallback to cached profile only on network exception
   }
 
   const cached = readLocalCache(PENDING_PROFILE_KEY);

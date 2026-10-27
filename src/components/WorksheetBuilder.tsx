@@ -339,6 +339,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     setIsExportingPdf(true);
     setStatusNote('Генерация PDF-файла А4... Пожалуйста, подождите.');
     try {
+      const logoImg = document.querySelector('.printable-a4-page img') as HTMLImageElement;
+      if (logoImg && !logoImg.complete) {
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve;
+        });
+      }
       const pdfName = activeSavedWorksheet?.title || config.sheetTitle || 'moshui-worksheet';
       await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, pdfName);
       setStatusNote(`PDF-файл «${pdfName}.pdf» успешно сформирован и скачан.`);
@@ -351,9 +358,16 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     }
   };
 
-  const handlePrintSheet = () => {
+  const handlePrintSheet = async () => {
+    const logoImg = document.querySelector('.printable-a4-page img') as HTMLImageElement;
+    if (logoImg && !logoImg.complete) {
+      await new Promise((resolve) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = resolve;
+      });
+    }
     const sheetTitle = activeSavedWorksheet?.title || config.sheetTitle || 'Пропись MoShui';
-    printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
+    await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
   };
 
   const handleExportJson = () => {

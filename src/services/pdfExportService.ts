@@ -53,22 +53,38 @@ export function calculateA4Dimensions(
 }
 
 /**
- * Дожидается полной загрузки всех изображений внутри печатного листа перед запуском html2canvas.
+ * Дожидается полной загрузки всех изображений (через Promise.all для всех <img>) внутри печатного блока
+ * перед запуском html2canvas или системной печати.
  */
-async function ensureImagesLoaded(container: HTMLElement): Promise<void> {
+export async function ensureImagesLoaded(container: HTMLElement): Promise<void> {
+  const logoImg = document.querySelector('.printable-a4-page img') as HTMLImageElement;
+  if (logoImg && !logoImg.complete) {
+    await new Promise((resolve) => {
+      logoImg.onload = resolve;
+      logoImg.onerror = resolve;
+    });
+  }
+
   const images = Array.from(container.querySelectorAll('img'));
   await Promise.all(
     images.map(
       (img) =>
         new Promise<void>((resolve) => {
+          const finish = () => {
+            if (typeof img.decode === 'function') {
+              img.decode().then(() => resolve()).catch(() => resolve());
+            } else {
+              resolve();
+            }
+          };
           if (img.complete && img.naturalWidth > 0) {
-            resolve();
+            finish();
             return;
           }
           const onDone = () => {
             img.removeEventListener('load', onDone);
             img.removeEventListener('error', onDone);
-            resolve();
+            finish();
           };
           img.addEventListener('load', onDone);
           img.addEventListener('error', onDone);
@@ -78,39 +94,30 @@ async function ensureImagesLoaded(container: HTMLElement): Promise<void> {
 }
 
 /**
- * Встраивает изображения внутри клонированного печатного листа как inline PNG dataURL
- * с учетом mix-blend-mode: multiply на белом фоне, чтобы html2canvas мгновенно отрендерил логотип.
+ * Подготавливает изображения внутри клонированного печатного листа для html2canvas и системной печати:
+ * устанавливает абсолютный путь `${window.location.origin}/image_0.png`, crossOrigin="anonymous",
+ * сбрасывает mix-blend-multiply и включает exact print color adjust.
  */
-function inlineImagesForHtml2Canvas(
-  originalContainer: HTMLElement,
-  clonedContainer: HTMLElement
-): void {
-  const origImages = Array.from(originalContainer.querySelectorAll('img'));
+function prepareClonedImagesForRender(clonedContainer: HTMLElement): void {
   const clonedImages = Array.from(clonedContainer.querySelectorAll('img'));
+  const absoluteLogoUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/image_0.png` : '/image_0.png';
 
-  origImages.forEach((origImg, idx) => {
-    const clonedImg = clonedImages[idx];
-    if (!clonedImg || !origImg.complete || origImg.naturalWidth === 0) return;
-
-    try {
-      const w = Math.min(origImg.naturalWidth || 256, 384);
-      const h = Math.min(origImg.naturalHeight || 256, 384);
-      const offscreen = document.createElement('canvas');
-      offscreen.width = w;
-      offscreen.height = h;
-      const ctx = offscreen.getContext('2d');
-      if (!ctx) return;
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'multiply';
-      ctx.drawImage(origImg, 0, 0, w, h);
-      ctx.globalCompositeOperation = 'source-over';
-
-      clonedImg.src = offscreen.toDataURL('image/png');
-    } catch {
-      // Оставляем исходный src, если конвертация недоступна
+  clonedImages.forEach((clonedImg) => {
+    if (clonedImg.getAttribute('src') !== absoluteLogoUrl) {
+      clonedImg.setAttribute('src', absoluteLogoUrl);
     }
+    if (clonedImg.getAttribute('crossOrigin') !== 'anonymous') {
+      clonedImg.setAttribute('crossOrigin', 'anonymous');
+    }
+    clonedImg.classList.remove('mix-blend-multiply', 'print:hidden', 'hidden');
+    clonedImg.classList.add('print:mix-blend-normal');
+    clonedImg.style.display = 'block';
+    clonedImg.style.visibility = 'visible';
+    clonedImg.style.opacity = '1';
+    clonedImg.style.mixBlendMode = 'normal';
+    clonedImg.style.setProperty('print-color-adjust', 'exact');
+    clonedImg.style.setProperty('-webkit-print-color-adjust', 'exact');
   });
 }
 
@@ -210,6 +217,7 @@ export async function downloadWorksheetAsPDF(
       pdf.addPage();
     }
 
+    await ensureImagesLoaded(pageEl);
     pageEl.style.setProperty('-webkit-font-smoothing', 'antialiased');
     pageEl.style.setProperty('text-rendering', 'geometricPrecision');
 
@@ -217,15 +225,19 @@ export async function downloadWorksheetAsPDF(
       scale: 2.5,
       width: 794,
       windowWidth: 794,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
       backgroundColor: '#FFFFFF',
       useCORS: true,
       allowTaint: true,
       logging: false,
       imageTimeout: 0,
       removeContainer: true,
-      onclone: (clonedDoc, clonedPageEl) => {
+      onclone: async (clonedDoc, clonedPageEl) => {
         normalizeStylesheetsForHtml2Canvas(clonedDoc);
-        inlineImagesForHtml2Canvas(pageEl, clonedPageEl);
+        prepareClonedImagesForRender(clonedPageEl);
 
         clonedDoc.body.innerHTML = '';
         clonedDoc.body.style.margin = '0';
@@ -245,9 +257,13 @@ export async function downloadWorksheetAsPDF(
         clonedPageEl.style.boxShadow = 'none';
         clonedPageEl.style.border = 'none';
         clonedPageEl.style.borderRadius = '0';
+        clonedPageEl.style.opacity = '1';
+        clonedPageEl.style.visibility = 'visible';
         clonedPageEl.style.backgroundColor = '#FFFFFF';
         clonedPageEl.style.setProperty('-webkit-font-smoothing', 'antialiased');
         clonedPageEl.style.setProperty('text-rendering', 'geometricPrecision');
+
+        await ensureImagesLoaded(clonedPageEl);
       },
     });
 
@@ -262,10 +278,10 @@ export async function downloadWorksheetAsPDF(
  * Функция 2: Мгновенная системная печать — открывает окно печати с поддержкой многостраничных
  * листов `.printable-a4-page` и вызывает диалог печати/сохранения в PDF браузера.
  */
-export function printWorksheetInNewWindow(
+export async function printWorksheetInNewWindow(
   elementId: string = PRINTABLE_SHEET_ELEMENT_ID,
   title: string = 'Учебная пропись MoShui (墨水)'
-): void {
+): Promise<void> {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error(
@@ -273,25 +289,10 @@ export function printWorksheetInNewWindow(
     );
   }
 
-  // Клонируем узел печатного листа и встраиваем логотип как Data URL (или абсолютный URL),
-  // чтобы в новом окне печати (about:blank) картинка гарантированно отображалась без потерь
-  const clonedElement = element.cloneNode(true) as HTMLElement;
-  inlineImagesForHtml2Canvas(element, clonedElement);
+  await ensureImagesLoaded(element);
 
-  const origImages = Array.from(element.querySelectorAll('img'));
-  const clonedImages = Array.from(clonedElement.querySelectorAll('img'));
-  clonedImages.forEach((img, idx) => {
-    const origImg = origImages[idx];
-    const currentSrc = img.getAttribute('src') || '';
-    if (!currentSrc.startsWith('data:') && origImg?.src) {
-      img.setAttribute('src', origImg.src);
-    } else if (currentSrc.startsWith('/') && typeof window !== 'undefined') {
-      img.setAttribute('src', `${window.location.origin}${currentSrc}`);
-    }
-    img.style.mixBlendMode = 'normal';
-    img.style.setProperty('print-color-adjust', 'exact');
-    img.style.setProperty('-webkit-print-color-adjust', 'exact');
-  });
+  const clonedElement = element.cloneNode(true) as HTMLElement;
+  prepareClonedImagesForRender(clonedElement);
 
   const styleNodes = document.querySelectorAll('style, link[rel="stylesheet"]');
   let collectedStylesHtml = '';

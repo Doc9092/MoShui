@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { pinyin } from 'pinyin-pro';
-import logoSrc from '../assets/image_0.png';
 import type { WordItem, WorksheetConfig } from '../types/hanzi';
 import {
   buildWorksheetCells,
@@ -534,11 +533,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                     }}
                   >
                     <img
-                      src={
-                        typeof window !== 'undefined' && logoSrc.startsWith('/')
-                          ? `${window.location.origin}${logoSrc}`
-                          : logoSrc
-                      }
+                      src={`${window.location.origin}/image_0.png`}
                       alt="MoShui Logo"
                       data-testid="printable-sheet-logo"
                       crossOrigin="anonymous"
