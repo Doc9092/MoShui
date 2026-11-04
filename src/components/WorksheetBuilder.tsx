@@ -346,6 +346,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           logoImg.onerror = resolve;
         });
       }
+      await new Promise((r) => setTimeout(r, 200));
       const pdfName = activeSavedWorksheet?.title || config.sheetTitle || 'moshui-worksheet';
       await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, pdfName);
       setStatusNote(`PDF-файл «${pdfName}.pdf» успешно сформирован и скачан.`);

@@ -200,6 +200,14 @@ export async function downloadWorksheetAsPDF(
   if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
     await document.fonts.ready;
   }
+
+  // Ждем завершения загрузки и вычисления SVG-путей HanziWriter перед рендером html2canvas
+  let waitAttempts = 0;
+  while (rootElement.getAttribute('data-strokes-ready') === 'false' && waitAttempts < 15) {
+    await new Promise((r) => setTimeout(r, 100));
+    waitAttempts++;
+  }
+  await new Promise((r) => setTimeout(r, 200));
   await ensureImagesLoaded(rootElement);
 
   const cleanFilename = sanitizePdfFilename(filename);
@@ -220,6 +228,8 @@ export async function downloadWorksheetAsPDF(
     await ensureImagesLoaded(pageEl);
     pageEl.style.setProperty('-webkit-font-smoothing', 'antialiased');
     pageEl.style.setProperty('text-rendering', 'geometricPrecision');
+    pageEl.style.setProperty('writing-mode', 'horizontal-tb');
+    pageEl.style.setProperty('direction', 'ltr');
 
     const canvas = await html2canvas(pageEl, {
       scale: 2.5,
@@ -245,6 +255,8 @@ export async function downloadWorksheetAsPDF(
         clonedDoc.body.style.backgroundColor = '#FFFFFF';
         clonedDoc.body.style.setProperty('-webkit-font-smoothing', 'antialiased');
         clonedDoc.body.style.setProperty('text-rendering', 'geometricPrecision');
+        clonedDoc.body.style.setProperty('writing-mode', 'horizontal-tb');
+        clonedDoc.body.style.setProperty('direction', 'ltr');
         clonedDoc.body.appendChild(clonedPageEl);
 
         clonedPageEl.style.transform = 'none';
@@ -262,6 +274,23 @@ export async function downloadWorksheetAsPDF(
         clonedPageEl.style.backgroundColor = '#FFFFFF';
         clonedPageEl.style.setProperty('-webkit-font-smoothing', 'antialiased');
         clonedPageEl.style.setProperty('text-rendering', 'geometricPrecision');
+        clonedPageEl.style.setProperty('writing-mode', 'horizontal-tb');
+        clonedPageEl.style.setProperty('direction', 'ltr');
+
+        const cellNodes = clonedPageEl.querySelectorAll<HTMLElement>('.worksheet-cell-container');
+        cellNodes.forEach((cellNode) => {
+          cellNode.style.setProperty('writing-mode', 'horizontal-tb', 'important');
+          cellNode.style.setProperty('direction', 'ltr', 'important');
+        });
+
+        const flipNodes = clonedPageEl.querySelectorAll<HTMLElement>('.hanzi-svg-flip-wrapper');
+        flipNodes.forEach((flipNode) => {
+          flipNode.style.setProperty('transform', 'scaleY(-1) translateZ(0)', 'important');
+          flipNode.style.setProperty('-webkit-transform', 'scaleY(-1) translateZ(0)', 'important');
+          flipNode.style.setProperty('transform-origin', 'center center', 'important');
+          flipNode.style.setProperty('writing-mode', 'horizontal-tb', 'important');
+          flipNode.style.setProperty('direction', 'ltr', 'important');
+        });
 
         await ensureImagesLoaded(clonedPageEl);
       },

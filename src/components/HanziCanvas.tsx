@@ -230,7 +230,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
       {/* Двойная рамка настольного планшета мастера каллиграфии (рисовая бумага + киноварная сетка Мицзыгэ) */}
       <div className="border-2 border-[#D6CEB8] p-3 rounded-2xl bg-[#FFFEFA] shadow-inner mx-auto">
         <div
-          className="relative bg-white border-2 border-[#C83E31]/80 rounded-xl shadow-2xs overflow-hidden mx-auto select-none touch-none"
+          className="relative bg-white border-2 border-[#C83E31]/80 rounded-xl shadow-2xs overflow-hidden mx-auto select-none touch-none worksheet-cell-container"
           style={{
             width: size,
             height: size,
@@ -238,6 +238,8 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
             touchAction: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
+            writingMode: 'horizontal-tb',
+            direction: 'ltr',
           }}
           data-testid={`hanzi-canvas-${singleChar}`}
         >

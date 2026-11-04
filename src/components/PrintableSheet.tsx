@@ -198,6 +198,8 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
         paddingTop: '2px',
         paddingBottom: '2px',
         maxWidth: '100%',
+        writingMode: 'horizontal-tb',
+        direction: 'ltr',
       }}
       aria-label={`Пошаговый порядок черт для иероглифа ${char} (${strokeData.strokes.length} черт)`}
     >
@@ -219,28 +221,64 @@ const StrokeOrderProgressionRow: React.FC<StrokeOrderHeaderProps> = ({
         const completedStrokesD =
           stepIndex > 0 ? strokeData.strokes.slice(0, stepIndex).join(' ') : '';
         return (
-          <svg
+          <div
             key={stepIndex}
-            width={boxSize}
-            height={boxSize}
-            viewBox="0 0 1024 1024"
             data-testid="stroke-order-box"
+            className="worksheet-cell-container"
             style={{
               width: `${boxSize}px`,
               height: `${boxSize}px`,
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               backgroundColor: '#ffffff',
               border: `1px solid ${borderColor}`,
               borderRadius: '2px',
               flexShrink: 0,
+              overflow: 'hidden',
+              writingMode: 'horizontal-tb',
+              direction: 'ltr',
             }}
           >
-            <g transform="scale(1, -1) translate(0, -900)">
-              <path d={combinedAllStrokes} fill="#E2E8F0" />
-              {completedStrokesD && <path d={completedStrokesD} fill="#334155" />}
-              <path d={currentStrokeD} fill="#EF4444" />
-            </g>
-          </svg>
+            <div
+              className="hanzi-svg-flip-wrapper"
+              ref={(el) => {
+                if (el) {
+                  el.style.setProperty('transform', 'scaleY(-1) translateZ(0)', 'important');
+                  el.style.setProperty('-webkit-transform', 'scaleY(-1) translateZ(0)', 'important');
+                }
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: 'scaleY(-1) translateZ(0)',
+                WebkitTransform: 'scaleY(-1) translateZ(0)',
+                transformOrigin: 'center center',
+                writingMode: 'horizontal-tb',
+                direction: 'ltr',
+              }}
+            >
+              <svg
+                width={boxSize}
+                height={boxSize}
+                viewBox="0 -124 1024 1024"
+                style={{
+                  width: `${boxSize}px`,
+                  height: `${boxSize}px`,
+                  display: 'block',
+                }}
+              >
+                <g>
+                  <path d={combinedAllStrokes} fill="#E2E8F0" />
+                  {completedStrokesD && <path d={completedStrokesD} fill="#334155" />}
+                  <path d={currentStrokeD} fill="#EF4444" />
+                </g>
+              </svg>
+            </div>
+          </div>
         );
       })}
     </div>
@@ -466,18 +504,52 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
     [practiceBlocks, totalCells, shouldShowStrokeOrder]
   );
 
+  const allUniqueChars = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of worksheetList) {
+      const chars = extractChineseChars(item.word);
+      const safeChars = chars.length > 0 ? chars : Array.from((item.word || '').trim());
+      for (const ch of safeChars) {
+        if (ch) set.add(ch);
+      }
+    }
+    return Array.from(set);
+  }, [worksheetList]);
+
+  const allStrokesLoaded = useMemo(
+    () => allUniqueChars.every((ch) => Boolean(loadedCharsMap[ch])),
+    [allUniqueChars, loadedCharsMap]
+  );
+
   const sheetTitleText = config.sheetTitle || 'Пропись китайских иероглифов и слов';
 
   return (
     <div
       id="printable-sheet-area"
       data-testid="printable-a4-sheet"
+      data-strokes-ready={allStrokesLoaded ? 'true' : 'false'}
       style={{
         width: '794px',
         margin: '0 auto',
         fontFamily: '"Noto Serif SC", "KaiTi", sans-serif',
+        writingMode: 'horizontal-tb',
+        direction: 'ltr',
       }}
     >
+      <style>{`
+        .worksheet-cell-container {
+          writing-mode: horizontal-tb !important;
+          direction: ltr !important;
+        }
+        .hanzi-svg-flip-wrapper {
+          transform: scaleY(-1) translateZ(0) !important;
+          -webkit-transform: scaleY(-1) translateZ(0) !important;
+          transform-origin: center center !important;
+          backface-visibility: hidden;
+          writing-mode: horizontal-tb !important;
+          direction: ltr !important;
+        }
+      `}</style>
       {pages.map((pageBlocks, pageIdx) => {
         const isLastPage = pageIdx === pages.length - 1;
 
@@ -906,17 +978,23 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                             borderLeft: `1.5px solid ${palette.border}`,
                             backgroundColor: '#ffffff',
                             boxSizing: 'border-box',
+                            writingMode: 'horizontal-tb',
+                            direction: 'ltr',
                           }}
                         >
                           {cells.map((cell, idx) => {
                             const hasChar = Boolean(cell.char && cell.mode !== 'empty');
                             const fillColor = cell.mode === 'sample' ? '#18181B' : '#D4D4D8';
                             const strokeData = cell.char ? strokeMap[cell.char] : null;
+                            const isCharStrokeLoaded = cell.char
+                              ? Boolean(loadedCharsMap[cell.char])
+                              : true;
 
                             return (
                               <div
                                 key={idx}
                                 data-testid={`worksheet-cell-${blockIdx}-${idx}`}
+                                className="worksheet-cell-container"
                                 style={{
                                   aspectRatio: '1 / 1',
                                   borderRight: `1.5px solid ${palette.border}`,
@@ -931,39 +1009,94 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                                   backgroundColor: '#ffffff',
                                   boxSizing: 'border-box',
                                   overflow: 'hidden',
+                                  writingMode: 'horizontal-tb',
+                                  direction: 'ltr',
                                 }}
                               >
                                 {hasChar && cell.char && (
-                                  <svg
-                                    viewBox="0 0 1024 1024"
-                                    width="82%"
-                                    height="82%"
-                                    style={{
-                                      display: 'block',
-                                      width: '82%',
-                                      height: '82%',
-                                      position: 'relative',
-                                      zIndex: 1,
-                                    }}
-                                  >
-                                    {strokeData && strokeData.strokes.length > 0 ? (
-                                      <g transform="scale(1, -1) translate(0, -900)">
-                                        <path d={strokeData.strokes.join(' ')} fill={fillColor} />
-                                      </g>
-                                    ) : (
-                                      <text
-                                        x="512"
-                                        y="540"
-                                        textAnchor="middle"
-                                        dominantBaseline="central"
-                                        fill={fillColor}
-                                        fontSize="760"
-                                        fontFamily='"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif'
+                                  strokeData && strokeData.strokes.length > 0 ? (
+                                    <div
+                                      className="hanzi-svg-flip-wrapper"
+                                      ref={(el) => {
+                                        if (el) {
+                                          el.style.setProperty(
+                                            'transform',
+                                            'scaleY(-1) translateZ(0)',
+                                            'important'
+                                          );
+                                          el.style.setProperty(
+                                            '-webkit-transform',
+                                            'scaleY(-1) translateZ(0)',
+                                            'important'
+                                          );
+                                        }
+                                      }}
+                                      style={{
+                                        width: '82%',
+                                        height: '82%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        transform: 'scaleY(-1) translateZ(0)',
+                                        WebkitTransform: 'scaleY(-1) translateZ(0)',
+                                        transformOrigin: 'center center',
+                                        writingMode: 'horizontal-tb',
+                                        direction: 'ltr',
+                                      }}
+                                    >
+                                      <svg
+                                        viewBox="0 -124 1024 1024"
+                                        width="100%"
+                                        height="100%"
+                                        style={{
+                                          display: 'block',
+                                          width: '100%',
+                                          height: '100%',
+                                        }}
                                       >
-                                        {cell.char}
-                                      </text>
-                                    )}
-                                  </svg>
+                                        <path d={strokeData.strokes.join(' ')} fill={fillColor} />
+                                      </svg>
+                                    </div>
+                                  ) : isCharStrokeLoaded ? (
+                                    <div
+                                      style={{
+                                        width: '82%',
+                                        height: '82%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        writingMode: 'horizontal-tb',
+                                        direction: 'ltr',
+                                      }}
+                                    >
+                                      <svg
+                                        viewBox="0 0 1024 1024"
+                                        width="100%"
+                                        height="100%"
+                                        style={{
+                                          display: 'block',
+                                          width: '100%',
+                                          height: '100%',
+                                        }}
+                                      >
+                                        <text
+                                          x="512"
+                                          y="540"
+                                          textAnchor="middle"
+                                          dominantBaseline="central"
+                                          fill={fillColor}
+                                          fontSize="760"
+                                          fontFamily='"KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", "Ma Shan Zheng", serif'
+                                        >
+                                          {cell.char}
+                                        </text>
+                                      </svg>
+                                    </div>
+                                  ) : null
                                 )}
                               </div>
                             );

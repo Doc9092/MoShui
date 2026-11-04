@@ -50,6 +50,20 @@
   font-variant-numeric: tabular-nums;
 }
 
+.worksheet-cell-container {
+  writing-mode: horizontal-tb !important;
+  direction: ltr !important;
+}
+
+.hanzi-svg-flip-wrapper {
+  transform: scaleY(-1) translateZ(0) !important;
+  -webkit-transform: scaleY(-1) translateZ(0) !important;
+  transform-origin: center center !important;
+  backface-visibility: hidden;
+  writing-mode: horizontal-tb !important;
+  direction: ltr !important;
+}
+
 @media print {
   @page {
     size: A4 portrait;
