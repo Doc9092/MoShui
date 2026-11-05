@@ -24,6 +24,12 @@ export const translations = {
     pwaUpdateBtn: 'Обновить',
     pwaHideAria: 'Скрыть уведомление',
     defaultSheetTitle: 'Учебная пропись',
+    aboutTitle: 'О проекте MoShui (墨水)',
+    aboutDescription:
+      'Инструмент создан для преподавателей и всех, кто изучает китайский язык, чтобы сделать подготовку прописей быстрой, эстетичной и удобной.',
+    authorChannelLabel: 'Telegram-канал автора и преподавателя китайского (Лилия):',
+    authorChannelBtn: 'Перейти в @lia_iakubova_chinese',
+    supportLabel: 'Техническая поддержка и вопросы:',
 
     // AuthModal
     authCloseAria: 'Закрыть окно авторизации',
@@ -392,6 +398,12 @@ export const translations = {
     pwaUpdateBtn: 'Update',
     pwaHideAria: 'Dismiss notification',
     defaultSheetTitle: 'Practice Sheet',
+    aboutTitle: 'About MoShui (墨水)',
+    aboutDescription:
+      'Designed for educators and Chinese language learners to make creating calligraphy worksheets fast, aesthetic, and effortless.',
+    authorChannelLabel: "Chinese Teacher & Co-creator's Telegram Channel (Lilia):",
+    authorChannelBtn: 'Visit @lia_iakubova_chinese',
+    supportLabel: 'Technical Support & Inquiries:',
 
     // AuthModal
     authCloseAria: 'Close authentication modal',

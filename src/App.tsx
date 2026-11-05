@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
+import { Send, Mail, ExternalLink } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import type {
   AppTab,
@@ -581,7 +582,61 @@ function AppContent() {
         onSuccess={handleAuthSuccess}
       />
 
-      <footer className="w-full text-center py-6 mt-auto text-sm text-gray-400/70 print:hidden">
+      {/* Раздел «О проекте и контакты» (About & Support) */}
+      <section
+        aria-label={t.aboutTitle}
+        className="w-full border-t border-stone-200/60 bg-[#FAF8F5] mt-auto print:hidden"
+      >
+        <div className="py-8 px-4 max-w-4xl mx-auto space-y-6">
+          <div className="space-y-2 text-center sm:text-left">
+            <h2 className="text-base sm:text-lg font-serif font-semibold text-[#18181B] tracking-tight">
+              {t.aboutTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed max-w-2xl">
+              {t.aboutDescription}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+            {/* 1. Telegram-канал Лилии */}
+            <div className="p-4 rounded-2xl bg-white/80 border border-[#EAE3D5]/80 flex flex-col justify-between gap-3 shadow-[0_2px_12px_rgb(24,24,27,0.02)]">
+              <span className="text-xs sm:text-sm font-medium text-[#52525B]">
+                {t.authorChannelLabel}
+              </span>
+              <div>
+                <a
+                  href="https://t.me/lia_iakubova_chinese"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium text-[#27272A] bg-[#FAF8F5] border border-[#E4DDD0] hover:border-[#A1A1AA] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-all duration-200"
+                >
+                  <Send className="w-3.5 h-3.5 text-[#C83E31] shrink-0" />
+                  <span>{t.authorChannelBtn}</span>
+                  <ExternalLink className="w-3 h-3 text-[#71717A] shrink-0" />
+                </a>
+              </div>
+            </div>
+
+            {/* 2. Почта технической поддержки */}
+            <div className="p-4 rounded-2xl bg-white/80 border border-[#EAE3D5]/80 flex flex-col justify-between gap-3 shadow-[0_2px_12px_rgb(24,24,27,0.02)]">
+              <span className="text-xs sm:text-sm font-medium text-[#52525B]">
+                {t.supportLabel}
+              </span>
+              <div>
+                <a
+                  href="mailto:dda-job@yandex.ru"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium text-[#27272A] bg-[#FAF8F5] border border-[#E4DDD0] hover:border-[#A1A1AA] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-all duration-200"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#C83E31] shrink-0" />
+                  <span>dda-job@yandex.ru</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="w-full text-center py-5 border-t border-stone-200/40 bg-[#FAF8F5] text-sm text-gray-400/70 print:hidden">
         {t.footerCopyright}
       </footer>
 
