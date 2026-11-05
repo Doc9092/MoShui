@@ -55,6 +55,14 @@ export const translations = {
     authWelcomeToast: 'Добро пожаловать',
     authCreatedToast: 'Профиль преподавателя создан',
     authGenericError: 'Произошла ошибка при входе в систему.',
+    forgotPassword: 'Забыли пароль?',
+    resetPasswordTitle: 'Восстановление пароля',
+    sendResetLink: 'Отправить ссылку',
+    backToLogin: 'Вернуться ко входу',
+    resetEmailSent: 'Ссылка для сброса отправлена на вашу почту',
+    newPasswordTitle: 'Введите новый пароль',
+    saveNewPassword: 'Сохранить пароль',
+    passwordUpdated: 'Пароль успешно обновлен!',
 
     // DictionaryView
     dictTitle: 'Интерактивный разбор слов и практика каллиграфии',
@@ -429,6 +437,14 @@ export const translations = {
     authWelcomeToast: 'Welcome back',
     authCreatedToast: 'Teacher profile created',
     authGenericError: 'An error occurred while signing in.',
+    forgotPassword: 'Forgot password?',
+    resetPasswordTitle: 'Reset Password',
+    sendResetLink: 'Send reset link',
+    backToLogin: 'Back to login',
+    resetEmailSent: 'Password reset link sent to your email',
+    newPasswordTitle: 'Enter new password',
+    saveNewPassword: 'Save new password',
+    passwordUpdated: 'Password successfully updated!',
 
     // DictionaryView
     dictTitle: 'Interactive Word & Calligraphy Practice',

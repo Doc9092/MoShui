@@ -43,7 +43,7 @@ import { DictionaryView } from './components/DictionaryView';
 import { WorksheetBuilder } from './components/WorksheetBuilder';
 import { RadicalsView } from './components/RadicalsView';
 import { TeacherDashboard } from './components/TeacherDashboard';
-import { AuthModal } from './components/AuthModal';
+import { AuthModal, type AuthModalMode } from './components/AuthModal';
 import {
   downloadWorksheetAsPDF,
   PRINTABLE_SHEET_ELEMENT_ID,
@@ -105,6 +105,7 @@ function AppContent() {
     getCachedTeacherProfile()
   );
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('login');
 
   // Данные Личного кабинета преподавателя из облака Supabase (таблицы public.folders и public.worksheets)
   const [teacherFolders, setTeacherFolders] = useState<TeacherFolder[]>([]);
@@ -247,12 +248,25 @@ function AppContent() {
 
     void initAuthSession();
 
+    // Проверяем URL hash на случай перехода по ссылке восстановления пароля
+    if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+      setAuthModalMode('update_password');
+      setIsAuthModalOpen(true);
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
 
-      if (event === 'SIGNED_OUT') {
+      if (event === 'PASSWORD_RECOVERY') {
+        if (session?.user) {
+          const profile = mapSupabaseUserToProfile(session.user);
+          setCurrentTeacher(profile);
+        }
+        setAuthModalMode('update_password');
+        setIsAuthModalOpen(true);
+      } else if (event === 'SIGNED_OUT') {
         resetUserWorkspaceState();
       } else if (session?.user) {
         const profile = mapSupabaseUserToProfile(session.user);
@@ -578,7 +592,11 @@ function AppContent() {
 
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setAuthModalMode('login');
+        }}
         onSuccess={handleAuthSuccess}
       />
 

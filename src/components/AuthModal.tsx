@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { X, LogIn, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import {
+  X,
+  LogIn,
+  UserPlus,
+  AlertCircle,
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  ArrowLeft,
+  KeyRound,
+  Check,
+} from 'lucide-react';
 import type { TeacherProfile } from '../types/hanzi';
-import { signIn, signUp } from '../services/authStorageService';
+import {
+  signIn,
+  signUp,
+  mapSupabaseUserToProfile,
+  translateSupabaseError,
+} from '../services/authStorageService';
+import { supabase } from '../services/supabaseClient';
 import { MOSHUI_LOGO_SRC } from './Navbar';
 import { useLanguage } from '../context/LanguageContext';
 
+export type AuthModalMode = 'login' | 'register' | 'forgot_password' | 'update_password';
+
 interface AuthModalProps {
   isOpen: boolean;
-  initialMode?: 'login' | 'register';
+  initialMode?: AuthModalMode;
   onClose: () => void;
   onSuccess: (teacher: TeacherProfile) => void;
 }
@@ -20,14 +40,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess,
 }) => {
   const { t } = useLanguage();
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const [mode, setMode] = useState<AuthModalMode>(initialMode);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [schoolOrTitle, setSchoolOrTitle] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setError(null);
+    }
+  }, [isOpen, initialMode]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setMode('update_password');
+        setError(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -43,7 +86,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         toast.success(`${t.authWelcomeToast}, ${profile.name}!`);
         onSuccess(profile);
         onClose();
-      } else {
+      } else if (mode === 'register') {
         const { profile } = await signUp({
           name,
           email,
@@ -52,6 +95,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         });
         toast.success(`${t.authCreatedToast}: «${profile.name}»!`);
         onSuccess(profile);
+        onClose();
+      } else if (mode === 'forgot_password') {
+        const cleanEmail = email.trim().toLowerCase();
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: window.location.origin,
+        });
+        if (resetError) {
+          throw new Error(translateSupabaseError(resetError));
+        }
+        toast.success(t.resetEmailSent);
+        setMode('login');
+      } else if (mode === 'update_password') {
+        const { data, error: updateError } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
+        if (updateError) {
+          throw new Error(translateSupabaseError(updateError));
+        }
+        toast.success(t.passwordUpdated);
+        if (data.user) {
+          const updatedProfile = mapSupabaseUserToProfile(data.user);
+          onSuccess(updatedProfile);
+        } else {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData.session?.user) {
+            onSuccess(mapSupabaseUserToProfile(sessionData.session.user));
+          }
+        }
+        setNewPassword('');
+        setMode('login');
         onClose();
       }
     } catch (err) {
@@ -95,55 +168,65 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             id="auth-modal-title"
             className="mt-3 font-display text-xl sm:text-2xl font-bold text-[#18181B]"
           >
-            MoShui (<span className="font-chinese">墨水</span>) — {t.authTitle}
+            {mode === 'forgot_password' ? (
+              t.resetPasswordTitle
+            ) : mode === 'update_password' ? (
+              t.newPasswordTitle
+            ) : (
+              <>
+                MoShui (<span className="font-chinese">墨水</span>) — {t.authTitle}
+              </>
+            )}
           </h2>
         </div>
 
-        {/* Переключатель вкладок: Вход / Регистрация */}
-        <div className="px-4 sm:px-6 pt-4 sm:pt-5">
-          <div
-            role="tablist"
-            aria-label={t.authModeAria}
-            className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
-          >
-            <button
-              role="tab"
-              type="button"
-              disabled={isSubmitting}
-              aria-selected={mode === 'login'}
-              onClick={() => {
-                setMode('login');
-                setError(null);
-              }}
-              className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
-                mode === 'login'
-                  ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
-                  : 'text-[#52525B] hover:text-[#18181B]'
-              }`}
+        {/* Переключатель вкладок: Вход / Регистрация (только для режимов login и register) */}
+        {(mode === 'login' || mode === 'register') && (
+          <div className="px-4 sm:px-6 pt-4 sm:pt-5">
+            <div
+              role="tablist"
+              aria-label={t.authModeAria}
+              className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
             >
-              <span className="hidden sm:inline">{t.authTabLoginFull}</span>
-              <span className="sm:hidden">{t.authTabLoginShort}</span>
-            </button>
+              <button
+                role="tab"
+                type="button"
+                disabled={isSubmitting}
+                aria-selected={mode === 'login'}
+                onClick={() => {
+                  setMode('login');
+                  setError(null);
+                }}
+                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
+                  mode === 'login'
+                    ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
+                    : 'text-[#52525B] hover:text-[#18181B]'
+                }`}
+              >
+                <span className="hidden sm:inline">{t.authTabLoginFull}</span>
+                <span className="sm:hidden">{t.authTabLoginShort}</span>
+              </button>
 
-            <button
-              role="tab"
-              type="button"
-              disabled={isSubmitting}
-              aria-selected={mode === 'register'}
-              onClick={() => {
-                setMode('register');
-                setError(null);
-              }}
-              className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
-                mode === 'register'
-                  ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
-                  : 'text-[#52525B] hover:text-[#18181B]'
-              }`}
-            >
-              <span>{t.authTabRegister}</span>
-            </button>
+              <button
+                role="tab"
+                type="button"
+                disabled={isSubmitting}
+                aria-selected={mode === 'register'}
+                onClick={() => {
+                  setMode('register');
+                  setError(null);
+                }}
+                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
+                  mode === 'register'
+                    ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
+                    : 'text-[#52525B] hover:text-[#18181B]'
+                }`}
+              >
+                <span>{t.authTabRegister}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Форма */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -179,58 +262,114 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          <div>
-            <label
-              htmlFor="teacher-email-input"
-              className="block text-sm font-semibold text-[#18181B] mb-1.5"
-            >
-              {t.authLabelEmail}
-            </label>
-            <input
-              id="teacher-email-input"
-              type="email"
-              required
-              disabled={isSubmitting}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t.authPlaceholderEmail}
-              className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="teacher-password-input"
-              className="block text-sm font-semibold text-[#18181B] mb-1.5"
-            >
-              {t.authLabelPassword}
-            </label>
-            <div className="relative">
-              <input
-                id="teacher-password-input"
-                type={showPassword ? 'text' : 'password'}
-                required
-                minLength={6}
-                disabled={isSubmitting}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t.authPlaceholderPassword}
-                className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+          {(mode === 'login' || mode === 'register' || mode === 'forgot_password') && (
+            <div>
+              <label
+                htmlFor="teacher-email-input"
+                className="block text-sm font-semibold text-[#18181B] mb-1.5"
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
+                {t.authLabelEmail}
+              </label>
+              <input
+                id="teacher-email-input"
+                type="email"
+                required
+                disabled={isSubmitting}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t.authPlaceholderEmail}
+                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+              />
             </div>
-          </div>
+          )}
+
+          {(mode === 'login' || mode === 'register') && (
+            <div>
+              <label
+                htmlFor="teacher-password-input"
+                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+              >
+                {t.authLabelPassword}
+              </label>
+              <div className="relative">
+                <input
+                  id="teacher-password-input"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  disabled={isSubmitting}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.authPlaceholderPassword}
+                  className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+
+              {mode === 'login' && (
+                <div className="mt-2 flex justify-end">
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      setMode('forgot_password');
+                      setError(null);
+                    }}
+                    className="text-xs sm:text-sm font-medium text-[#71717A] hover:text-[#C83E31] transition-colors cursor-pointer"
+                  >
+                    {t.forgotPassword}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {mode === 'update_password' && (
+            <div>
+              <label
+                htmlFor="teacher-new-password-input"
+                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+              >
+                {t.newPasswordTitle}
+              </label>
+              <div className="relative">
+                <input
+                  id="teacher-new-password-input"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  disabled={isSubmitting}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={t.authPlaceholderPassword}
+                  className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
 
           {mode === 'register' && (
             <div>
@@ -252,7 +391,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2.5">
             <button
               type="submit"
               disabled={isSubmitting}
@@ -263,7 +402,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>
-                    {mode === 'login' ? t.authLoadingLogin : t.authLoadingRegister}
+                    {mode === 'login'
+                      ? t.authLoadingLogin
+                      : mode === 'register'
+                      ? t.authLoadingRegister
+                      : mode === 'forgot_password'
+                      ? t.sendResetLink
+                      : t.saveNewPassword}
                   </span>
                 </>
               ) : mode === 'login' ? (
@@ -271,13 +416,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <LogIn className="w-5 h-5 text-[#F5D0C8]" />
                   <span>{t.authSubmitLogin}</span>
                 </>
-              ) : (
+              ) : mode === 'register' ? (
                 <>
                   <UserPlus className="w-5 h-5 text-[#F5D0C8]" />
                   <span>{t.authSubmitRegister}</span>
                 </>
+              ) : mode === 'forgot_password' ? (
+                <>
+                  <Mail className="w-5 h-5 text-[#F5D0C8]" />
+                  <span>{t.sendResetLink}</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="w-5 h-5 text-[#F5D0C8]" />
+                  <span>{t.saveNewPassword}</span>
+                </>
               )}
             </button>
+
+            {mode === 'forgot_password' && (
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setMode('login');
+                  setError(null);
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-semibold text-[#52525B] hover:text-[#18181B] bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE3D5] rounded-xl transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>{t.backToLogin}</span>
+              </button>
+            )}
           </div>
         </form>
       </div>
