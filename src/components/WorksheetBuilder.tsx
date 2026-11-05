@@ -48,7 +48,6 @@ import {
   PRINTABLE_SHEET_ELEMENT_ID,
 } from '../services/pdfExportService';
 import { PrintableSheet } from './PrintableSheet';
-import { MOSHUI_LOGO_SRC } from './Navbar';
 
 interface WorksheetBuilderProps {
   worksheetList: WordItem[];
@@ -1158,12 +1157,6 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] print:hidden"
             >
               <div className="max-w-lg mx-auto flex flex-col items-center">
-                <img
-                  src={MOSHUI_LOGO_SRC}
-                  alt="MoShui 墨水"
-                  data-testid="worksheet-empty-logo"
-                  className="h-16 w-16 object-contain rounded-full mix-blend-multiply opacity-85 mb-3"
-                />
                 <h2 className="font-display text-xl font-bold text-[#18181B]">
                   Список слов для прописи пока пуст
                 </h2>
