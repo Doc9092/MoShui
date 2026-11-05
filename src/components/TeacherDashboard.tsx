@@ -1174,9 +1174,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   <div className="flex flex-wrap gap-2">
                     {(
                       [
-                        { id: 'mizi', label: 'Мицзыгэ 米字格' },
-                        { id: 'tianzi', label: 'Тяньцзыгэ 田字格' },
-                        { id: 'kouzi', label: 'Квадрат 口字格' },
+                        { id: 'mizi', label: 'Mizige 米字格' },
+                        { id: 'tianzi', label: 'Tianzige 田字格' },
+                        { id: 'kouzi', label: 'Kouzige 口字格' },
                       ] as const
                     ).map((g) => (
                       <button
@@ -1185,13 +1185,34 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         onClick={() =>
                           setLocalDefaultConfig({ ...localDefaultConfig, gridType: g.id })
                         }
-                        className={`px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors cursor-pointer ${
+                        className={`relative group px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors cursor-pointer ${
                           localDefaultConfig.gridType === g.id
                             ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B]'
                             : 'bg-white text-[#52525B] border-[#EAE3D5]'
                         }`}
                       >
-                        {g.label}
+                        <span>{g.label}</span>
+
+                        {/* Всплывающая CSS-миниатюра каллиграфической сетки */}
+                        <span
+                          aria-hidden="true"
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 h-14 p-1.5 bg-[#FAF8F5] shadow-md border border-gray-200/60 rounded-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none z-50 print:hidden flex items-center justify-center"
+                        >
+                          <span className="relative block w-full h-full bg-white border border-red-300/60 overflow-hidden">
+                            {(g.id === 'tianzi' || g.id === 'mizi') && (
+                              <>
+                                <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-red-300/60" />
+                                <span className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-red-300/60" />
+                              </>
+                            )}
+                            {g.id === 'mizi' && (
+                              <>
+                                <span className="absolute top-1/2 left-1/2 w-[150%] -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-dashed border-red-300/50" />
+                                <span className="absolute top-1/2 left-1/2 w-[150%] -translate-x-1/2 -translate-y-1/2 -rotate-45 border-t border-dashed border-red-300/50" />
+                              </>
+                            )}
+                          </span>
+                        </span>
                       </button>
                     ))}
                   </div>

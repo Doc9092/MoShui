@@ -946,13 +946,34 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     key={g.id}
                     type="button"
                     onClick={() => onUpdateConfig({ ...config, gridType: g.id })}
-                    className={`flex-1 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer font-hanzi-sans ${
+                    className={`relative group flex-1 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer font-hanzi-sans ${
                       config.gridType === g.id
                         ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
                         : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
                     }`}
                   >
-                    {g.label}
+                    <span>{g.label}</span>
+
+                    {/* Всплывающая CSS-миниатюра каллиграфической сетки */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 h-14 p-1.5 bg-[#FAF8F5] shadow-md border border-gray-200/60 rounded-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none z-50 print:hidden flex items-center justify-center"
+                    >
+                      <span className="relative block w-full h-full bg-white border border-red-300/60 overflow-hidden">
+                        {(g.id === 'tianzi' || g.id === 'mizi') && (
+                          <>
+                            <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-red-300/60" />
+                            <span className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-red-300/60" />
+                          </>
+                        )}
+                        {g.id === 'mizi' && (
+                          <>
+                            <span className="absolute top-1/2 left-1/2 w-[150%] -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-dashed border-red-300/50" />
+                            <span className="absolute top-1/2 left-1/2 w-[150%] -translate-x-1/2 -translate-y-1/2 -rotate-45 border-t border-dashed border-red-300/50" />
+                          </>
+                        )}
+                      </span>
+                    </span>
                   </button>
                 ))}
               </div>
