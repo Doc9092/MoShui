@@ -426,7 +426,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       }
     } catch (err) {
       setStatusNote(
-        err instanceof Error ? err.message : 'Ошибка обновления прописи в облаке Supabase.'
+        err instanceof Error ? err.message : 'Ошибка обновления прописи.'
       );
     } finally {
       setIsSavingToCloud(false);
@@ -483,7 +483,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       }
     } catch (err) {
       setSaveError(
-        err instanceof Error ? err.message : 'Не удалось сохранить пропись в облако Supabase.'
+        err instanceof Error ? err.message : 'Не удалось сохранить пропись.'
       );
     } finally {
       setIsSavingToCloud(false);

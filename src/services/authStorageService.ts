@@ -132,25 +132,25 @@ export function translateSupabaseError(error: unknown): string {
     return 'Неверный Email или пароль. Проверьте введенные данные или зарегистрируйтесь.';
   }
   if (lower.includes('email not confirmed')) {
-    return 'Ваш Email еще не подтвержден. Перейдите по ссылке в письме от Supabase или отключите опцию «Confirm email» в панели Supabase (Authentication → Providers → Email).';
+    return 'Ваш Email еще не подтвержден. Перейдите по ссылке из письма для подтверждения аккаунта.';
   }
   if (lower.includes('user already registered') || lower.includes('already been registered')) {
     return 'Преподаватель с таким Email уже зарегистрирован. Переключитесь на вкладку «Вход в систему».';
   }
   if (lower.includes('password should be at least 6 characters')) {
-    return 'Пароль в Supabase должен содержать минимум 6 символов.';
+    return 'Пароль должен содержать минимум 6 символов.';
   }
   if (lower.includes('rate limit') || lower.includes('too many requests')) {
     return 'Слишком много запросов к серверу авторизации. Пожалуйста, подождите минуту и попробуйте снова.';
   }
   if (lower.includes('violates row-level security policy')) {
-    return 'Для сохранения в облако Supabase требуется активная подтвержденная сессия (подтвердите Email или отключите Confirm Email в настройках проекта Supabase).';
+    return 'Для сохранения прописей требуется активная подтвержденная сессия. Войдите в аккаунт повторно.';
   }
   if (lower.includes('failed to fetch') || lower.includes('network')) {
-    return 'Не удалось соединиться с облаком Supabase. Проверьте подключение к интернету.';
+    return 'Не удалось соединиться с сервером. Проверьте подключение к интернету.';
   }
 
-  return rawMessage || 'Произошла ошибка при обращении к облаку Supabase.';
+  return rawMessage || 'Произошла ошибка при обращении к серверу.';
 }
 
 /**
@@ -255,7 +255,7 @@ export async function signUp(params: {
   }
 
   if (!data.user) {
-    throw new Error('Не удалось создать профиль преподавателя в Supabase.');
+    throw new Error('Не удалось создать профиль преподавателя.');
   }
 
   const profile = mapSupabaseUserToProfile(data.user);

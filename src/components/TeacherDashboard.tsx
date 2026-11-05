@@ -247,7 +247,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           Личный кабинет преподавателя MoShui (墨水)
         </h1>
         <p className="mt-3 text-sm sm:text-lg text-[#52525B] max-w-2xl mx-auto leading-relaxed">
-          Войдите или создайте бесплатный аккаунт преподавателя в облаке Supabase, чтобы сохранять
+          Войдите или создайте бесплатный аккаунт преподавателя, чтобы сохранять
           готовые прописи по учебным группам (HSK 1, Детская группа, Индивидуальные уроки),
           автоматически подписывать листы А4 своим именем и синхронизировать уроки между
           устройствами.
@@ -314,7 +314,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       showFeedback(`Папка «${trimmed}» синхронизирована с облаком.`);
     } catch (err) {
       setActionError(
-        err instanceof Error ? err.message : 'Ошибка при создании папки в облаке Supabase.'
+        err instanceof Error ? err.message : 'Ошибка при создании папки.'
       );
     } finally {
       setIsMutating(false);
@@ -432,7 +432,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               type="button"
               onClick={() => void onRefreshFromCloud()}
               disabled={isCloudLoading || isMutating}
-              title="Обновить прописи из облака Supabase"
+              title="Обновить сохраненные прописи"
               className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer min-h-[44px]"
             >
               <RefreshCw className={`w-4 h-4 ${isCloudLoading ? 'animate-spin' : ''}`} />
@@ -596,7 +596,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <div className="bg-white border border-[#EAE3D5] rounded-2xl p-12 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-[#C83E31]" />
               <p className="text-base font-medium text-[#52525B]">
-                Загружаем ваши сохраненные прописи и папки из облака Supabase...
+                Загружаем ваши сохраненные прописи и папки...
               </p>
             </div>
           ) : filteredWorksheets.length === 0 ? (

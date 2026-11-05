@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, AlertCircle, Loader2, CloudCheck } from 'lucide-react';
+import { X, LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import type { TeacherProfile } from '../types/hanzi';
 import { signIn, signUp } from '../services/authStorageService';
 import { MOSHUI_LOGO_SRC } from './Navbar';
@@ -50,7 +50,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Произошла ошибка при обращении к облаку Supabase.'
+        err instanceof Error ? err.message : 'Произошла ошибка при входе в систему.'
       );
     } finally {
       setIsSubmitting(false);
@@ -91,10 +91,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           >
             MoShui (<span className="font-chinese">墨水</span>) — Кабинет преподавателя
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-[#52525B] inline-flex items-center justify-center gap-1.5">
-            <CloudCheck className="w-4 h-4 text-[#15803D] shrink-0" />
-            <span>Облачная синхронизация прописей и папок (Supabase)</span>
-          </p>
         </div>
 
         {/* Переключатель вкладок: Вход / Регистрация */}
@@ -247,13 +243,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>
-                    {mode === 'login' ? 'Вход в Supabase...' : 'Регистрация...'}
+                    {mode === 'login' ? 'Вход...' : 'Регистрация...'}
                   </span>
                 </>
               ) : mode === 'login' ? (
                 <>
                   <LogIn className="w-5 h-5 text-[#F5D0C8]" />
-                  <span>Войти в кабинет</span>
+                  <span>Войти</span>
                 </>
               ) : (
                 <>
