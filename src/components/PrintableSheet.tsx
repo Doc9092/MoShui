@@ -461,12 +461,15 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
             normalized.characters.find((c) => c.char === ch) ||
             normalized.characters[idx];
           const charPinyin = charObj?.pinyin || pinyin(ch, { toneType: 'symbol' });
+          const fallbackNormalizedMeaning = normalized.characters[idx]?.meaning;
           const rawCharMeaning =
             charObj?.meaning && !isPlaceholderTranslation(charObj.meaning)
               ? charObj.meaning.trim()
               : KNOWN_CHARACTERS[ch]?.meaning ||
                 COMMON_CHAR_MEANINGS[ch] ||
-                normalized.characters[idx]?.meaning ||
+                (fallbackNormalizedMeaning && !isPlaceholderTranslation(fallbackNormalizedMeaning)
+                  ? fallbackNormalizedMeaning.trim()
+                  : '') ||
                 '';
 
           blocks.push({

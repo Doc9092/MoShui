@@ -20,7 +20,6 @@ import {
 import { analyzeChineseInput } from '../services/geminiService';
 import { speakChinese } from '../services/audioService';
 import { HanziCanvas } from './HanziCanvas';
-import { MOSHUI_LOGO_SRC } from './Navbar';
 
 interface DictionaryViewProps {
   currentWord: WordItem | null;
@@ -148,10 +147,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         >
           <div className="max-w-lg mx-auto flex flex-col items-center">
             <img
-              src={MOSHUI_LOGO_SRC}
+              src="/assets/aistudio/panda_logo_9b02a05f.png"
               alt="MoShui 墨水"
               data-testid="dictionary-empty-logo"
-              className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-full mix-blend-multiply opacity-85 mb-4 sm:mb-5"
+              className="h-[97px] w-[97px] sm:h-[116px] sm:w-[116px] object-contain rounded-full mix-blend-multiply opacity-85 mb-4 sm:mb-5"
             />
             <h2 className="font-display text-xl sm:text-2xl font-bold text-[#18181B]">
               Готово к разбору иероглифов и слов

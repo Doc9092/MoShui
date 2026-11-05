@@ -507,7 +507,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="max-w-3xl">
               <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
-                Конструктор PDF-прописей MoShui формата А4
+                Конструктор PDF-прописей
               </h1>
               <p className="mt-2 text-base sm:text-lg text-[#52525B] leading-relaxed">
                 Поддержка как одиночных иероглифов, так и многосложных слов целиком в одной строке с

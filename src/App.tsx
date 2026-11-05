@@ -67,7 +67,13 @@ export default function App() {
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({
+    onRegisteredSW(_swUrl, r) {
+      if (r) {
+        void r.update();
+      }
+    },
+  });
 
   useEffect(() => {
     if (import.meta.env.DEV && 'serviceWorker' in navigator) {

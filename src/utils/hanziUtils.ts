@@ -12,20 +12,25 @@ export function extractChineseChars(input: string): string[] {
 }
 
 /**
- * Parses a comma, semicolon, or space-separated batch string into distinct Chinese words.
+ * Parses a comma, semicolon, space, or newline-separated batch string into distinct Chinese words.
+ * Uses the `+` quantifier (`/[\u4e00-\u9fff]+/g`) so multi-character words are preserved as whole words
+ * and never split into individual characters.
  * Example: "你好, 老师, 水, 朋友" -> ["你好", "老师", "水", "朋友"]
  */
 export function parseBatchChineseInput(raw: string): string[] {
   if (!raw || !raw.trim()) return [];
-  const tokens = raw.split(/[,，;；\s\n]+/);
+  const wordMatches = raw.match(
+    /[\u2e80-\u2eff\u2f00-\u2fdf\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g
+  );
+  if (!wordMatches) return [];
   const result: string[] = [];
   const seen = new Set<string>();
 
-  for (const token of tokens) {
-    const chars = extractChineseChars(token).join('');
-    if (chars && !seen.has(chars)) {
-      seen.add(chars);
-      result.push(chars);
+  for (const word of wordMatches) {
+    const clean = word.trim();
+    if (clean && !seen.has(clean)) {
+      seen.add(clean);
+      result.push(clean);
     }
   }
   return result;
@@ -810,7 +815,12 @@ export function isPlaceholderTranslation(text?: string | null): boolean {
   if (!text) return true;
   const trimmed = text.trim();
   if (!trimmed) return true;
-  return /^Слово «.+»/i.test(trimmed) || /^Иероглиф «.+»/i.test(trimmed);
+  return (
+    /^Слово «.+»/i.test(trimmed) ||
+    /^Иероглиф «.+»/i.test(trimmed) ||
+    /^знак «.+»/i.test(trimmed) ||
+    trimmed.includes(' + ')
+  );
 }
 
 /**
@@ -1259,15 +1269,6 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
     }
   );
 
-  // Если перевод всего слова еще не задан, проверяем словари или собираем осмысленный перевод из известных знаков
-  const knownCharMeanings = characters
-    .map((c) => {
-      if (KNOWN_CHARACTERS[c.char]) return KNOWN_CHARACTERS[c.char].meaning.split(',')[0].trim();
-      if (COMMON_CHAR_MEANINGS[c.char]) return COMMON_CHAR_MEANINGS[c.char].split(',')[0].trim();
-      return '';
-    })
-    .filter(Boolean);
-
   const translation =
     cleanRawTranslation ||
     preset?.translation ||
@@ -1277,8 +1278,6 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
       ? KNOWN_CHARACTERS[cleanWord].meaning
       : cleanWord.length === 1 && COMMON_CHAR_MEANINGS[cleanWord]
       ? COMMON_CHAR_MEANINGS[cleanWord]
-      : knownCharMeanings.length === chars.length && knownCharMeanings.length > 0
-      ? knownCharMeanings.join(' + ')
       : `Слово «${cleanWord}» (${wordPinyin})`);
 
   const examples =

@@ -188,8 +188,8 @@ test('normalizeWordItem resolves translations for common multi-character words a
 
 import { translateWordsBatch } from '../services/geminiService';
 
-test('translateWordsBatch returns full word translations, pinyin, and charMeanings for batch words', async () => {
-  const batch = await translateWordsBatch(['老师', '图书馆']);
+test('translateWordsBatch returns full word translations, pinyin, and charMeanings for batch words including multi-syllable words', async () => {
+  const batch = await translateWordsBatch(['老师', '图书馆', '留学生']);
   assert.ok(batch['老师'], 'Should include 老师');
   assert.equal(batch['老师'].translation, 'учитель, преподаватель');
   assert.ok(batch['老师'].charMeanings['老'].includes('старый'));
@@ -198,6 +198,10 @@ test('translateWordsBatch returns full word translations, pinyin, and charMeanin
   assert.ok(batch['图书馆'], 'Should include 图书馆');
   assert.equal(batch['图书馆'].translation, 'библиотека');
   assert.ok(batch['图书馆'].charMeanings['书'].includes('книга'));
+
+  assert.ok(batch['留学生'], 'Should include multi-syllable word 留学生');
+  assert.equal(isPlaceholderTranslation(batch['留学生'].translation), false);
+  assert.equal(isPlaceholderTranslation(batch['留学生'].charMeanings['留']), false);
 });
 
 import { isLikelyHanziCharacter, loadHanziStrokes } from './strokeDataLoader';
