@@ -12,7 +12,6 @@ import {
   ListPlus,
   Layers,
   Grid,
-  Download,
   FileText,
   BookOpen,
   BookmarkCheck,
@@ -389,17 +388,6 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     }
   };
 
-  const handleExportJson = () => {
-    const payload = JSON.stringify({ config, words: worksheetList }, null, 2);
-    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `moshui-worksheet-${ new Date().toISOString().slice(0, 10) }.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleOpenSaveModal = (mode: 'new' | 'copy' | 'update') => {
     if (!currentTeacher) {
       if (onOpenAuthModal) onOpenAuthModal();
@@ -543,16 +531,6 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <BookmarkCheck className="w-5 h-5 text-[#F5D0C8]" />
               )}
               <span>Сохранить в Личный кабинет</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleExportJson}
-              disabled={worksheetList.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-3 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <Download className="w-5 h-5 text-[#52525B]" />
-              <span>Экспорт JSON</span>
             </button>
 
             <button
