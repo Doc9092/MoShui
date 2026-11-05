@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { X, LogIn, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import type { TeacherProfile } from '../types/hanzi';
 import { signIn, signUp } from '../services/authStorageService';
 import { MOSHUI_LOGO_SRC } from './Navbar';
@@ -21,6 +21,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
   const [schoolOrTitle, setSchoolOrTitle] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,17 +200,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               Пароль *
             </label>
-            <input
-              id="teacher-password-input"
-              type="password"
-              required
-              minLength={6}
-              disabled={isSubmitting}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Минимум 6 символов"
-              className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
-            />
+            <div className="relative">
+              <input
+                id="teacher-password-input"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                disabled={isSubmitting}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Минимум 6 символов"
+                className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           {mode === 'register' && (
