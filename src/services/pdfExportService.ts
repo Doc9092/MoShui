@@ -309,7 +309,7 @@ export async function downloadWorksheetAsPDF(
  */
 export async function printWorksheetInNewWindow(
   elementId: string = PRINTABLE_SHEET_ELEMENT_ID,
-  title: string = 'Учебная пропись MoShui (墨水)'
+  title: string = 'Учебная пропись'
 ): Promise<void> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -345,7 +345,7 @@ export async function printWorksheetInNewWindow(
     );
   }
 
-  const safeTitle = (title || 'Учебная пропись MoShui (墨水)')
+  const safeTitle = (title || 'Учебная пропись')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 

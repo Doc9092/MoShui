@@ -10,6 +10,8 @@ export interface CharDetail {
   pinyin: string;
   tone: number;
   meaning: string;
+  meaning_ru?: string;
+  meaning_en?: string;
   radical: string;
   strokeCount: number;
   graphemes: Grapheme[];
@@ -27,6 +29,9 @@ export interface WordItem {
   word: string;
   pinyin: string;
   translation: string;
+  translation_ru?: string;
+  translation_en?: string;
+  isManualTranslation?: boolean;
   examples: WordExample[];
   characters: CharDetail[];
   createdAt: number;
@@ -50,6 +55,7 @@ export interface RadicalItem {
   variant?: string;
   pinyin: string;
   meaning: string;
+  meaning_en?: string;
   strokes: number;
   examples: string[];
 }

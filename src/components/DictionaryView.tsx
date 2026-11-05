@@ -20,6 +20,7 @@ import {
 import { analyzeChineseInput } from '../services/geminiService';
 import { speakChinese } from '../services/audioService';
 import { HanziCanvas } from './HanziCanvas';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DictionaryViewProps {
   currentWord: WordItem | null;
@@ -36,15 +37,43 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   onAddToWorksheet,
   onNavigateToWorksheet,
 }) => {
+  const { lang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCharIndex, setSelectedCharIndex] = useState<number>(0);
+  const currentWordRef = React.useRef<WordItem | null>(currentWord);
+  currentWordRef.current = currentWord;
+  const prevLangRef = React.useRef<'ru' | 'en'>(lang);
 
   // Reset selected character tab when the analyzed word changes
   useEffect(() => {
     setSelectedCharIndex(0);
   }, [currentWord?.word]);
+
+  // Автоматическое обновление открытого слова в словаре при переключении языка RU / EN
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+    prevLangRef.current = lang;
+    const activeWord = currentWordRef.current?.word;
+    if (!activeWord) return;
+
+    let isCancelled = false;
+    void (async () => {
+      try {
+        const reanalyzed = await analyzeChineseInput(activeWord, lang);
+        if (!isCancelled) {
+          onWordChange(reanalyzed);
+        }
+      } catch {
+        // Сохраняем текущее состояние при сетевой ошибке
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [lang, onWordChange]);
 
   const isAlreadyInWorksheet = currentWord
     ? worksheetList.some((item) => item.word === currentWord.word)
@@ -53,7 +82,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   const handleAnalyze = async (rawText: string) => {
     const trimmed = rawText.trim();
     if (!trimmed) {
-      const msg = 'Введите китайское слово или иероглиф для разбора.';
+      const msg = t.dictEmptyInputError;
       setErrorMessage(msg);
       toast.error(msg);
       return;
@@ -62,11 +91,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
     setErrorMessage(null);
     setIsLoading(true);
     try {
-      const analyzed = await analyzeChineseInput(trimmed);
+      const analyzed = await analyzeChineseInput(trimmed, lang);
       onWordChange(analyzed);
       setSearchQuery(analyzed.word);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось разобрать введенное слово.';
+      const msg = err instanceof Error ? err.message : t.dictAnalyzeError;
       setErrorMessage(msg);
       toast.error(msg);
     } finally {
@@ -89,17 +118,16 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
       <section className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-6 sm:p-8">
         <div className="max-w-4xl">
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
-            Интерактивный разбор слов и практика каллиграфии
+            {t.dictTitle}
           </h1>
           <p className="mt-2.5 text-base sm:text-lg text-[#52525B] leading-relaxed">
-            Введите одиночный иероглиф или многосложное слово (от 1 до 4+ знаков), чтобы получить
-            структурную декомпозицию по ключам и графемам, порядок черт и тренажер письма.
+            {t.dictSubtitle}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <label htmlFor="chinese-search-input" className="sr-only">
-                Введите иероглиф или слово на китайском
+                {t.dictSearchLabel}
               </label>
               <Search className="w-5 h-5 text-[#71717A] absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -107,7 +135,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Введите иероглиф или слово на китайском..."
+                placeholder={t.dictSearchPlaceholder}
                 className="w-full h-12 sm:h-14 pl-11 sm:pl-13 pr-4 sm:pr-6 text-base sm:text-xl bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] focus:ring-2 focus:ring-[#C83E31]/15 transition-all font-hanzi-sans"
               />
             </div>
@@ -119,12 +147,12 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin text-[#C83E31]" />
-                  <span>Анализ ИИ...</span>
+                  <span>{t.dictAnalyzingBtn}</span>
                 </>
               ) : (
                 <>
                   <Search className="w-5 h-5" />
-                  <span>Разобрать слово</span>
+                  <span>{t.dictAnalyzeBtn}</span>
                 </>
               )}
             </button>
@@ -138,10 +166,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         </div>
       </section>
 
-      {/* Чистое пустое состояние (Empty State) с логотипом MoShui */}
+      {/* Чистое пустое состояние (Empty State) с иллюстрацией панды */}
       {!currentWord ? (
         <section
-          aria-label="Пустое состояние словаря"
+          aria-label={t.dictEmptyAria}
           data-testid="dictionary-empty-state"
           className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-8 sm:p-16 text-center"
         >
@@ -153,18 +181,17 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               className="h-[97px] w-[97px] sm:h-[116px] sm:w-[116px] object-contain rounded-full mix-blend-multiply opacity-85 mb-4 sm:mb-5"
             />
             <h2 className="font-display text-xl sm:text-2xl font-bold text-[#18181B]">
-              Готово к разбору иероглифов и слов
+              {t.dictEmptyTitle}
             </h2>
             <p className="mt-2 text-sm sm:text-base text-[#52525B] leading-relaxed">
-              Введите любой иероглиф или многосложное слово в строку поиска выше, чтобы получить
-              разбор графем, прослушать произношение и потренировать порядок черт.
+              {t.dictEmptySubtitle}
             </p>
           </div>
         </section>
       ) : (
         /* Карточка результата: Шапка всего слова */
         <section
-          aria-label={`Разбор слова ${currentWord.word}`}
+          aria-label={`${t.dictWordSectionAria} ${currentWord.word}`}
           className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 overflow-hidden"
         >
           <div className="p-5 sm:p-8 border-b border-[#EAE3D5] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
@@ -190,11 +217,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   <button
                     type="button"
                     onClick={() => speakChinese(currentWord.word)}
-                    aria-label={`Озвучить слово ${currentWord.word}`}
+                    aria-label={`${t.dictSpeakWordAria} ${currentWord.word}`}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] text-xs sm:text-sm font-semibold text-[#C83E31] bg-[#FDF2F0] border border-[#F5D0C8] hover:bg-[#F5D0C8]/50 rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#C83E31]" />
-                    <span>Слушать</span>
+                    <span>{t.dictListenBtn}</span>
                   </button>
                 </div>
 
@@ -207,14 +234,18 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
 
                 {/* Метаданные слова */}
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[#71717A] font-mono-tabular">
-                  <span>Знаков: {currentWord.characters.length}</span>
+                  <span>
+                    {t.dictMetaChars}: {currentWord.characters.length}
+                  </span>
                   <span aria-hidden="true">·</span>
                   <span>
-                    Черт:{' '}
+                    {t.dictMetaStrokes}:{' '}
                     {currentWord.characters.reduce((acc, ch) => acc + (ch.strokeCount || 0), 0)}
                   </span>
                   <span aria-hidden="true">·</span>
-                  <span>Примеров: {currentWord.examples.length}</span>
+                  <span>
+                    {t.dictMetaExamples}: {currentWord.examples.length}
+                  </span>
                 </div>
               </div>
             </div>
@@ -225,7 +256,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 type="button"
                 data-testid="add-to-worksheet-button"
                 onClick={() => {
-                  const normalized = normalizeWordItem(currentWord, currentWord.word);
+                  const normalized = normalizeWordItem(currentWord, currentWord.word, lang);
                   const fullWordItem: WordItem = {
                     ...normalized,
                     id: currentWord.id || normalized.id,
@@ -258,12 +289,12 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 {isAlreadyInWorksheet ? (
                   <>
                     <Check className="w-5 h-5 text-[#15803D]" />
-                    <span>Добавлено в пропись</span>
+                    <span>{t.dictAddedBtn}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-5 h-5" />
-                    <span>+ Добавить в пропись</span>
+                    <span>{t.dictAddBtn}</span>
                   </>
                 )}
               </button>
@@ -274,7 +305,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   onClick={onNavigateToWorksheet}
                   className="inline-flex items-center justify-center gap-2 px-4 py-3 sm:px-5 h-12 min-h-[48px] text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl hover:bg-[#EAE3D5]/50 transition-all whitespace-nowrap cursor-pointer"
                 >
-                  <span>Открыть пропись</span>
+                  <span>{t.dictOpenWorksheetBtn}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
@@ -287,7 +318,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#52525B] shrink-0">
                 <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-[#C83E31]" />
                 <span>
-                  Посимвольный разбор слова «
+                  {t.dictCharBreakdownLabel} «
                   <span className="font-chinese font-bold text-[#18181B]">{currentWord.word}</span>
                   »:
                 </span>
@@ -295,7 +326,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
 
               <div
                 role="tablist"
-                aria-label="Иероглифы в составе слова"
+                aria-label={t.dictCharsInWordAria}
                 className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar py-1 w-full sm:w-auto"
               >
                 {currentWord.characters.map((charObj, idx) => {
@@ -335,7 +366,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 <div className="w-full flex items-center justify-between mb-4">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
-                      Тренажер каллиграфии
+                      {t.dictTrainerLabel}
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="font-chinese text-2xl font-bold text-[#18181B]">
@@ -347,7 +378,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       <button
                         type="button"
                         onClick={() => speakChinese(activeChar.char)}
-                        aria-label={`Озвучить иероглиф ${activeChar.char}`}
+                        aria-label={`${t.dictSpeakCharAria} ${activeChar.char}`}
                         className="p-1.5 text-[#52525B] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
                       >
                         <Volume2 className="w-4 h-4" />
@@ -355,7 +386,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     </div>
                   </div>
                   <span className="px-3 py-1 bg-white border border-[#EAE3D5] rounded-lg text-xs font-mono-tabular font-semibold text-[#52525B]">
-                    Черт: {activeChar.strokeCount}
+                    {t.dictMetaStrokes}: {activeChar.strokeCount}
                   </span>
                 </div>
 
@@ -368,7 +399,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-[#EAE3D5]">
                   <div>
                     <div className="text-sm font-medium text-[#71717A]">
-                      Значение иероглифа «
+                      {t.dictCharMeaningLabel} «
                       <span className="font-chinese font-bold text-[#18181B]">
                         {activeChar.char}
                       </span>
@@ -381,7 +412,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
 
                   <div>
                     <div className="text-sm font-medium text-[#71717A]">
-                      Ключ (Радикал) — традиционная печать
+                      {t.dictRadicalStampLabel}
                     </div>
                     <div className="mt-2 inline-flex items-center gap-3 px-3.5 py-2 border border-[#C83E31]/40 bg-[#FDF2F0]/50 rounded-lg">
                       <span className="font-chinese text-lg font-bold text-[#C83E31]">
@@ -396,10 +427,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5">
                       <BookOpen className="w-5 h-5 text-[#C83E31]" />
-                      <span>Структурная декомпозиция (графемы и ключи)</span>
+                      <span>{t.dictStructuralTitle}</span>
                     </h2>
                     <span className="text-xs px-2.5 py-1 rounded-md bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] font-mono-tabular font-semibold">
-                      Элементов: {activeChar.graphemes.length}
+                      {t.dictElementsCount}: {activeChar.graphemes.length}
                     </span>
                   </div>
 
@@ -421,7 +452,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                               </span>
                               <span aria-hidden="true">·</span>
                               <span className="text-[#C83E31] font-medium">
-                                {g.type === 'radical' ? 'ключ' : 'компонент'}
+                                {g.type === 'radical' ? t.dictTypeRadical : t.dictTypeComponent}
                               </span>
                             </div>
                             <div className="text-base font-medium text-[#18181B] truncate">
@@ -433,7 +464,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         <button
                           type="button"
                           onClick={() => speakChinese(g.char)}
-                          aria-label={`Озвучить графему ${g.char}`}
+                          aria-label={`${t.dictSpeakGraphemeAria} ${g.char}`}
                           className="p-2.5 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#52525B] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-xl transition-colors shrink-0 cursor-pointer"
                         >
                           <Volume2 className="w-4 h-4" />
@@ -447,7 +478,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 <div className="pb-6 border-b border-[#EAE3D5]">
                   <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5 mb-3">
                     <Lightbulb className="w-5 h-5 text-amber-600" />
-                    <span>Этимология и мнемоника для запоминания</span>
+                    <span>{t.dictEtymologyTitle}</span>
                   </h2>
                   <p className="text-base text-[#18181B] leading-relaxed bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl p-5">
                     {activeChar.etymology}
@@ -459,7 +490,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5 mb-4">
                     <MessageSquareQuote className="w-5 h-5 text-[#C83E31]" />
                     <span>
-                      Примеры употребления со словом «
+                      {t.dictExamplesTitle} «
                       <span className="font-chinese font-bold">{currentWord.word}</span>»
                     </span>
                   </h2>
@@ -483,11 +514,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         <button
                           type="button"
                           onClick={() => speakChinese(ex.zh)}
-                          aria-label={`Озвучить пример: ${ex.zh}`}
+                          aria-label={`${t.dictSpeakExampleAria}: ${ex.zh}`}
                           className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[42px] text-sm font-medium text-[#18181B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FDF2F0] hover:border-[#F5D0C8] transition-colors shrink-0 cursor-pointer"
                         >
                           <Volume2 className="w-4 h-4 text-[#C83E31]" />
-                          <span>Слушать</span>
+                          <span>{t.dictListenBtn}</span>
                         </button>
                       </div>
                     ))}

@@ -4,9 +4,8 @@ import {
   normalizeWordItem,
   isPlaceholderTranslation,
   PRESET_WORDS,
-  COMMON_WORD_TRANSLATIONS,
-  COMMON_CHAR_MEANINGS,
-  KNOWN_CHARACTERS,
+  getLocalWordTranslation,
+  getLocalCharMeaning,
 } from '../utils/hanziUtils';
 
 export interface BatchWordTranslationEntry {
@@ -15,11 +14,15 @@ export interface BatchWordTranslationEntry {
   charMeanings: Record<string, string>;
 }
 
-async function fetchDirectRussianTranslation(text: string): Promise<string> {
+async function fetchDirectTranslation(
+  text: string,
+  lang: 'ru' | 'en' = 'ru'
+): Promise<string> {
   const clean = text.trim();
   if (!clean) return '';
+  const targetLang = lang === 'en' ? 'en' : 'ru';
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=ru&dt=t&q=${encodeURIComponent(
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=${targetLang}&dt=t&q=${encodeURIComponent(
       clean
     )}`;
     const response = await fetch(url);
@@ -43,18 +46,26 @@ async function fetchDirectRussianTranslation(text: string): Promise<string> {
 
 /**
  * Анализирует введенный китайский текст (отдельный иероглиф или многосложное слово)
- * через серверный маршрут Gemini API и возвращает строго типизированный объект WordItem.
+ * через серверный маршрут Gemini API на выбранном языке интерфейса ('ru' | 'en')
+ * и возвращает строго типизированный объект WordItem.
  */
-export async function analyzeChineseInput(input: string): Promise<WordItem> {
+export async function analyzeChineseInput(
+  input: string,
+  lang: 'ru' | 'en' = 'ru'
+): Promise<WordItem> {
   const chars = extractChineseChars(input.trim());
   const cleanWord = chars.join('');
 
   if (!cleanWord) {
-    throw new Error('Введите хотя бы один китайский иероглиф (например: 好, 老师, 学习, 图书馆).');
+    throw new Error(
+      lang === 'en'
+        ? 'Please enter at least one Chinese character (e.g. 好, 老师, 学习, 图书馆).'
+        : 'Введите хотя бы один китайский иероглиф (например: 好, 老师, 学习, 图书馆).'
+    );
   }
 
   if (PRESET_WORDS[cleanWord]) {
-    return normalizeWordItem(PRESET_WORDS[cleanWord], cleanWord);
+    return normalizeWordItem(PRESET_WORDS[cleanWord], cleanWord, lang);
   }
 
   try {
@@ -63,32 +74,44 @@ export async function analyzeChineseInput(input: string): Promise<WordItem> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ input: cleanWord }),
+      body: JSON.stringify({ input: cleanWord, lang }),
     });
 
     if (!response.ok) {
       const errData = await response.json().catch(() => null);
-      throw new Error(errData?.error || `Ошибка сервера: ${response.status}`);
+      throw new Error(errData?.error || `Server error: ${response.status}`);
     }
 
     const data = (await response.json()) as Partial<WordItem>;
-    const normalized = normalizeWordItem(data, cleanWord);
+    const normalized = normalizeWordItem(data, cleanWord, lang);
     if (isPlaceholderTranslation(normalized.translation)) {
-      const tr = await fetchDirectRussianTranslation(cleanWord);
-      if (tr) normalized.translation = tr;
+      const tr = await fetchDirectTranslation(cleanWord, lang);
+      if (tr) {
+        normalized.translation = tr;
+        if (lang === 'en') normalized.translation_en = tr;
+        else normalized.translation_ru = tr;
+      }
     }
     return normalized;
   } catch {
-    const fallback = normalizeWordItem(null, cleanWord);
+    const fallback = normalizeWordItem(null, cleanWord, lang);
     if (isPlaceholderTranslation(fallback.translation)) {
-      const tr = await fetchDirectRussianTranslation(cleanWord);
-      if (tr) fallback.translation = tr;
+      const tr = await fetchDirectTranslation(cleanWord, lang);
+      if (tr) {
+        fallback.translation = tr;
+        if (lang === 'en') fallback.translation_en = tr;
+        else fallback.translation_ru = tr;
+      }
     }
     await Promise.all(
       fallback.characters.map(async (chObj) => {
         if (isPlaceholderTranslation(chObj.meaning)) {
-          const chTr = await fetchDirectRussianTranslation(chObj.char);
-          if (chTr) chObj.meaning = chTr;
+          const chTr = await fetchDirectTranslation(chObj.char, lang);
+          if (chTr) {
+            chObj.meaning = chTr;
+            if (lang === 'en') chObj.meaning_en = chTr;
+            else chObj.meaning_ru = chTr;
+          }
         }
       })
     );
@@ -98,12 +121,14 @@ export async function analyzeChineseInput(input: string): Promise<WordItem> {
 
 /**
  * Пакетный перевод списка китайских слов (как одиночных иероглифов, так и двусложных/многосложных слов)
- * одним запросом к серверному маршруту ИИ с надежным резервным переводом каждого слова и знака.
+ * одним запросом к серверному маршруту ИИ с надежным резервным переводом каждого слова и знака
+ * на выбранном языке ('ru' | 'en').
  */
 export async function translateWordsBatch(
   words: string[],
-  options?: { forceRemote?: boolean }
+  options?: { forceRemote?: boolean; lang?: 'ru' | 'en' }
 ): Promise<Record<string, BatchWordTranslationEntry>> {
+  const lang: 'ru' | 'en' = options?.lang === 'en' ? 'en' : 'ru';
   const cleanWords = Array.from(
     new Set(
       words
@@ -116,23 +141,17 @@ export async function translateWordsBatch(
     return {};
   }
 
-  // Строим локальный базовый результат для мгновенного отклика
+  // Строим локальный базовый результат для мгновенного отклика на выбранном языке
   const mergedResult: Record<string, BatchWordTranslationEntry> = {};
   for (const w of cleanWords) {
-    const norm = normalizeWordItem(PRESET_WORDS[w] || null, w);
+    const norm = normalizeWordItem(PRESET_WORDS[w] || null, w, lang);
     const charMeanings: Record<string, string> = {};
     for (const c of norm.characters) {
-      charMeanings[c.char] =
-        KNOWN_CHARACTERS[c.char]?.meaning ||
-        COMMON_CHAR_MEANINGS[c.char] ||
-        c.meaning;
+      charMeanings[c.char] = getLocalCharMeaning(c.char, lang) || c.meaning;
     }
     mergedResult[w] = {
       pinyin: norm.pinyin,
-      translation:
-        PRESET_WORDS[w]?.translation ||
-        COMMON_WORD_TRANSLATIONS[w] ||
-        norm.translation,
+      translation: getLocalWordTranslation(w, lang) || norm.translation,
       charMeanings,
     };
   }
@@ -154,7 +173,7 @@ export async function translateWordsBatch(
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ words: cleanWords }),
+        body: JSON.stringify({ words: cleanWords, lang }),
       });
 
       if (response.ok) {
@@ -204,13 +223,13 @@ export async function translateWordsBatch(
     const charTranslated: Record<string, string> = {};
     await Promise.all([
       ...stillMissingWords.map(async (w) => {
-        const tr = await fetchDirectRussianTranslation(w);
+        const tr = await fetchDirectTranslation(w, lang);
         if (tr && !isPlaceholderTranslation(tr)) {
           mergedResult[w].translation = tr;
         }
       }),
       ...Array.from(stillMissingChars).map(async (ch) => {
-        const tr = await fetchDirectRussianTranslation(ch);
+        const tr = await fetchDirectTranslation(ch, lang);
         if (tr && !isPlaceholderTranslation(tr)) {
           charTranslated[ch] = tr;
         }

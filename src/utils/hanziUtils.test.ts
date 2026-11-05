@@ -218,5 +218,20 @@ test('strokeDataLoader safely handles Latin, punctuation, and rare characters wi
   assert.equal(punctResult, null);
 });
 
+test('bilingual support (ru and en) in normalizeWordItem, getInitialDemoWorksheet, and translateWordsBatch', async () => {
+  const demoRu = getInitialDemoWorksheet('ru');
+  assert.equal(demoRu[0].word, '你好');
+  assert.ok(demoRu[0].translation.includes('привет'));
 
+  const demoEn = getInitialDemoWorksheet('en');
+  assert.equal(demoEn[0].word, '你好');
+  assert.equal(demoEn[0].translation, 'hello');
+  assert.equal(demoEn[1].word, '老师');
+  assert.equal(demoEn[1].translation, 'teacher');
+
+  const batchEn = await translateWordsBatch(['你好', '老师', '妈妈'], { lang: 'en' });
+  assert.equal(batchEn['你好'].translation, 'hello');
+  assert.equal(batchEn['老师'].translation, 'teacher');
+  assert.equal(batchEn['妈妈'].translation, 'mom, mother');
+});
 

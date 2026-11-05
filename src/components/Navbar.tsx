@@ -7,6 +7,7 @@ import {
   Grid,
 } from 'lucide-react';
 import type { AppTab, TeacherProfile } from '../types/hanzi';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -26,10 +27,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentTeacher,
   onOpenAuthModal,
 }) => {
+  const { lang, setLang, t } = useLanguage();
+
   const desktopNavItems: { id: AppTab; label: string; shortLabel: string; count?: number }[] = [
-    { id: 'dictionary', label: 'Словарь и Практика', shortLabel: 'Словарь' },
-    { id: 'worksheet', label: 'Конструктор прописей', shortLabel: 'Прописи', count: worksheetCount },
-    { id: 'radicals', label: 'Таблица ключей', shortLabel: 'Ключи' },
+    { id: 'dictionary', label: t.navDictionaryLong, shortLabel: t.navDictionaryShort },
+    { id: 'worksheet', label: t.navWorksheetLong, shortLabel: t.navWorksheetShort, count: worksheetCount },
+    { id: 'radicals', label: t.navRadicalsLong, shortLabel: t.navRadicalsShort },
   ];
 
   const teacherInitials = currentTeacher
@@ -75,14 +78,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <span className="mt-0.5 text-xs font-medium text-[#52525B] hidden sm:block whitespace-nowrap">
-                Умный словарь и прописи
+                {t.navSubtitle}
               </span>
             </div>
           </a>
 
           {/* Навигация для планшетов и десктопов (hidden md:flex, кнопки min-h-[44px]) */}
           <nav
-            aria-label="Основная навигация"
+            aria-label={t.navMainAria}
             className="hidden md:flex items-center gap-1.5 lg:gap-2 shrink-0"
           >
             {desktopNavItems.map((item) => {
@@ -118,14 +121,51 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Правая зона: Личный кабинет преподавателя / Вход */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Правая зона: Переключатель языка RU / EN и Личный кабинет преподавателя / Вход */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <div
+              className="flex items-center gap-1.5 text-xs sm:text-sm select-none print:hidden"
+              role="group"
+              aria-label="Language switcher"
+              data-testid="language-switcher"
+            >
+              <button
+                type="button"
+                onClick={() => setLang('ru')}
+                data-testid="lang-btn-ru"
+                aria-pressed={lang === 'ru'}
+                className={`px-1 py-1 cursor-pointer transition-colors ${
+                  lang === 'ru'
+                    ? 'font-medium text-gray-800'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                RU
+              </button>
+              <span className="text-gray-300 select-none" aria-hidden="true">
+                /
+              </span>
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                data-testid="lang-btn-en"
+                aria-pressed={lang === 'en'}
+                className={`px-1 py-1 cursor-pointer transition-colors ${
+                  lang === 'en'
+                    ? 'font-medium text-gray-800'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
             {currentTeacher ? (
               <button
                 type="button"
                 onClick={() => onSelectTab('dashboard')}
                 data-testid="navbar-teacher-profile-btn"
-                aria-label={`Личный кабинет преподавателя: ${currentTeacher.name}`}
+                aria-label={`${t.navTeacherProfileAria}: ${currentTeacher.name}`}
                 className={`inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold rounded-xl border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   activeTab === 'dashboard'
                     ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-md'
@@ -133,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <span className="w-7 h-7 rounded-full bg-[#C83E31] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  {teacherInitials || 'Л'}
+                  {teacherInitials || 'T'}
                 </span>
                 <span className="max-w-[100px] lg:max-w-[140px] truncate hidden sm:inline">
                   {currentTeacher.name}
@@ -151,12 +191,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={onOpenAuthModal}
                 data-testid="navbar-login-btn"
-                aria-label="Войти или открыть Личный кабинет преподавателя"
+                aria-label={t.navLoginAria}
                 className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FDF2F0] hover:border-[#F5D0C8] rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
               >
                 <LogIn className="w-4 h-4 text-[#C83E31]" />
-                <span className="hidden sm:inline">Войти / Кабинет</span>
-                <span className="sm:hidden">Войти</span>
+                <span className="hidden sm:inline">{t.navLoginFull}</span>
+                <span className="sm:hidden">{t.navLoginShort}</span>
               </button>
             )}
           </div>
@@ -165,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Фиксированная нижняя панель навигации для смартфонов (md:hidden): 4 равномерные колонки */}
       <nav
-        aria-label="Мобильная нижняя навигация"
+        aria-label={t.navMobileAria}
         data-testid="mobile-bottom-navigation"
         className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF7F2]/85 backdrop-blur-md border-t border-[#E6E0D6] shadow-lg md:hidden px-2 py-1.5 grid grid-cols-4 gap-1 items-center print:hidden"
         style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}
@@ -181,7 +221,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           }`}
         >
           <BookOpen className="w-5 h-5 mb-0.5" />
-          <span>Словарь</span>
+          <span>{t.navDictionaryShort}</span>
         </button>
 
         <button
@@ -205,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             )}
           </div>
-          <span>Прописи</span>
+          <span>{t.navWorksheetShort}</span>
         </button>
 
         <button
@@ -219,7 +259,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           }`}
         >
           <Grid className="w-5 h-5 mb-0.5" />
-          <span>Ключи</span>
+          <span>{t.navRadicalsShort}</span>
         </button>
 
         <button
@@ -243,7 +283,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <LogIn className="w-5 h-5 mb-0.5 text-[#C83E31]" />
           )}
-          <span>Кабинет</span>
+          <span>{t.navDashboardShort}</span>
         </button>
       </nav>
     </>

@@ -47,12 +47,20 @@ import {
   downloadWorksheetAsPDF,
   PRINTABLE_SHEET_ELEMENT_ID,
 } from './services/pdfExportService';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
 const WORKSHEET_STORAGE_KEY = 'moshui_worksheet_list_v2';
 const CONFIG_STORAGE_KEY = 'moshui_worksheet_config_v1';
 
+const DEFAULT_SHEET_TITLES = new Set([
+  'Учебная пропись',
+  'Practice Sheet',
+  'Учебная пропись MoShui (墨水)',
+  'MoShui (墨水) Practice Worksheet',
+]);
+
 const DEFAULT_WORKSHEET_CONFIG: WorksheetConfig = {
-  sheetTitle: 'Учебная пропись MoShui (墨水)',
+  sheetTitle: 'Учебная пропись',
   layoutMode: 'by-character',
   gridType: 'mizi',
   gridColor: 'red',
@@ -63,7 +71,8 @@ const DEFAULT_WORKSHEET_CONFIG: WorksheetConfig = {
   cellsPerRow: 10,
 };
 
-export default function App() {
+function AppContent() {
+  const { lang, t } = useLanguage();
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -114,7 +123,7 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           return parsed.map((rawItem: WordItem) => {
-            const norm = normalizeWordItem(rawItem, rawItem.word || '');
+            const norm = normalizeWordItem(rawItem, rawItem.word || '', lang);
             return {
               ...norm,
               id: rawItem.id || norm.id,
@@ -122,6 +131,9 @@ export default function App() {
                 rawItem.translation && !isPlaceholderTranslation(rawItem.translation)
                   ? rawItem.translation
                   : norm.translation,
+              translation_ru: rawItem.translation_ru || norm.translation_ru,
+              translation_en: rawItem.translation_en || norm.translation_en,
+              isManualTranslation: rawItem.isManualTranslation,
             };
           });
         }
@@ -136,13 +148,41 @@ export default function App() {
     try {
       const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
       if (saved) {
-        return { ...DEFAULT_WORKSHEET_CONFIG, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved) as Partial<WorksheetConfig>;
+        const rawTitle = parsed.sheetTitle?.trim();
+        const resolvedTitle =
+          !rawTitle || DEFAULT_SHEET_TITLES.has(rawTitle) ? t.defaultSheetTitle : parsed.sheetTitle!;
+        return {
+          ...DEFAULT_WORKSHEET_CONFIG,
+          ...parsed,
+          sheetTitle: resolvedTitle,
+        };
       }
     } catch {
       // ignore
     }
-    return DEFAULT_WORKSHEET_CONFIG;
+    return {
+      ...DEFAULT_WORKSHEET_CONFIG,
+      sheetTitle: t.defaultSheetTitle,
+    };
   });
+
+  // Автоматическое переключение дефолтного заголовка при смене языка (RU / EN)
+  useEffect(() => {
+    setWorksheetConfig((prev) => {
+      const currentTitle = prev.sheetTitle?.trim() || '';
+      if (
+        DEFAULT_SHEET_TITLES.has(currentTitle) &&
+        prev.sheetTitle !== t.defaultSheetTitle
+      ) {
+        return {
+          ...prev,
+          sheetTitle: t.defaultSheetTitle,
+        };
+      }
+      return prev;
+    });
+  }, [lang, t.defaultSheetTitle]);
 
   // Загрузка папок и прописей преподавателя из Supabase PostgreSQL
   const syncTeacherWorkspaceFromCloud = useCallback(async (teacherId: string) => {
@@ -169,7 +209,10 @@ export default function App() {
     setSavedWorksheets([]);
     setActiveSavedWorksheet(null);
     setWorksheetList([]);
-    setWorksheetConfig(DEFAULT_WORKSHEET_CONFIG);
+    setWorksheetConfig({
+      ...DEFAULT_WORKSHEET_CONFIG,
+      sheetTitle: t.defaultSheetTitle,
+    });
     setCurrentWord(null);
     setCloudError(null);
     try {
@@ -240,7 +283,7 @@ export default function App() {
   }, [worksheetConfig]);
 
   const handleAddToWorksheet = (item: WordItem) => {
-    const normalized = normalizeWordItem(item, item.word);
+    const normalized = normalizeWordItem(item, item.word, lang);
     const enrichedItem: WordItem = {
       ...normalized,
       id: item.id || normalized.id,
@@ -250,6 +293,8 @@ export default function App() {
         item.translation && !isPlaceholderTranslation(item.translation)
           ? item.translation
           : normalized.translation,
+      translation_ru: item.translation_ru || normalized.translation_ru,
+      translation_en: item.translation_en || normalized.translation_en,
       characters:
         item.characters && item.characters.length > 0
           ? item.characters.map((chObj, idx) => ({
@@ -258,6 +303,8 @@ export default function App() {
                 chObj.meaning && !isPlaceholderTranslation(chObj.meaning)
                   ? chObj.meaning
                   : normalized.characters[idx]?.meaning || chObj.meaning,
+              meaning_ru: chObj.meaning_ru || normalized.characters[idx]?.meaning_ru,
+              meaning_en: chObj.meaning_en || normalized.characters[idx]?.meaning_en,
             }))
           : normalized.characters,
     };
@@ -279,10 +326,10 @@ export default function App() {
 
   const handlePracticeCharacterFromRadicals = async (char: string) => {
     setActiveTab('dictionary');
-    const immediate = normalizeWordItem(PRESET_WORDS[char] || null, char);
+    const immediate = normalizeWordItem(PRESET_WORDS[char] || null, char, lang);
     setCurrentWord(immediate);
     try {
-      const analyzed = await analyzeChineseInput(char);
+      const analyzed = await analyzeChineseInput(char, lang);
       setCurrentWord(analyzed);
     } catch {
       // Оставляем локальный разбор
@@ -429,7 +476,7 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success(`Резервная копия «${filename}» скачана.`);
+    toast.success(`${t.dashToastBackupDownloadedPrefix} «${filename}» ${t.dashToastBackupDownloadedSuffix}`);
   };
 
   const handleImportWorkspaceBackup = async (
@@ -535,7 +582,7 @@ export default function App() {
       />
 
       <footer className="w-full text-center py-6 mt-auto text-sm text-gray-400/70 print:hidden">
-        © 2026 MoShui. Все права защищены.
+        {t.footerCopyright}
       </footer>
 
       {/* Уведомление о доступности новой версии PWA */}
@@ -546,19 +593,19 @@ export default function App() {
           data-testid="pwa-update-toast"
           className="fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 z-50 print:hidden flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#18181B] text-[#FAF7F2] shadow-xl border border-[#C83E31]/40 text-xs sm:text-sm font-medium max-w-[92vw]"
         >
-          <span>Доступна новая версия MoShui.</span>
+          <span>{t.pwaNewVersion}</span>
           <button
             type="button"
             onClick={() => void updateServiceWorker(true)}
             data-testid="pwa-update-btn"
             className="px-3 py-1.5 rounded-xl bg-[#C83E31] hover:bg-[#B23327] text-white font-semibold transition-colors cursor-pointer shrink-0"
           >
-            Обновить
+            {t.pwaUpdateBtn}
           </button>
           <button
             type="button"
             onClick={() => setNeedRefresh(false)}
-            aria-label="Скрыть уведомление"
+            aria-label={t.pwaHideAria}
             className="px-2 py-1 rounded-lg text-[#FAF7F2]/70 hover:text-white transition-colors cursor-pointer shrink-0"
           >
             ✕
@@ -584,5 +631,13 @@ export default function App() {
         }}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

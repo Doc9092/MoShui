@@ -6,12 +6,11 @@ import {
   extractChineseChars,
   normalizeWordItem,
   isPlaceholderTranslation,
-  PRESET_WORDS,
-  COMMON_WORD_TRANSLATIONS,
-  KNOWN_CHARACTERS,
-  COMMON_CHAR_MEANINGS,
+  getLocalWordTranslation,
+  getLocalCharMeaning,
 } from '../utils/hanziUtils';
 import { loadHanziStrokes, type CharacterStrokeData } from '../utils/strokeDataLoader';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PrintableSheetProps {
   worksheetList: WordItem[];
@@ -361,6 +360,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
   worksheetList,
   config,
 }) => {
+  const { lang, t } = useLanguage();
   const [strokeMap, setStrokeMap] = useState<Record<string, CharacterStrokeData | null>>({});
   const [loadedCharsMap, setLoadedCharsMap] = useState<Record<string, boolean>>({});
 
@@ -434,7 +434,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
     let counter = 0;
 
     for (const item of worksheetList) {
-      const normalized = normalizeWordItem(item, item.word);
+      const normalized = normalizeWordItem(item, item.word, lang);
       const parentWord = item.word || normalized.word;
       const parentPinyin =
         item.pinyin?.trim() ||
@@ -446,8 +446,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
           ? item.translation.trim()
           : '';
       const fallbackWordTranslation =
-        PRESET_WORDS[parentWord]?.translation ||
-        COMMON_WORD_TRANSLATIONS[parentWord] ||
+        getLocalWordTranslation(parentWord, lang) ||
         (!isPlaceholderTranslation(normalized.translation) ? normalized.translation : '');
 
       const parentTranslation = explicitUserTranslation || fallbackWordTranslation || '';
@@ -462,11 +461,15 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
             normalized.characters[idx];
           const charPinyin = charObj?.pinyin || pinyin(ch, { toneType: 'symbol' });
           const fallbackNormalizedMeaning = normalized.characters[idx]?.meaning;
+          const langSpecificCharMeaning =
+            lang === 'en' ? charObj?.meaning_en : charObj?.meaning_ru;
           const rawCharMeaning =
-            charObj?.meaning && !isPlaceholderTranslation(charObj.meaning)
-              ? charObj.meaning.trim()
-              : KNOWN_CHARACTERS[ch]?.meaning ||
-                COMMON_CHAR_MEANINGS[ch] ||
+            langSpecificCharMeaning && !isPlaceholderTranslation(langSpecificCharMeaning)
+              ? langSpecificCharMeaning.trim()
+              : getLocalCharMeaning(ch, lang) ||
+                (charObj?.meaning && !isPlaceholderTranslation(charObj.meaning)
+                  ? charObj.meaning.trim()
+                  : '') ||
                 (fallbackNormalizedMeaning && !isPlaceholderTranslation(fallbackNormalizedMeaning)
                   ? fallbackNormalizedMeaning.trim()
                   : '') ||
@@ -500,7 +503,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
     }
 
     return blocks;
-  }, [worksheetList, config.layoutMode]);
+  }, [worksheetList, config.layoutMode, lang]);
 
   const pages = useMemo(
     () => paginatePracticeBlocks(practiceBlocks, totalCells, shouldShowStrokeOrder),
@@ -524,7 +527,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
     [allUniqueChars, loadedCharsMap]
   );
 
-  const sheetTitleText = config.sheetTitle || 'Пропись китайских иероглифов и слов';
+  const sheetTitleText = config.sheetTitle || t.defaultSheetTitle;
 
   return (
     <div
@@ -655,8 +658,8 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      <span>Имя: ____________</span>
-                      <span>Дата: ____________</span>
+                      <span>{t.printStudentName}</span>
+                      <span>{t.printStudentDate}</span>
                     </div>
                   )}
                 </div>
@@ -691,7 +694,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                       color: '#52525B',
                     }}
                   >
-                    Стр. {pageIdx + 1}
+                    {t.printPagePrefix} {pageIdx + 1}
                   </span>
                 </div>
               )}
@@ -708,7 +711,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                     fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
                   }}
                 >
-                  Список слов для прописи пуст. Добавьте слова слева или выберите быстрый набор.
+                  {t.printEmptyListNotice}
                 </div>
               ) : (
                 <div
@@ -843,7 +846,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                                     color: '#0F172A',
                                   }}
                                 >
-                                  {block.parentTranslation || 'без перевода'}
+                                  {block.parentTranslation || t.printNoTranslation}
                                 </strong>
                               </div>
                             </div>
@@ -910,8 +913,8 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                                 >
                                   —{' '}
                                   {block.isMultiCharWord
-                                    ? block.charMeaning || block.parentTranslation || 'без перевода'
-                                    : block.parentTranslation || block.charMeaning || 'без перевода'}
+                                    ? block.charMeaning || block.parentTranslation || t.printNoTranslation
+                                    : block.parentTranslation || block.charMeaning || t.printNoTranslation}
                                 </span>
                               </div>
 
@@ -929,12 +932,12 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                                     border: `1px solid ${palette.guide}`,
                                   }}
                                 >
-                                  [Слово:{' '}
+                                  [{t.printWordLabel}{' '}
                                   <span style={{ fontFamily: "'Noto Serif SC', serif" }}>
                                     {block.parentWord}
                                   </span>{' '}
                                   ({block.parentPinyin}) —{' '}
-                                  {block.parentTranslation || 'без перевода'}]
+                                  {block.parentTranslation || t.printNoTranslation}]
                                 </strong>
                               )}
                             </div>
@@ -1126,9 +1129,12 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
                 fontFamily: "'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', sans-serif",
               }}
             >
-              <span>MoShui (墨水) — Учебная пропись китайских иероглифов и слов</span>
+              <span>{t.printFooterLeft}</span>
               <span>
-                Лист А4 {pages.length > 1 ? `• Стр. ${pageIdx + 1} из ${pages.length}` : ''}
+                {t.printFooterRightA4}{' '}
+                {pages.length > 1
+                  ? `• ${t.printPagePrefix} ${pageIdx + 1} ${t.printPageOf} ${pages.length}`
+                  : ''}
               </span>
             </div>
           </div>

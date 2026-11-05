@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import HanziWriter from 'hanzi-writer';
 import { Play, PenTool, Eye, EyeOff, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { loadHanziStrokes } from '../utils/strokeDataLoader';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HanziCanvasProps {
   char: string;
@@ -9,6 +10,7 @@ interface HanziCanvasProps {
 }
 
 export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) => {
+  const { t } = useLanguage();
   const codePoints = Array.from((char || '').trim());
   const singleChar = codePoints[0] || '';
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -22,7 +24,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
     message: string;
   }>({
     type: 'idle',
-    message: 'Нажмите «Анимация» для просмотра порядка черт или «Практика письма» для тренажера.',
+    message: t.canvasInitIdle,
   });
   const [mistakeCount, setMistakeCount] = useState<number>(0);
 
@@ -39,7 +41,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
     setIsFallbackGlyph(false);
     setFeedback({
       type: 'idle',
-      message: 'Готово к анимации черт или интерактивной практике письма.',
+      message: t.canvasReadyIdle,
     });
 
     void (async () => {
@@ -47,11 +49,10 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
       if (isCancelled || !containerRef.current) return;
 
       if (!strokeData || !Array.isArray(strokeData.strokes) || strokeData.strokes.length === 0) {
-        // Если введена латиница, пунктуация или редкий иероглиф, которого нет в базе hanzi-writer-data
         setIsFallbackGlyph(true);
         setFeedback({
           type: 'info',
-          message: `Для знака «${singleChar}» нет векторных данных черт — включен каллиграфический показ шрифтом KaiTi / Noto Serif SC.`,
+          message: `«${singleChar}»: ${t.canvasFallbackInfo}`,
         });
         return;
       }
@@ -82,7 +83,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
               setIsFallbackGlyph(true);
               setFeedback({
                 type: 'info',
-                message: `Для знака «${singleChar}» включено отображение шрифтом KaiTi / Noto Serif SC.`,
+                message: `«${singleChar}»: ${t.canvasFallbackShort}`,
               });
             }
           },
@@ -94,7 +95,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           setIsFallbackGlyph(true);
           setFeedback({
             type: 'info',
-            message: `Для знака «${singleChar}» включено отображение шрифтом KaiTi / Noto Serif SC.`,
+            message: `«${singleChar}»: ${t.canvasFallbackShort}`,
           });
         }
       }
@@ -107,14 +108,14 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
       }
       writerRef.current = null;
     };
-  }, [singleChar, size]);
+  }, [singleChar, size, t]);
 
   const handleAnimate = () => {
     if (isFallbackGlyph) {
       setShowOutline(true);
       setFeedback({
         type: 'info',
-        message: `Показано эталонное начертание «${singleChar}» шрифтом KaiTi / Noto Serif SC.`,
+        message: `«${singleChar}»: ${t.canvasAnimateFallback}`,
       });
       return;
     }
@@ -125,7 +126,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
     setMode('animate');
     setFeedback({
       type: 'info',
-      message: `Анимация написания иероглифа «${singleChar}» по порядку черт...`,
+      message: `«${singleChar}»: ${t.canvasAnimating}`,
     });
 
     try {
@@ -141,7 +142,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
         onComplete: () => {
           setFeedback({
             type: 'success',
-            message: `Порядок черт для «${singleChar}» показан полностью.`,
+            message: `«${singleChar}»: ${t.canvasAnimateComplete}`,
           });
         },
       });
@@ -154,7 +155,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
     if (isFallbackGlyph) {
       setFeedback({
         type: 'info',
-        message: `Интерактивная проверка черт недоступна для редкого знака «${singleChar}». Используйте каллиграфический образец выше.`,
+        message: `«${singleChar}»: ${t.canvasQuizUnavailable}`,
       });
       return;
     }
@@ -166,7 +167,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
     setMistakeCount(0);
     setFeedback({
       type: 'info',
-      message: `Рисуйте черты иероглифа «${singleChar}» мышкой, стилусом или пальцем в правильном порядке.`,
+      message: `«${singleChar}»: ${t.canvasQuizPrompt}`,
     });
 
     try {
@@ -182,13 +183,13 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           setMistakeCount(strokeData.totalMistakes);
           setFeedback({
             type: 'mistake',
-            message: `Неверная черта №${strokeData.strokeNum + 1}. Попробуйте провести её по направлению письма (ошибок: ${strokeData.totalMistakes}).`,
+            message: `${t.canvasMistakePrefix}${strokeData.strokeNum + 1}. ${t.canvasMistakeHint} ${strokeData.totalMistakes}).`,
           });
         },
         onCorrectStroke: (strokeData) => {
           setFeedback({
             type: 'info',
-            message: `Отлично! Черта №${strokeData.strokeNum + 1} верна. Осталось черт: ${strokeData.strokesRemaining}.`,
+            message: `${t.canvasCorrectPrefix}${strokeData.strokeNum + 1} ${t.canvasCorrectRemaining} ${strokeData.strokesRemaining}.`,
           });
         },
         onComplete: (summaryData) => {
@@ -197,8 +198,8 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
             type: 'success',
             message:
               summaryData.totalMistakes === 0
-                ? `Безупречно! Вы написали «${singleChar}» без единой ошибки!`
-                : `Молодец! Иероглиф «${singleChar}» написан (всего ошибок: ${summaryData.totalMistakes}).`,
+                ? `«${singleChar}»: ${t.canvasCompletePerfect}`
+                : `«${singleChar}»: ${t.canvasCompleteGood} ${summaryData.totalMistakes}).`,
           });
         },
       });
@@ -313,7 +314,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
               }}
-              aria-label={`Каллиграфическое начертание знака ${singleChar}`}
+              aria-label={singleChar}
             >
               {singleChar}
             </div>
@@ -327,7 +328,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
               }}
-              aria-label={`Холст для написания иероглифа ${singleChar}`}
+              aria-label={singleChar}
             />
           )}
         </div>
@@ -346,7 +347,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           }`}
         >
           <Play className="w-4 h-4" />
-          <span>Анимация</span>
+          <span>{t.canvasAnimateBtn}</span>
         </button>
 
         <button
@@ -360,7 +361,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           }`}
         >
           <PenTool className="w-4 h-4" />
-          <span>Практика</span>
+          <span>{t.canvasPracticeBtn}</span>
         </button>
 
         <button
@@ -372,12 +373,12 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           {showOutline ? (
             <>
               <EyeOff className="w-4 h-4 text-[#71717A]" />
-              <span>Скрыть контур</span>
+              <span>{t.canvasHideOutlineBtn}</span>
             </>
           ) : (
             <>
               <Eye className="w-4 h-4 text-[#71717A]" />
-              <span>Показать контур</span>
+              <span>{t.canvasShowOutlineBtn}</span>
             </>
           )}
         </button>
@@ -386,12 +387,12 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           <button
             type="button"
             onClick={handleStartQuiz}
-            title="Начать практику заново"
-            aria-label="Сбросить практику письма"
+            title={t.canvasResetTitle}
+            aria-label={t.canvasResetAria}
             className="col-span-2 sm:col-span-1 inline-flex items-center justify-center p-3 h-12 min-h-[48px] text-sm font-medium text-[#52525B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FAF7F2] transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4 mr-1.5 sm:mr-0" />
-            <span className="sm:hidden">Сбросить черты</span>
+            <span className="sm:hidden">{t.canvasResetBtn}</span>
           </button>
         )}
       </div>
@@ -419,7 +420,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
         </div>
         {mode === 'quiz' && mistakeCount > 0 && (
           <div className="mt-1 text-xs text-[#71717A] font-mono-tabular">
-            Ошибок за попытку: {mistakeCount}
+            {t.canvasMistakesTotal}: {mistakeCount}
           </div>
         )}
       </div>

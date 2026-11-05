@@ -41,6 +41,7 @@ import {
   PRINTABLE_SHEET_ELEMENT_ID,
 } from '../services/pdfExportService';
 import { PrintableSheet } from './PrintableSheet';
+import { useLanguage } from '../context/LanguageContext';
 
 interface TeacherDashboardProps {
   teacher: TeacherProfile | null;
@@ -75,32 +76,36 @@ type DashboardSection = 'worksheets' | 'folders' | 'profile';
 
 const FOLDER_COLOR_STYLES: Record<
   string,
-  { badge: string; dot: string; label: string }
+  {
+    badge: string;
+    dot: string;
+    labelKey: 'dashColorRose' | 'dashColorEmerald' | 'dashColorAmber' | 'dashColorIndigo' | 'dashColorSlate';
+  }
 > = {
   rose: {
     badge: 'bg-[#FDF2F0] text-[#C83E31] border-[#F5D0C8]',
     dot: 'bg-[#C83E31]',
-    label: 'Киноварь',
+    labelKey: 'dashColorRose',
   },
   emerald: {
     badge: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',
     dot: 'bg-[#15803D]',
-    label: 'Нефрит',
+    labelKey: 'dashColorEmerald',
   },
   amber: {
     badge: 'bg-amber-50 text-amber-800 border-amber-200',
     dot: 'bg-amber-500',
-    label: 'Янтарь',
+    labelKey: 'dashColorAmber',
   },
   indigo: {
     badge: 'bg-indigo-50 text-indigo-800 border-indigo-200',
     dot: 'bg-indigo-600',
-    label: 'Индиго',
+    labelKey: 'dashColorIndigo',
   },
   slate: {
     badge: 'bg-[#FAF7F2] text-[#18181B] border-[#EAE3D5]',
     dot: 'bg-[#52525B]',
-    label: 'Тушь',
+    labelKey: 'dashColorSlate',
   },
 };
 
@@ -126,6 +131,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onImportBackupFile,
   onNavigateToBuilder,
 }) => {
+  const { lang, t } = useLanguage();
   const [activeSection, setActiveSection] = useState<DashboardSection>('worksheets');
   const [selectedFolderFilter, setSelectedFolderFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -203,9 +209,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 450));
       await waitForPrintableSheetImages();
       await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
-      showFeedback(`Файл «${sheet.title}.pdf» успешно сформирован и скачан.`);
+      showFeedback(`${t.wsToastPdfSavedPrefix} «${sheet.title}.pdf» ${t.wsToastPdfSavedSuffix}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось скачать PDF-пропись.';
+      const msg = err instanceof Error ? err.message : t.wsErrorPdfFailed;
       setActionError(msg);
       toast.error(msg);
     } finally {
@@ -223,7 +229,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       await waitForPrintableSheetImages();
       await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось открыть окно печати.';
+      const msg = err instanceof Error ? err.message : t.wsErrorPrintFailed;
       setActionError(msg);
       toast.error(msg);
       onQuickPrintSavedWorksheet(sheet);
@@ -233,7 +239,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   if (!teacher) {
     return (
       <section
-        aria-label="Приглашение в Личный кабинет преподавателя"
+        aria-label={t.dashGuestAria}
         data-testid="teacher-dashboard-guest"
         className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-14 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 max-w-3xl mx-auto my-4 sm:my-6"
       >
@@ -246,13 +252,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
         />
         <h1 className="font-display text-2xl sm:text-4xl font-bold text-[#18181B] tracking-tight">
-          Личный кабинет преподавателя MoShui (墨水)
+          {t.dashGuestTitle}
         </h1>
         <p className="mt-3 text-sm sm:text-lg text-[#52525B] max-w-2xl mx-auto leading-relaxed">
-          Войдите или создайте бесплатный аккаунт преподавателя, чтобы сохранять
-          готовые прописи по учебным группам (HSK 1, Детская группа, Индивидуальные уроки),
-          автоматически подписывать листы А4 своим именем и синхронизировать уроки между
-          устройствами.
+          {t.dashGuestDesc}
         </p>
 
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
@@ -263,7 +266,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 h-12 text-sm sm:text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
           >
             <UserCheck className="w-5 h-5 text-[#F5D0C8]" />
-            <span>Войти или зарегистрироваться</span>
+            <span>{t.dashGuestLoginBtn}</span>
           </button>
 
           <button
@@ -272,7 +275,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="inline-flex items-center justify-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
           >
             <FileText className="w-5 h-5 text-[#C83E31]" />
-            <span>Перейти в конструктор без входа</span>
+            <span>{t.dashGuestBuilderBtn}</span>
           </button>
         </div>
       </section>
@@ -313,9 +316,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     try {
       await onCreateFolder(trimmed, newFolderColor);
       setNewFolderName('');
-      showFeedback(`Папка «${trimmed}» синхронизирована с облаком.`);
+      showFeedback(`${t.dashToastFolderSyncedPrefix} «${trimmed}» ${t.dashToastFolderSyncedSuffix}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Ошибка при создании папки.';
+      const msg = err instanceof Error ? err.message : t.wsErrorCreateFolderFailed;
       setActionError(msg);
       toast.error(msg);
     } finally {
@@ -335,9 +338,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         email: profileEmail.trim() || teacher.email,
         schoolOrTitle: profileSchool.trim() || undefined,
       });
-      showFeedback('Профиль преподавателя обновлен в облаке. Ваше имя отобразится в шапке А4.');
+      showFeedback(t.dashToastProfileUpdated);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось обновить профиль преподавателя.';
+      const msg = err instanceof Error ? err.message : t.authGenericError;
       setActionError(msg);
       toast.error(msg);
     } finally {
@@ -347,7 +350,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   const handleSaveDefaultConfigClick = () => {
     onSaveDefaultConfig(localDefaultConfig);
-    showFeedback('Настройки сетки по умолчанию сохранены для новых прописей.');
+    showFeedback(t.dashToastDefaultsSaved);
   };
 
   const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,15 +365,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         const result = await onImportBackupFile(content);
         if (result) {
           showFeedback(
-            `Резервная копия успешно восстановлена в облако. Загружено прописей: ${result.importedCount}.`
+            `${t.dashToastBackupRestoredPrefix} ${result.importedCount}.`
           );
         } else {
-          const msg = 'Не удалось прочитать файл резервной копии JSON. Проверьте формат файла.';
+          const msg = t.dashErrorInvalidBackupJson;
           setActionError(msg);
           toast.error(msg);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Ошибка восстановления резервной копии.';
+        const msg = err instanceof Error ? err.message : t.dashErrorRestoreFailed;
         setActionError(msg);
         toast.error(msg);
       } finally {
@@ -394,7 +397,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       <div className="bg-white border border-[#EAE3D5] rounded-2xl p-4 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
         <div className="flex items-start sm:items-center gap-3.5 sm:gap-4">
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#18181B] text-[#FAF7F2] font-bold text-lg sm:text-xl flex items-center justify-center shrink-0 shadow-xs border border-[#C83E31]/50">
-            {initials || 'ПР'}
+            {initials || 'TR'}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
@@ -415,16 +418,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold bg-[#FAF7F2] text-[#52525B] border border-[#EAE3D5] rounded-lg"
                 >
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C83E31]" />
-                  <span>Синхронизация...</span>
+                  <span>{t.dashSyncing}</span>
                 </span>
               )}
             </div>
             <p className="mt-1 sm:mt-1.5 text-xs sm:text-base text-[#52525B]">
-              {teacher.email} · Прописей:{' '}
+              {teacher.email} · {t.dashCountWorksheets}{' '}
               <span className="font-mono-tabular font-bold text-[#18181B]">
                 {savedWorksheets.length}
               </span>{' '}
-              · Папок:{' '}
+              · {t.dashCountFolders}{' '}
               <span className="font-mono-tabular font-bold text-[#18181B]">{folders.length}</span>
             </p>
           </div>
@@ -436,11 +439,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               type="button"
               onClick={() => void onRefreshFromCloud()}
               disabled={isCloudLoading || isMutating}
-              title="Обновить сохраненные прописи"
+              title={t.dashRefreshTitle}
               className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer min-h-[44px]"
             >
               <RefreshCw className={`w-4 h-4 ${isCloudLoading ? 'animate-spin' : ''}`} />
-              <span>Обновить</span>
+              <span>{t.dashRefreshBtn}</span>
             </button>
           )}
 
@@ -450,7 +453,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Создать пропись</span>
+            <span>{t.dashCreateWorksheetBtn}</span>
           </button>
 
           <button
@@ -460,7 +463,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer min-h-[44px]"
           >
             <Download className="w-4 h-4 text-[#52525B]" />
-            <span>Резервная копия</span>
+            <span>{t.dashBackupBtn}</span>
           </button>
 
           <button
@@ -470,7 +473,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="inline-flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold text-[#52525B] hover:text-[#C83E31] bg-[#FAF7F2] hover:bg-[#FDF2F0] border border-[#EAE3D5] rounded-xl transition-colors cursor-pointer min-h-[44px]"
           >
             <LogOut className="w-4 h-4" />
-            <span>Выйти</span>
+            <span>{t.dashLogoutBtn}</span>
           </button>
         </div>
       </div>
@@ -488,7 +491,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>Мои прописи ({savedWorksheets.length})</span>
+          <span>
+            {t.dashTabWorksheets} ({savedWorksheets.length})
+          </span>
         </button>
 
         <button
@@ -502,7 +507,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           }`}
         >
           <Folder className="w-4 h-4" />
-          <span>Папки и группы ({folders.length})</span>
+          <span>
+            {t.dashTabFolders} ({folders.length})
+          </span>
         </button>
 
         <button
@@ -516,7 +523,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           }`}
         >
           <Settings className="w-4 h-4" />
-          <span>Настройки по умолчанию</span>
+          <span>{t.dashTabProfile}</span>
         </button>
       </div>
 
@@ -556,7 +563,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     : 'bg-[#FAF7F2] text-[#52525B] border border-[#EAE3D5] hover:bg-[#F3EFE6]'
                 }`}
               >
-                Все папки ({savedWorksheets.length})
+                {t.dashAllFoldersFilter} ({savedWorksheets.length})
               </button>
 
               {folders.map((folder) => {
@@ -588,7 +595,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по названию или иероглифам..."
+                placeholder={t.dashSearchPlaceholder}
                 data-testid="dashboard-search-input"
                 className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31]"
               />
@@ -600,7 +607,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <div className="bg-white border border-[#EAE3D5] rounded-2xl p-12 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-[#C83E31]" />
               <p className="text-base font-medium text-[#52525B]">
-                Загружаем ваши сохраненные прописи и папки...
+                {t.dashLoadingWorksheets}
               </p>
             </div>
           ) : filteredWorksheets.length === 0 ? (
@@ -618,13 +625,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               />
               <h3 className="font-display text-lg sm:text-2xl font-bold text-[#18181B]">
                 {savedWorksheets.length === 0
-                  ? 'У вас пока нет сохраненных прописей'
-                  : 'Ничего не найдено по выбранному фильтру'}
+                  ? t.dashEmptyNoSheetsTitle
+                  : t.dashEmptyFilterTitle}
               </h3>
               <p className="mt-2 text-xs sm:text-base text-[#52525B] max-w-lg mx-auto leading-relaxed">
                 {savedWorksheets.length === 0
-                  ? 'Добавьте нужные слова в конструкторе прописей и нажмите кнопку «Сохранить в Личный кабинет», чтобы сформировать свою библиотеку уроков.'
-                  : 'Попробуйте выбрать другую папку или изменить поисковый запрос.'}
+                  ? t.dashEmptyNoSheetsDesc
+                  : t.dashEmptyFilterDesc}
               </p>
               {savedWorksheets.length === 0 && (
                 <button
@@ -633,7 +640,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="mt-6 inline-flex items-center gap-2.5 px-6 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 >
                   <Plus className="w-5 h-5 text-[#F5D0C8]" />
-                  <span>Открыть Конструктор прописей</span>
+                  <span>{t.dashOpenBuilderBtn}</span>
                 </button>
               )}
             </div>
@@ -643,11 +650,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 const folderObj = folderMap.get(sheet.folder);
                 const folderStyle =
                   FOLDER_COLOR_STYLES[folderObj?.color || 'rose'] || FOLDER_COLOR_STYLES.rose;
-                const formattedDate = new Date(sheet.updatedAt).toLocaleDateString('ru-RU', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                });
+                const formattedDate = new Date(sheet.updatedAt).toLocaleDateString(
+                  lang === 'ru' ? 'ru-RU' : 'en-US',
+                  {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  }
+                );
 
                 return (
                   <article
@@ -687,7 +697,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                           />
                           <span className="px-3 py-1 bg-[#FAF7F2] border border-[#EAE3D5] text-[#18181B] font-mono-tabular text-sm font-bold rounded-lg">
-                            {sheet.words.length} сл.
+                            {sheet.words.length} {t.dashWordsShort}
                           </span>
                         </div>
                       </div>
@@ -713,7 +723,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         ))}
                         {sheet.words.length > 10 && (
                           <span className="inline-flex items-center px-2.5 py-1 text-sm font-mono-tabular text-[#71717A]">
-                            +{sheet.words.length - 10} ещё
+                            +{sheet.words.length - 10} {t.dashMoreWords}
                           </span>
                         )}
                       </div>
@@ -722,19 +732,21 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       <div className="flex flex-wrap items-center gap-2 text-xs text-[#71717A] font-mono-tabular pt-1">
                         <span>
                           {sheet.config.layoutMode === 'by-character'
-                            ? 'Режим А: Посимвольный'
-                            : 'Режим Б: Слово целиком'}
+                            ? t.dashModeAShort
+                            : t.dashModeBShort}
                         </span>
                         <span>·</span>
                         <span>
                           {sheet.config.gridType === 'mizi'
-                            ? 'Мицзыгэ 米字格'
+                            ? t.dashGridMizi
                             : sheet.config.gridType === 'tianzi'
-                            ? 'Тяньцзыгэ 田字格'
-                            : 'Квадрат 口字格'}
+                            ? t.dashGridTianzi
+                            : t.dashGridKouzi}
                         </span>
                         <span>·</span>
-                        <span>Обводка: {sheet.config.traceCount} кл.</span>
+                        <span>
+                          {t.dashTraceShort} {sheet.config.traceCount} {t.wsCellCountUnit}
+                        </span>
                       </div>
                     </div>
 
@@ -751,7 +763,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-[#18181B] bg-[#FAF7F2] hover:bg-[#EAE3D5] border border-[#E6E0D6] rounded-xl transition-colors cursor-pointer"
                         >
                           <Eye className="w-4 h-4 text-[#C83E31]" />
-                          <span>Предпросмотр</span>
+                          <span>{t.dashPreviewBtn}</span>
                         </button>
 
                         <button
@@ -761,7 +773,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                         >
                           <ExternalLink className="w-4 h-4" />
-                          <span>Открыть в конструкторе</span>
+                          <span>{t.dashOpenInBuilderBtn}</span>
                         </button>
 
                         <button
@@ -771,7 +783,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           className="inline-flex items-center gap-2 px-3.5 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                         >
                           <Printer className="w-4 h-4" />
-                          <span>Печать</span>
+                          <span>{t.wsPrintBtn}</span>
                         </button>
 
                         <button
@@ -784,12 +796,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           {exportingSheetId === sheet.id ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
-                              <span>Создание PDF...</span>
+                              <span>{t.wsCreatingPdfBtn}</span>
                             </>
                           ) : (
                             <>
                               <FileDown className="w-4 h-4 text-[#52525B]" />
-                              <span>Скачать PDF</span>
+                              <span>{t.wsDownloadPdfBtn}</span>
                             </>
                           )}
                         </button>
@@ -803,13 +815,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             setIsMutating(true);
                             try {
                               await onDuplicateWorksheet(sheet.id);
-                              showFeedback(`Создана копия прописи «${sheet.title}».`);
+                              showFeedback(`${t.dashToastDuplicatedPrefix} «${sheet.title}».`);
                             } finally {
                               setIsMutating(false);
                             }
                           }}
-                          title="Дублировать пропись"
-                          aria-label={`Дублировать ${sheet.title}`}
+                          title={t.dashDuplicateTitle}
+                          aria-label={`${t.dashDuplicateTitle} ${sheet.title}`}
                           data-testid={`duplicate-worksheet-${sheet.id}`}
                           className="p-2.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
                         >
@@ -823,13 +835,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             setIsMutating(true);
                             try {
                               await onDeleteWorksheet(sheet.id);
-                              showFeedback(`Пропись «${sheet.title}» удалена.`);
+                              showFeedback(
+                                `${t.dashToastDeletedWorksheetPrefix} «${sheet.title}» ${t.dashToastDeletedSuffix}`
+                              );
                             } finally {
                               setIsMutating(false);
                             }
                           }}
-                          title="Удалить пропись"
-                          aria-label={`Удалить ${sheet.title}`}
+                          title={t.dashDeleteTitle}
+                          aria-label={`${t.dashDeleteTitle} ${sheet.title}`}
                           data-testid={`delete-worksheet-${sheet.id}`}
                           className="p-2.5 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-xl transition-colors cursor-pointer"
                         >
@@ -851,10 +865,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <section className="lg:col-span-5 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-4">
             <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
               <FolderPlus className="w-5 h-5 text-[#C83E31]" />
-              <span>Создать тематическую папку</span>
+              <span>{t.dashCreateFolderHeading}</span>
             </h2>
             <p className="text-sm text-[#52525B] leading-relaxed">
-              Группируйте прописи по уровням HSK, учебникам, возрастным группам или дням недели.
+              {t.dashCreateFolderDesc}
             </p>
 
             <form onSubmit={handleCreateFolderSubmit} className="space-y-4 pt-1">
@@ -863,7 +877,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   htmlFor="new-folder-name-input"
                   className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
-                  Название папки или группы *
+                  {t.dashFolderNameLabel}
                 </label>
                 <input
                   id="new-folder-name-input"
@@ -873,14 +887,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   disabled={isMutating}
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="Например: HSK 3 · Вторник 18:00"
+                  placeholder={t.dashFolderNamePlaceholder}
                   className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
 
               <div>
                 <span className="block text-sm font-semibold text-[#18181B] mb-2">
-                  Цветовая метка папки
+                  {t.dashFolderColorLabel}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(FOLDER_COLOR_STYLES).map(([colorKey, style]) => (
@@ -896,7 +910,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       }`}
                     >
                       <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
-                      <span>{style.label}</span>
+                      <span>{t[style.labelKey]}</span>
                     </button>
                   ))}
                 </div>
@@ -911,12 +925,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 {isMutating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Сохранение в облако...</span>
+                    <span>{t.wsSavingToCloudBtn}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-5 h-5 text-[#F5D0C8]" />
-                    <span>Добавить папку</span>
+                    <span>{t.dashAddFolderBtn}</span>
                   </>
                 )}
               </button>
@@ -926,7 +940,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <section className="lg:col-span-7 bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] space-y-4">
             <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
               <Folder className="w-5 h-5 text-[#C83E31]" />
-              <span>Активные папки ({folders.length})</span>
+              <span>
+                {t.dashActiveFoldersHeading} ({folders.length})
+              </span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -946,7 +962,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         </span>
                       </div>
                       <div className="mt-1 text-xs text-[#71717A] font-mono-tabular">
-                        Сохранено прописей: {count}
+                        {t.dashSavedInFolderCount} {count}
                       </div>
                     </div>
 
@@ -959,7 +975,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         }}
                         className="px-3 py-1.5 text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-lg transition-colors cursor-pointer"
                       >
-                        Открыть
+                        {t.dashOpenFolderBtn}
                       </button>
                       {folders.length > 1 && (
                         <button
@@ -969,12 +985,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             setIsMutating(true);
                             try {
                               await onDeleteFolder(folder.id);
-                              showFeedback(`Папка «${folder.name}» удалена.`);
+                              showFeedback(
+                                `${t.dashToastDeletedFolderPrefix} «${folder.name}» ${t.dashToastDeletedSuffix}`
+                              );
                             } finally {
                               setIsMutating(false);
                             }
                           }}
-                          aria-label={`Удалить папку ${folder.name}`}
+                          aria-label={`${t.dashDeleteFolderAria} ${folder.name}`}
                           className="p-2 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -997,12 +1015,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <div>
               <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
                 <UserCheck className="w-5 h-5 text-[#C83E31]" />
-                <span>Личные данные преподавателя</span>
+                <span>{t.dashProfileHeading}</span>
               </h2>
-              <p className="mt-1.5 text-sm text-[#52525B]">
-                Ваше имя автоматически подставляется в правый верхний угол каждого печатного листа
-                А4 («Преподаватель: [Имя]»).
-              </p>
+              <p className="mt-1.5 text-sm text-[#52525B]">{t.dashProfileDesc}</p>
             </div>
 
             <form onSubmit={handleSaveProfileSubmit} className="space-y-4">
@@ -1011,7 +1026,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   htmlFor="profile-name-input"
                   className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
-                  Имя и отчество / Обращение *
+                  {t.dashProfileNameLabel}
                 </label>
                 <input
                   id="profile-name-input"
@@ -1030,7 +1045,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   htmlFor="profile-email-input"
                   className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
-                  Электронная почта (Email)
+                  {t.dashProfileEmailLabel}
                 </label>
                 <input
                   id="profile-email-input"
@@ -1048,7 +1063,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   htmlFor="profile-school-input"
                   className="block text-sm font-semibold text-[#18181B] mb-1.5"
                 >
-                  Учебное заведение / Статус
+                  {t.dashProfileSchoolLabel}
                 </label>
                 <input
                   id="profile-school-input"
@@ -1056,7 +1071,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   disabled={isMutating}
                   value={profileSchool}
                   onChange={(e) => setProfileSchool(e.target.value)}
-                  placeholder="Школа китайского языка, ВУЗ или частный репетитор"
+                  placeholder={t.dashProfileSchoolPlaceholder}
                   className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
                 />
               </div>
@@ -1070,12 +1085,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 {isMutating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Сохранение...</span>
+                    <span>{t.dashSavingBtn}</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-[#F5D0C8]" />
-                    <span>Сохранить профиль преподавателя</span>
+                    <span>{t.dashSaveProfileBtn}</span>
                   </>
                 )}
               </button>
@@ -1084,11 +1099,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             {/* Резервное копирование кабинета (JSON) */}
             <div className="pt-5 border-t border-[#EAE3D5] space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
-                Резервное копирование кабинета
+                {t.dashBackupSectionHeading}
               </h3>
               <p className="text-sm text-[#52525B] leading-relaxed">
-                Скачайте полный архив своих папок, сохраненных прописей и настроек в один файл JSON
-                для резервного хранения.
+                {t.dashBackupSectionDesc}
               </p>
               <div className="flex flex-wrap gap-2.5">
                 <button
@@ -1097,7 +1111,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Скачать резервную копию кабинета (JSON)</span>
+                  <span>{t.dashDownloadBackupJsonBtn}</span>
                 </button>
 
                 <button
@@ -1107,7 +1121,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#C83E31] bg-[#FDF2F0] hover:bg-[#FCE6E2] border border-[#F5D0C8] rounded-xl transition-colors cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
-                  <span>Восстановить из файла</span>
+                  <span>{t.dashRestoreFromFileBtn}</span>
                 </button>
                 <input
                   ref={fileInputRef}
@@ -1125,19 +1139,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <div>
               <h2 className="font-display text-xl font-bold text-[#18181B] flex items-center gap-2.5">
                 <Sparkles className="w-5 h-5 text-[#C83E31]" />
-                <span>Настройки прописей по умолчанию</span>
+                <span>{t.dashDefaultSettingsHeading}</span>
               </h2>
-              <p className="mt-1.5 text-sm text-[#52525B]">
-                Выберите любимый тип сетки, цвет линий и режим компоновки, которые будут
-                применяться при создании новых листов прописи.
-              </p>
+              <p className="mt-1.5 text-sm text-[#52525B]">{t.dashDefaultSettingsDesc}</p>
             </div>
 
             <div className="space-y-5">
               <div>
                 <span className="block text-sm font-semibold text-[#18181B] mb-2.5 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-[#71717A]" />
-                  <span>Режим компоновки по умолчанию</span>
+                  <span>{t.dashDefaultLayoutLabel}</span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <button
@@ -1151,7 +1162,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
                     }`}
                   >
-                    Режим А: Посимвольный разбор (1 знак = 1 блок)
+                    {t.dashDefaultModeALabel}
                   </button>
                   <button
                     type="button"
@@ -1164,7 +1175,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
                     }`}
                   >
-                    Режим Б: Словарный режим (Слово целиком в строке)
+                    {t.dashDefaultModeBLabel}
                   </button>
                 </div>
               </div>
@@ -1173,7 +1184,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 <div>
                   <span className="block text-sm font-semibold text-[#18181B] mb-2.5 flex items-center gap-2">
                     <Grid className="w-4 h-4 text-[#71717A]" />
-                    <span>Тип сетки по умолчанию</span>
+                    <span>{t.dashDefaultGridLabel}</span>
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {(
@@ -1224,14 +1235,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
                 <div>
                   <span className="block text-sm font-semibold text-[#18181B] mb-2.5">
-                    Цвет линий сетки
+                    {t.wsGridColorLabel}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {(
                       [
-                        { id: 'red', label: 'Красный' },
-                        { id: 'green', label: 'Зеленый' },
-                        { id: 'gray', label: 'Графит' },
+                        { id: 'red', label: t.dashDefaultColorRed },
+                        { id: 'green', label: t.dashDefaultColorGreen },
+                        { id: 'gray', label: t.dashDefaultColorGray },
                       ] as const
                     ).map((c) => (
                       <button
@@ -1255,9 +1266,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
               <div className="pt-4 border-t border-[#EAE3D5] flex items-center justify-between">
                 <div className="text-sm text-[#52525B]">
-                  Контуров для обводки по умолчанию:{' '}
+                  {t.dashDefaultTraceLabel}{' '}
                   <strong className="font-mono-tabular text-[#18181B]">
-                    {localDefaultConfig.traceCount} шт.
+                    {localDefaultConfig.traceCount} {t.wsTraceUnit}
                   </strong>
                 </div>
                 <input
@@ -1282,7 +1293,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 className="inline-flex items-center gap-2.5 px-6 py-3 h-12 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
               >
                 <CheckCircle2 className="w-5 h-5 text-[#F5D0C8]" />
-                <span>Применить как настройки по умолчанию</span>
+                <span>{t.dashApplyDefaultConfigBtn}</span>
               </button>
             </div>
           </section>
@@ -1294,7 +1305,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Предпросмотр прописи ${previewSheet.title}`}
+          aria-label={`${t.dashPreviewBtn} ${previewSheet.title}`}
           data-testid="saved-worksheet-preview-modal"
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
           onClick={() => setPreviewSheet(null)}
@@ -1323,7 +1334,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-[#71717A] truncate">
-                    Папка: {previewSheet.folder} · Слов: {previewSheet.words.length}
+                    {t.dashPreviewModalFolder} {previewSheet.folder} · {t.dashPreviewModalWords}{' '}
+                    {previewSheet.words.length}
                   </p>
                 </div>
               </div>
@@ -1335,7 +1347,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] rounded-xl transition-colors cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Печать</span>
+                  <span>{t.wsPrintBtn}</span>
                 </button>
 
                 <button
@@ -1347,12 +1359,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   {exportingSheetId === previewSheet.id ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-[#C83E31]" />
-                      <span>Создание PDF...</span>
+                      <span>{t.wsCreatingPdfBtn}</span>
                     </>
                   ) : (
                     <>
                       <FileDown className="w-4 h-4 text-[#52525B]" />
-                      <span>Скачать PDF</span>
+                      <span>{t.wsDownloadPdfBtn}</span>
                     </>
                   )}
                 </button>
@@ -1367,13 +1379,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl transition-colors cursor-pointer"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>В конструктор</span>
+                  <span>{t.dashPreviewModalToBuilderBtn}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPreviewSheet(null)}
-                  aria-label="Закрыть предпросмотр"
+                  aria-label={t.dashPreviewModalCloseAria}
                   className="p-2 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] rounded-xl transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />

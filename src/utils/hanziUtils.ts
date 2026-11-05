@@ -809,6 +809,529 @@ export const COMMON_CHAR_MEANINGS: Record<string, string> = {
 };
 
 /**
+ * English translations for preset words, characters, and common HSK 1–3 words.
+ */
+export const PRESET_WORDS_EN: Record<string, string> = {
+  好: 'good, fine, well',
+  老师: 'teacher',
+  学习: 'to study, to learn',
+  中国: 'China',
+  图书馆: 'library',
+  朋友: 'friend, friends',
+  你好: 'hello',
+  水: 'water',
+  学生: 'student',
+  北京: 'Beijing',
+  汉语: 'Chinese language',
+  喝茶: 'to drink tea',
+  喜欢: 'to like, to love',
+  高兴: 'happy, glad',
+  电脑: 'computer',
+  医院: 'hospital',
+};
+
+export const KNOWN_CHARACTERS_EN: Record<string, {
+  meaning: string;
+  radical: string;
+  etymology: string;
+  graphemes?: Array<{ char: string; pinyin: string; meaning: string; type: 'radical' | 'component' }>;
+}> = {
+  好: {
+    meaning: 'good, kind; well, to like',
+    radical: '女 (woman)',
+    etymology: 'Ideogram: a woman (女) holding a child (子) — an ancient symbol of well-being, harmony, and goodness.',
+    graphemes: [
+      { char: '女', pinyin: 'nǚ', meaning: 'woman, daughter', type: 'radical' },
+      { char: '子', pinyin: 'zǐ', meaning: 'child, son', type: 'component' },
+    ],
+  },
+  老: {
+    meaning: 'old, experienced, venerable',
+    radical: '老 (old age)',
+    etymology: 'Depicts an elderly person with long hair leaning on a cane — a symbol of wisdom and respect.',
+    graphemes: [
+      { char: '土', pinyin: 'tǔ', meaning: 'earth, support of years', type: 'component' },
+      { char: '匕', pinyin: 'bǐ', meaning: 'cane / bent figure', type: 'radical' },
+    ],
+  },
+  师: {
+    meaning: 'teacher, master, mentor',
+    radical: '巾 (cloth, banner)',
+    etymology: 'Originally depicted troops gathered under a banner (巾), later coming to mean a commander or wise teacher.',
+    graphemes: [
+      { char: '刀', pinyin: 'dāo', meaning: 'order and discipline', type: 'component' },
+      { char: '巾', pinyin: 'jīn', meaning: 'cloth, banner', type: 'radical' },
+    ],
+  },
+  学: {
+    meaning: 'to study, to learn; science, school',
+    radical: '子 (child)',
+    etymology: 'A child (子) under the roof of a school (冖), absorbing knowledge passed down from above.',
+    graphemes: [
+      { char: '小', pinyin: 'xiǎo', meaning: 'sparks of knowledge above', type: 'component' },
+      { char: '冖', pinyin: 'mì', meaning: 'school roof', type: 'component' },
+      { char: '子', pinyin: 'zǐ', meaning: 'child, student', type: 'radical' },
+    ],
+  },
+  习: {
+    meaning: 'to practice, to review; habit',
+    radical: '羽 (feathers, wings)',
+    etymology: 'A young bird flapping its wings (羽) again and again to learn to fly — a metaphor for steady practice.',
+    graphemes: [
+      { char: '羽', pinyin: 'yǔ', meaning: 'bird wing (simplified)', type: 'radical' },
+      { char: '白', pinyin: 'bái', meaning: 'clarity of repetition', type: 'component' },
+    ],
+  },
+  中: {
+    meaning: 'middle, center; inside; China',
+    radical: '丨 (vertical stroke)',
+    etymology: 'A flagpole (丨) passing right through the center of a square (口) — hitting the bullseye and center.',
+    graphemes: [
+      { char: '口', pinyin: 'kǒu', meaning: 'enclosed square, target', type: 'component' },
+      { char: '丨', pinyin: 'gǔn', meaning: 'pole right in the center', type: 'radical' },
+    ],
+  },
+  国: {
+    meaning: 'country, state, nation',
+    radical: '囗 (enclosure)',
+    etymology: 'The jade seal of sovereignty (玉) protected on all sides by city walls (囗) — a country.',
+    graphemes: [
+      { char: '囗', pinyin: 'wéi', meaning: 'state borders, walls', type: 'radical' },
+      { char: '玉', pinyin: 'yù', meaning: 'jade, imperial treasure', type: 'component' },
+    ],
+  },
+  图: {
+    meaning: 'map, chart, drawing, plan',
+    radical: '囗 (enclosure)',
+    etymology: 'A plan of territory drawn within clear borders (囗) — a map, diagram, or illustration.',
+    graphemes: [
+      { char: '囗', pinyin: 'wéi', meaning: 'territory borders', type: 'radical' },
+      { char: '冬', pinyin: 'dōng', meaning: 'winter (phonetic component)', type: 'component' },
+    ],
+  },
+  书: {
+    meaning: 'book, letter, calligraphy',
+    radical: '乙 (hook / brush)',
+    etymology: 'A simplified depiction of a hand holding an ink brush to write on a scroll — book and writing.',
+    graphemes: [
+      { char: '乛', pinyin: 'zhé', meaning: 'folds of a bamboo scroll', type: 'component' },
+      { char: '丨', pinyin: 'gǔn', meaning: 'vertical shaft of the brush', type: 'radical' },
+    ],
+  },
+  馆: {
+    meaning: 'pavilion, hall, public building',
+    radical: '饣 (food)',
+    etymology: 'Originally aguesthouse offering meals (饣) for officials (官); today a public building (library, museum).',
+    graphemes: [
+      { char: '饣', pinyin: 'shí', meaning: 'hospitality, food', type: 'radical' },
+      { char: '官', pinyin: 'guān', meaning: 'official hall (phonetic guān)', type: 'component' },
+    ],
+  },
+  你: {
+    meaning: 'you',
+    radical: '亻 (person)',
+    etymology: 'A person (亻) standing opposite whom you address directly (尔).',
+    graphemes: [
+      { char: '亻', pinyin: 'rén', meaning: 'person radical', type: 'radical' },
+      { char: '尔', pinyin: 'ěr', meaning: 'you (ancient phonetic form)', type: 'component' },
+    ],
+  },
+  朋: {
+    meaning: 'friend, companion; pair',
+    radical: '月 (moon / shells)',
+    etymology: 'Two equal strings of precious cowrie shells (月+月) side by side — a symbol of close friendship.',
+    graphemes: [
+      { char: '月', pinyin: 'yuè', meaning: 'string of cowrie shells / moon', type: 'radical' },
+      { char: '月', pinyin: 'yuè', meaning: 'second matching string beside it', type: 'component' },
+    ],
+  },
+  友: {
+    meaning: 'friend, friendly',
+    radical: '又 (right hand)',
+    etymology: 'Two hands reaching in the same direction to help one another — a true friend.',
+    graphemes: [
+      { char: '𠂇', pinyin: 'zuǒ', meaning: 'outstretched hand', type: 'component' },
+      { char: '又', pinyin: 'yòu', meaning: 'second hand in a handshake', type: 'radical' },
+    ],
+  },
+  水: {
+    meaning: 'water, river, liquid',
+    radical: '水 (water)',
+    etymology: 'Pictogram of a flowing stream with a central current and splashes on both sides.',
+    graphemes: [
+      { char: '亅', pinyin: 'jué', meaning: 'central stream channel', type: 'radical' },
+      { char: '冫', pinyin: 'bīng', meaning: 'ripples and splashes on the sides', type: 'component' },
+    ],
+  },
+  生: {
+    meaning: 'to be born, life; student',
+    radical: '生 (life)',
+    etymology: 'A young sprout breaking through the fertile soil (土) toward the sun — birth, growth, and life.',
+    graphemes: [
+      { char: '丿', pinyin: 'piě', meaning: 'young plant sprout', type: 'component' },
+      { char: '土', pinyin: 'tǔ', meaning: 'fertile earth', type: 'radical' },
+    ],
+  },
+  北: {
+    meaning: 'north, northern',
+    radical: '匕 (spoon / person)',
+    etymology: 'Two people standing back-to-back (hence "back" and "north", the direction traditional houses turned their back walls toward).',
+    graphemes: [
+      { char: '爿', pinyin: 'pán', meaning: 'person facing left', type: 'component' },
+      { char: '匕', pinyin: 'bǐ', meaning: 'person facing right', type: 'radical' },
+    ],
+  },
+  京: {
+    meaning: 'capital city, high mound',
+    radical: '亠 (lid)',
+    etymology: 'A tall watchtower atop an elevated mound at the heart of the imperial capital.',
+    graphemes: [
+      { char: '亠', pinyin: 'tóu', meaning: 'high tower roof', type: 'radical' },
+      { char: '口', pinyin: 'kǒu', meaning: 'palace lookout window', type: 'component' },
+      { char: '小', pinyin: 'xiǎo', meaning: 'high hill foundation', type: 'component' },
+    ],
+  },
+  汉: {
+    meaning: 'Han dynasty, Chinese (people & language)',
+    radical: '氵 (water)',
+    etymology: 'Named after the great Han River (氵), which gave its name to the Han dynasty, people, and language.',
+    graphemes: [
+      { char: '氵', pinyin: 'shuǐ', meaning: 'water, Han River', type: 'radical' },
+      { char: '又', pinyin: 'yòu', meaning: 'hand, river confluence', type: 'component' },
+    ],
+  },
+  语: {
+    meaning: 'language, speech, to speak',
+    radical: '讠 (speech)',
+    etymology: 'Words (讠) spoken by the mouths (口) of many people — language and living speech.',
+    graphemes: [
+      { char: '讠', pinyin: 'yán', meaning: 'word, speech', type: 'radical' },
+      { char: '五', pinyin: 'wǔ', meaning: 'five (phonetic wǔ)', type: 'component' },
+      { char: '口', pinyin: 'kǒu', meaning: 'mouth, speech', type: 'component' },
+    ],
+  },
+  喝: {
+    meaning: 'to drink',
+    radical: '口 (mouth)',
+    etymology: 'Quenching thirst with the mouth (口) on a hot sunny day (日 inside 曷).',
+    graphemes: [
+      { char: '口', pinyin: 'kǒu', meaning: 'mouth', type: 'radical' },
+      { char: '曷', pinyin: 'hé', meaning: 'to ask for water (phonetic hé)', type: 'component' },
+    ],
+  },
+  茶: {
+    meaning: 'tea, tea plant',
+    radical: '艹 (grass)',
+    etymology: 'A person (人) among plants (艹) and trees (木) harvesting fragrant tea leaves.',
+    graphemes: [
+      { char: '艹', pinyin: 'cǎo', meaning: 'grass, young tea leaves', type: 'radical' },
+      { char: '人', pinyin: 'rén', meaning: 'person harvesting leaves', type: 'component' },
+      { char: '木', pinyin: 'mù', meaning: 'tea bush, tree', type: 'component' },
+    ],
+  },
+  喜: {
+    meaning: 'joy, happiness, to like',
+    radical: '口 (mouth)',
+    etymology: 'The beat of a festive drum (壴) and a smiling mouth (口) — heartfelt joy.',
+    graphemes: [
+      { char: '壴', pinyin: 'zhù', meaning: 'festive drum', type: 'component' },
+      { char: '口', pinyin: 'kǒu', meaning: 'smiling mouth', type: 'radical' },
+    ],
+  },
+  欢: {
+    meaning: 'joyous, delighted, to rejoice',
+    radical: '欠 (breath, emotion)',
+    etymology: 'A joyful exclamation (欠) and an open gesture of the hand (又) when greeting friends.',
+    graphemes: [
+      { char: '又', pinyin: 'yòu', meaning: 'waving hand in greeting', type: 'component' },
+      { char: '欠', pinyin: 'qiàn', meaning: 'joyful exclamation', type: 'radical' },
+    ],
+  },
+  高: {
+    meaning: 'tall, high, lofty',
+    radical: '高 (tall)',
+    etymology: 'Pictogram of a tall multi-story tower rising above city gates.',
+    graphemes: [
+      { char: '亠', pinyin: 'tóu', meaning: 'spire of the roof', type: 'radical' },
+      { char: '口', pinyin: 'kǒu', meaning: 'upper and lower tower tiers', type: 'component' },
+    ],
+  },
+  兴: {
+    meaning: 'excitement, interest, to prosper',
+    radical: '八 (eight / supports)',
+    etymology: 'Four hands lifting a vessel together — shared enthusiasm and uplift.',
+    graphemes: [
+      { char: '⺍', pinyin: 'xiǎo', meaning: 'many hands lifting above', type: 'component' },
+      { char: '同', pinyin: 'tóng', meaning: 'lifting together (base)', type: 'radical' },
+    ],
+  },
+  电: {
+    meaning: 'electricity, lightning',
+    radical: '日 (sun / thundercloud)',
+    etymology: 'A flash of lightning (乚) piercing storm clouds (日) — electrical energy.',
+    graphemes: [
+      { char: '日', pinyin: 'rì', meaning: 'stormy sky', type: 'radical' },
+      { char: '乚', pinyin: 'yǐ', meaning: 'lightning bolt striking down', type: 'component' },
+    ],
+  },
+  脑: {
+    meaning: 'brain, mind, head',
+    radical: '月 (flesh, body organ)',
+    etymology: 'The vital organ of the body (月) beneath the crown of the head (亠) — the brain.',
+    graphemes: [
+      { char: '月', pinyin: 'ròu', meaning: 'body organ (flesh)', type: 'radical' },
+      { char: '亠', pinyin: 'tóu', meaning: 'crown of the head', type: 'component' },
+      { char: '凶', pinyin: 'xiōng', meaning: 'cranium and brain folds', type: 'component' },
+    ],
+  },
+  医: {
+    meaning: 'medicine, doctor, to heal',
+    radical: '匚 (box, case)',
+    etymology: 'A healer’s case (匚) holding acupuncture needles (矢) for treating wounds.',
+    graphemes: [
+      { char: '匚', pinyin: 'fāng', meaning: 'medical chest, case', type: 'radical' },
+      { char: '矢', pinyin: 'shǐ', meaning: 'acupuncture needle / arrow', type: 'component' },
+    ],
+  },
+  院: {
+    meaning: 'courtyard, institution, hospital',
+    radical: '阝 (mound, wall)',
+    etymology: 'An enclosed courtyard (完) behind a high wall (阝) — a major public institution.',
+    graphemes: [
+      { char: '阝', pinyin: 'fù', meaning: 'high wall, mound', type: 'radical' },
+      { char: '完', pinyin: 'wán', meaning: 'complete courtyard (phonetic wán)', type: 'component' },
+    ],
+  },
+};
+
+export const COMMON_WORD_TRANSLATIONS_EN: Record<string, string> = {
+  妈妈: 'mom, mother',
+  爸爸: 'dad, father',
+  哥哥: 'older brother',
+  姐姐: 'older sister',
+  弟弟: 'younger brother',
+  妹妹: 'younger sister',
+  家人: 'family',
+  吃饭: 'to eat a meal',
+  米饭: 'cooked rice',
+  面条: 'noodles',
+  水果: 'fruit',
+  苹果: 'apple',
+  牛奶: 'milk',
+  咖啡: 'coffee',
+  面包: 'bread',
+  鸡蛋: 'egg',
+  学校: 'school',
+  大学: 'university',
+  中学: 'middle school',
+  小学: 'primary school',
+  同学: 'classmate',
+  教室: 'classroom',
+  工作: 'work, job',
+  公司: 'company',
+  医生: 'doctor',
+  护士: 'nurse',
+  司机: 'driver',
+  经理: 'manager',
+  谢谢: 'thank you',
+  不客气: 'you are welcome',
+  再见: 'goodbye',
+  对不起: 'sorry, excuse me',
+  没关系: 'it does not matter',
+  请问: 'excuse me, may I ask',
+  名字: 'name',
+  什么: 'what',
+  哪里: 'where',
+  怎么: 'how',
+  多少: 'how many, how much',
+  今天: 'today',
+  明天: 'tomorrow',
+  昨天: 'yesterday',
+  现在: 'now',
+  时间: 'time',
+  星期: 'week',
+  上午: 'morning',
+  下午: 'afternoon',
+  晚上: 'evening',
+  早上: 'early morning',
+  天气: 'weather',
+  下雨: 'to rain',
+  下雪: 'to snow',
+  看书: 'to read a book',
+  写字: 'to write characters',
+  说话: 'to speak, to talk',
+  听音乐: 'to listen to music',
+  看电影: 'to watch a movie',
+  电影: 'movie, film',
+  电视: 'television',
+  手机: 'mobile phone',
+  飞机: 'airplane',
+  火车: 'train',
+  火车站: 'train station',
+  机场: 'airport',
+  出租车: 'taxi',
+  公共汽车: 'bus',
+  商店: 'shop, store',
+  超市: 'supermarket',
+  买东西: 'to go shopping',
+  东西: 'thing, item',
+  衣服: 'clothes',
+  漂亮: 'beautiful, pretty',
+  认识: 'to know, to meet',
+  休息: 'to rest',
+  运动: 'sports, exercise',
+  游泳: 'to swim',
+  跑步: 'to run, jogging',
+  旅游: 'to travel',
+  上海: 'Shanghai',
+  俄罗斯: 'Russia',
+  莫斯科: 'Moscow',
+  中文: 'Chinese language',
+  汉字: 'Chinese characters',
+  书法: 'calligraphy',
+  毛笔: 'ink brush',
+  墨水: 'ink',
+};
+
+export const COMMON_CHAR_MEANINGS_EN: Record<string, string> = {
+  我: 'I, me',
+  他: 'he, him',
+  她: 'she, her',
+  们: 'plural suffix',
+  的: 'possessive particle',
+  是: 'to be',
+  不: 'not, no',
+  在: 'at, in, on',
+  有: 'to have, there is',
+  人: 'person, people',
+  大: 'big, large',
+  小: 'small, little',
+  多: 'many, much',
+  少: 'few, little',
+  上: 'up, above, last',
+  下: 'down, below, next',
+  来: 'to come',
+  去: 'to go',
+  看: 'to look, to read',
+  听: 'to listen',
+  说: 'to speak, to say',
+  读: 'to read aloud',
+  写: 'to write',
+  吃: 'to eat',
+  饭: 'meal, cooked rice',
+  买: 'to buy',
+  卖: 'to sell',
+  开: 'to open, to drive',
+  坐: 'to sit, to travel by',
+  住: 'to live, to stay',
+  家: 'home, family',
+  校: 'school',
+  店: 'shop, store',
+  车: 'vehicle, car',
+  机: 'machine, airplane',
+  天: 'sky, day',
+  气: 'air, weather',
+  年: 'year',
+  月: 'month, moon',
+  日: 'sun, day',
+  今: 'today, present',
+  明: 'bright, tomorrow',
+  昨: 'yesterday',
+  早: 'early, morning',
+  晚: 'late, evening',
+  午: 'noon',
+  时: 'time, hour',
+  间: 'space, room',
+  名: 'name, famous',
+  字: 'character, word',
+  文: 'script, language',
+  妈: 'mom, mother',
+  爸: 'dad, father',
+  哥: 'older brother',
+  姐: 'older sister',
+  弟: 'younger brother',
+  妹: 'younger sister',
+  爱: 'to love',
+  想: 'to think, to want',
+  会: 'can, to know how to',
+  能: 'can, able to',
+  很: 'very',
+  太: 'too, extremely',
+  真: 'real, truly',
+  都: 'all, both',
+  也: 'also, too',
+  和: 'and, with, peace',
+  謝: 'to thank',
+  谢: 'to thank',
+  再: 'again',
+  见: 'to see, to meet',
+  请: 'please, to invite',
+  问: 'to ask',
+  火: 'fire',
+  山: 'mountain',
+  木: 'tree, wood',
+  口: 'mouth',
+  手: 'hand',
+  心: 'heart, mind',
+  墨: 'ink',
+};
+
+/**
+ * Returns a local word translation in the requested language ('ru' | 'en') if available in the local dictionaries.
+ */
+export function getLocalWordTranslation(word: string, lang: 'ru' | 'en' = 'ru'): string | undefined {
+  const clean = extractChineseChars(word).join('') || word.trim();
+  if (!clean) return undefined;
+  const radicalEntry =
+    clean.length === 1
+      ? RADICALS_DATA.find((r) => r.char === clean || r.variant === clean)
+      : undefined;
+
+  if (lang === 'en') {
+    return (
+      PRESET_WORDS_EN[clean] ||
+      COMMON_WORD_TRANSLATIONS_EN[clean] ||
+      radicalEntry?.meaning_en ||
+      (clean.length === 1
+        ? KNOWN_CHARACTERS_EN[clean]?.meaning || COMMON_CHAR_MEANINGS_EN[clean]
+        : undefined)
+    );
+  }
+
+  return (
+    PRESET_WORDS[clean]?.translation ||
+    COMMON_WORD_TRANSLATIONS[clean] ||
+    radicalEntry?.meaning ||
+    (clean.length === 1
+      ? KNOWN_CHARACTERS[clean]?.meaning || COMMON_CHAR_MEANINGS[clean]
+      : undefined)
+  );
+}
+
+/**
+ * Returns a local single-character meaning in the requested language ('ru' | 'en') if available.
+ */
+export function getLocalCharMeaning(char: string, lang: 'ru' | 'en' = 'ru'): string | undefined {
+  const clean = extractChineseChars(char)[0] || char.trim();
+  if (!clean) return undefined;
+  const radicalEntry = RADICALS_DATA.find((r) => r.char === clean || r.variant === clean);
+
+  if (lang === 'en') {
+    return (
+      KNOWN_CHARACTERS_EN[clean]?.meaning ||
+      COMMON_CHAR_MEANINGS_EN[clean] ||
+      radicalEntry?.meaning_en
+    );
+  }
+
+  return (
+    KNOWN_CHARACTERS[clean]?.meaning ||
+    COMMON_CHAR_MEANINGS[clean] ||
+    radicalEntry?.meaning
+  );
+}
+
+/**
  * Проверяет, является ли строка перевода технической заглушкой или пустой.
  */
 export function isPlaceholderTranslation(text?: string | null): boolean {
@@ -819,6 +1342,9 @@ export function isPlaceholderTranslation(text?: string | null): boolean {
     /^Слово «.+»/i.test(trimmed) ||
     /^Иероглиф «.+»/i.test(trimmed) ||
     /^знак «.+»/i.test(trimmed) ||
+    /^Word [«"].+[»"]/i.test(trimmed) ||
+    /^Character [«"].+[»"]/i.test(trimmed) ||
+    /^char [«"].+[»"]/i.test(trimmed) ||
     trimmed.includes(' + ')
   );
 }
@@ -1147,26 +1673,130 @@ export function getCharacterGraphemesForPractice(charDetail: CharDetail): Graphe
   ];
 }
 
+const PRESET_EXAMPLES_EN: Record<string, Array<{ zh: string; pinyin: string; ru: string }>> = {
+  好: [
+    { zh: '你好！很高兴认识你。', pinyin: 'Nǐ hǎo! Hěn gāoxìng rènshi nǐ.', ru: 'Hello! Nice to meet you.' },
+    { zh: '今天天气真好。', pinyin: 'Jīntiān tiānqì zhēn hǎo.', ru: 'The weather is really nice today.' },
+  ],
+  老师: [
+    { zh: '王老师教我们中文。', pinyin: 'Wáng lǎoshī jiāo wǒmen Zhōngwén.', ru: 'Teacher Wang teaches us Chinese.' },
+    { zh: '谢谢您的帮助，老师！', pinyin: 'Xièxie nín de bāngzhù, lǎoshī!', ru: 'Thank you for your help, teacher!' },
+  ],
+  学习: [
+    { zh: '我每天都努力学习汉语。', pinyin: 'Wǒ měitiān dōu nǔlì xuéxí Hànyǔ.', ru: 'I study Chinese hard every day.' },
+    { zh: '学习新知识非常有趣。', pinyin: 'Xuéxí xīn zhīshi fēicháng yǒuqù.', ru: 'Learning new knowledge is very interesting.' },
+  ],
+  中国: [
+    { zh: '中国有着悠久的历史和文化。', pinyin: 'Zhōngguó yǒuzhe yōujiǔ de lìshǐ hé wénhuà.', ru: 'China has a long history and rich culture.' },
+    { zh: '我明年想去中国旅行。', pinyin: 'Wǒ míngnián xiǎng qù Zhōngguó lǚxíng.', ru: 'I want to travel to China next year.' },
+  ],
+  图书馆: [
+    { zh: '周末我喜欢在图书馆看书。', pinyin: 'Zhōumò wǒ xǐhuan zài túshūguǎn kànshū.', ru: 'On weekends I like reading books in the library.' },
+    { zh: '大学图书馆里非常安静。', pinyin: 'Dàxué túshūguǎn lǐ fēicháng ānjìng.', ru: 'It is very quiet inside the university library.' },
+  ],
+  朋友: [
+    { zh: '他是我最好的朋友。', pinyin: 'Tā shì wǒ zuì hǎo de péngyou.', ru: 'He is my best friend.' },
+    { zh: '我们和朋友一起喝茶。', pinyin: 'Wǒmen hé péngyou yìqǐ hē chá.', ru: 'We drink tea together with friends.' },
+  ],
+  你好: [
+    { zh: '你好，请问图书馆怎么走？', pinyin: 'Nǐ hǎo, qǐngwèn túshūguǎn zěnme zǒu?', ru: 'Hello, excuse me, how do I get to the library?' },
+    { zh: '见到你真好，你好吗？', pinyin: 'Jiàndào nǐ zhēn hǎo, nǐ hǎo ma?', ru: 'So good to see you, how are you?' },
+  ],
+  水: [
+    { zh: '请给我一杯温水。', pinyin: 'Qǐng gěi wǒ yì bēi wēnshuǐ.', ru: 'Please give me a glass of warm water.' },
+    { zh: '多喝水对身体好。', pinyin: 'Duō hē shuǐ duì shēntǐ hǎo.', ru: 'Drinking more water is good for your health.' },
+  ],
+  学生: [
+    { zh: '班里有二十个学生。', pinyin: 'Bān lǐ yǒu èrshí gè xuésheng.', ru: 'There are twenty students in the class.' },
+    { zh: '她是一位非常聪明的学生。', pinyin: 'Tā shì yí wèi fēicháng cōngmíng de xuésheng.', ru: 'She is a very smart student.' },
+  ],
+  北京: [
+    { zh: '北京是中国的首都。', pinyin: 'Běijīng shì Zhōngguó de shǒudū.', ru: 'Beijing is the capital of China.' },
+    { zh: '秋天是去北京旅游的最好季节。', pinyin: 'Qiūtiān shì qù Běijīng lǚyóu de zuì hǎo jìjié.', ru: 'Autumn is the best season to visit Beijing.' },
+  ],
+  汉语: [
+    { zh: '他的汉语说得很流利。', pinyin: 'Tā de Hànyǔ shuō de hěn liúlì.', ru: 'He speaks Chinese very fluently.' },
+    { zh: '我们一起练习写汉字和说汉语。', pinyin: 'Wǒmen yìqǐ liànxí xiě Hànzì hé shuō Hànyǔ.', ru: 'We practice writing Chinese characters and speaking Chinese together.' },
+  ],
+  喝茶: [
+    { zh: '爷爷每天早上都喜欢喝茶。', pinyin: 'Yéye měitiān zǎoshang dōu xǐhuan hē chá.', ru: 'Grandpa likes to drink tea every morning.' },
+    { zh: '请坐，我们一起喝茶聊天吧。', pinyin: 'Qǐng zuò, wǒmen yìqǐ hē chá liáotiān ba.', ru: 'Please have a seat, let us drink tea and chat together.' },
+  ],
+  喜欢: [
+    { zh: '你最喜欢什么颜色？', pinyin: 'Nǐ zuì xǐhuan shénme yánsè?', ru: 'What color do you like best?' },
+    { zh: '我很喜欢看中国电影。', pinyin: 'Wǒ hěn xǐhuan kàn Zhōngguó diànyǐng.', ru: 'I really like watching Chinese movies.' },
+  ],
+  高兴: [
+    { zh: '听到这个好消息，大家都很高兴。', pinyin: 'Tīngdào zhège hǎo xiāoxi, dàjiā dōu hěn gāoxìng.', ru: 'Hearing this good news, everyone was very happy.' },
+    { zh: '认识你我非常高兴。', pinyin: 'Rènshi nǐ wǒ fēicháng gāoxìng.', ru: 'I am very glad to meet you.' },
+  ],
+  电脑: [
+    { zh: '桌子上有一台新电脑。', pinyin: 'Zhuōzi shàng yǒu yì tái xīn diànnǎo.', ru: 'There is a new computer on the desk.' },
+    { zh: '我用电脑查找学习资料。', pinyin: 'Wǒ yòng diànnǎo cházhǎo xuéxí zīliào.', ru: 'I use a computer to look up study materials.' },
+  ],
+  医院: [
+    { zh: '李大夫在第一医院工作。', pinyin: 'Lǐ dàifu zài dì-yī yīyuàn gōngzuò.', ru: 'Dr. Li works at the First Hospital.' },
+    { zh: '这家医院离地铁站很近。', pinyin: 'Zhè jiā yīyuàn lí dìtiězhàn hěn jìn.', ru: 'This hospital is very close to the subway station.' },
+  ],
+};
+
 /**
  * Builds a complete fallback CharDetail for any Chinese character,
  * checking KNOWN_CHARACTERS, CHAR_GRAPHEME_MAP, COMMON_CHAR_MEANINGS, and RADICALS_DATA first.
  */
-export function buildFallbackCharDetail(char: string): CharDetail {
-  if (KNOWN_CHARACTERS[char]) {
-    return KNOWN_CHARACTERS[char];
+export function buildFallbackCharDetail(char: string, lang: 'ru' | 'en' = 'ru'): CharDetail {
+  const knownRu = KNOWN_CHARACTERS[char];
+  const knownEn = KNOWN_CHARACTERS_EN[char];
+
+  if (knownRu) {
+    const meaningRu = knownRu.meaning;
+    const meaningEn = knownEn?.meaning || COMMON_CHAR_MEANINGS_EN[char];
+    if (lang === 'en' && knownEn) {
+      return {
+        ...knownRu,
+        meaning: knownEn.meaning,
+        meaning_ru: meaningRu,
+        meaning_en: meaningEn,
+        radical: knownEn.radical || knownRu.radical,
+        etymology: knownEn.etymology || knownRu.etymology,
+        graphemes: knownEn.graphemes || knownRu.graphemes,
+      };
+    }
+    return {
+      ...knownRu,
+      meaning: lang === 'en' && meaningEn ? meaningEn : meaningRu,
+      meaning_ru: meaningRu,
+      meaning_en: meaningEn,
+    };
   }
+
   const radicalMatch = RADICALS_DATA.find((r) => r.char === char || r.variant === char);
   const { pinyin: py, tone } = getCharPinyinAndTone(char);
-  const commonCharMeaning = COMMON_CHAR_MEANINGS[char];
+  const commonCharMeaningRu = COMMON_CHAR_MEANINGS[char];
+  const commonCharMeaningEn = COMMON_CHAR_MEANINGS_EN[char];
   const mappedGraphemes = CHAR_GRAPHEME_MAP[char];
 
   if (radicalMatch) {
+    const meaningRu = commonCharMeaningRu || radicalMatch.meaning;
+    const meaningEn = commonCharMeaningEn || radicalMatch.meaning_en || radicalMatch.meaning;
+    const activeMeaning = lang === 'en' ? meaningEn : meaningRu;
+    const activeRadicalDesc =
+      lang === 'en'
+        ? `${radicalMatch.char} (Radical #${radicalMatch.number}, ${(radicalMatch.meaning_en || radicalMatch.meaning).split(',')[0]})`
+        : `${radicalMatch.char} (ключ №${radicalMatch.number}, ${radicalMatch.meaning.split(',')[0]})`;
+    const activeEtymology =
+      lang === 'en'
+        ? `Kangxi radical #${radicalMatch.number} (${radicalMatch.strokes} strokes): "${radicalMatch.meaning_en || radicalMatch.meaning}". Commonly appears in characters: ${radicalMatch.examples.join(', ')}.`
+        : `Базовый иероглифический ключ Канси №${radicalMatch.number} (${radicalMatch.strokes} черт): «${radicalMatch.meaning}». Часто встречается в знаках: ${radicalMatch.examples.join(', ')}.`;
+
     return {
       char,
       pinyin: radicalMatch.pinyin || py,
       tone: detectToneFromPinyin(radicalMatch.pinyin || py),
-      meaning: commonCharMeaning || radicalMatch.meaning,
-      radical: `${radicalMatch.char} (ключ №${radicalMatch.number}, ${radicalMatch.meaning.split(',')[0]})`,
+      meaning: activeMeaning,
+      meaning_ru: meaningRu,
+      meaning_en: meaningEn,
+      radical: activeRadicalDesc,
       strokeCount: radicalMatch.strokes,
       graphemes:
         mappedGraphemes && mappedGraphemes.length >= 2
@@ -1175,23 +1805,30 @@ export function buildFallbackCharDetail(char: string): CharDetail {
               {
                 char: radicalMatch.char,
                 pinyin: radicalMatch.pinyin,
-                meaning: radicalMatch.meaning,
+                meaning: lang === 'en' ? radicalMatch.meaning_en || radicalMatch.meaning : radicalMatch.meaning,
                 type: 'radical',
               },
             ],
-      etymology: `Базовый иероглифический ключ Канси №${radicalMatch.number} (${radicalMatch.strokes} черт): «${radicalMatch.meaning}». Часто встречается в знаках: ${radicalMatch.examples.join(', ')}.`,
+      etymology: activeEtymology,
     };
   }
 
   const firstRadical = mappedGraphemes?.find((g) => g.type === 'radical') || mappedGraphemes?.[0];
+  const meaningRu = commonCharMeaningRu || `знак «${char}» (${py})`;
+  const meaningEn = commonCharMeaningEn || `Character "${char}" (${py})`;
+  const activeMeaning = lang === 'en' ? meaningEn : meaningRu;
 
   return {
     char,
     pinyin: py || char,
     tone,
-    meaning: commonCharMeaning || `знак «${char}» (${py})`,
+    meaning: activeMeaning,
+    meaning_ru: commonCharMeaningRu,
+    meaning_en: commonCharMeaningEn,
     radical: firstRadical
       ? `${firstRadical.char} (${firstRadical.meaning.split(',')[0]})`
+      : lang === 'en'
+      ? `${char} (base component)`
       : `${char} (базовый ключ)`,
     strokeCount: 8,
     graphemes:
@@ -1201,22 +1838,33 @@ export function buildFallbackCharDetail(char: string): CharDetail {
             {
               char,
               pinyin: py,
-              meaning: commonCharMeaning || 'основной структурный элемент',
+              meaning:
+                lang === 'en'
+                  ? commonCharMeaningEn || 'core structural element'
+                  : commonCharMeaningRu || 'основной структурный элемент',
               type: 'radical',
             },
           ],
-    etymology: `Иероглиф «${char}» произносится как «${py}» (${tone}-й тон) и входит в состав лексической единицы.`,
+    etymology:
+      lang === 'en'
+        ? `Character "${char}" is pronounced "${py}" (tone ${tone}) and forms part of this lexical unit.`
+        : `Иероглиф «${char}» произносится как «${py}» (${tone}-й тон) и входит в состав лексической единицы.`,
   };
 }
 
 /**
  * Normalizes raw API output or fallback into a strictly valid WordItem.
  */
-export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inputText: string): WordItem {
+export function normalizeWordItem(
+  raw: Partial<WordItem> | null | undefined,
+  inputText: string,
+  lang: 'ru' | 'en' = 'ru'
+): WordItem {
   const chars = extractChineseChars(raw?.word || inputText);
   const cleanWord = chars.length > 0 ? chars.join('') : inputText.trim();
   const preset = PRESET_WORDS[cleanWord];
-  const commonWordMeaning = COMMON_WORD_TRANSLATIONS[cleanWord];
+  const localTranslationRu = getLocalWordTranslation(cleanWord, 'ru');
+  const localTranslationEn = getLocalWordTranslation(cleanWord, 'en');
   const radicalEntry =
     cleanWord.length === 1
       ? RADICALS_DATA.find((r) => r.char === cleanWord || r.variant === cleanWord)
@@ -1226,15 +1874,31 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
     raw?.pinyin?.trim() || preset?.pinyin || radicalEntry?.pinyin || getPinyinForText(cleanWord);
 
   const rawTranslation = raw?.translation?.trim();
+  // Ignore rawTranslation if it equals the preset's Russian translation while we are normalizing for English
+  const isPresetObjectPassedDirectly =
+    preset && raw && raw.translation === preset.translation && !raw.translation_en && !raw.isManualTranslation;
   const cleanRawTranslation =
-    rawTranslation && !isPlaceholderTranslation(rawTranslation) ? rawTranslation : '';
+    rawTranslation &&
+    !isPlaceholderTranslation(rawTranslation) &&
+    !(lang === 'en' && isPresetObjectPassedDirectly)
+      ? rawTranslation
+      : '';
 
   const rawChars = Array.isArray(raw?.characters) ? raw!.characters : [];
   const characters: CharDetail[] = (chars.length > 0 ? chars : [cleanWord.slice(0, 1)]).map(
     (ch, idx) => {
       const found = rawChars.find((rc) => rc.char === ch) || rawChars[idx];
-      const fallback = buildFallbackCharDetail(ch);
-      if (!found) return fallback;
+      const fallback = buildFallbackCharDetail(ch, lang);
+      const localCharRu = getLocalCharMeaning(ch, 'ru');
+      const localCharEn = getLocalCharMeaning(ch, 'en');
+
+      if (!found || (lang === 'en' && isPresetObjectPassedDirectly)) {
+        return {
+          ...fallback,
+          meaning_ru: fallback.meaning_ru || localCharRu,
+          meaning_en: fallback.meaning_en || localCharEn,
+        };
+      }
 
       const { pinyin: computedPy, tone: computedTone } = getCharPinyinAndTone(ch);
       const graphemes: Grapheme[] =
@@ -1242,10 +1906,15 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
           ? found.graphemes.map((g) => ({
               char: g.char || ch,
               pinyin: g.pinyin || getPinyinForText(g.char || ch),
-              meaning: g.meaning || 'компонент',
+              meaning: g.meaning || (lang === 'en' ? 'component' : 'компонент'),
               type: g.type === 'radical' ? 'radical' : 'component',
             }))
           : fallback.graphemes;
+
+      const resolvedMeaning =
+        found.meaning && !isPlaceholderTranslation(found.meaning)
+          ? found.meaning
+          : fallback.meaning;
 
       return {
         char: ch,
@@ -1254,10 +1923,13 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
           typeof found.tone === 'number' && found.tone >= 1 && found.tone <= 5
             ? found.tone
             : computedTone,
-        meaning:
-          found.meaning && !isPlaceholderTranslation(found.meaning)
-            ? found.meaning
-            : fallback.meaning,
+        meaning: resolvedMeaning,
+        meaning_ru:
+          found.meaning_ru ||
+          (lang === 'ru' && !isPlaceholderTranslation(resolvedMeaning) ? resolvedMeaning : localCharRu),
+        meaning_en:
+          found.meaning_en ||
+          (lang === 'en' && !isPlaceholderTranslation(resolvedMeaning) ? resolvedMeaning : localCharEn),
         radical: found.radical || fallback.radical,
         strokeCount:
           typeof found.strokeCount === 'number' && found.strokeCount > 0
@@ -1269,34 +1941,51 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
     }
   );
 
-  const translation =
-    cleanRawTranslation ||
-    preset?.translation ||
-    commonWordMeaning ||
-    radicalEntry?.meaning ||
-    (cleanWord.length === 1 && KNOWN_CHARACTERS[cleanWord]
-      ? KNOWN_CHARACTERS[cleanWord].meaning
-      : cleanWord.length === 1 && COMMON_CHAR_MEANINGS[cleanWord]
-      ? COMMON_CHAR_MEANINGS[cleanWord]
-      : `Слово «${cleanWord}» (${wordPinyin})`);
+  const localForLang = lang === 'en' ? localTranslationEn : localTranslationRu;
+  const placeholderForLang =
+    lang === 'en'
+      ? `Word "${cleanWord}" (${wordPinyin})`
+      : `Слово «${cleanWord}» (${wordPinyin})`;
+
+  const translation = cleanRawTranslation || localForLang || placeholderForLang;
+
+  const translationRu =
+    raw?.translation_ru ||
+    (lang === 'ru' && !isPlaceholderTranslation(translation) ? translation : localTranslationRu);
+  const translationEn =
+    raw?.translation_en ||
+    (lang === 'en' && !isPlaceholderTranslation(translation) ? translation : localTranslationEn);
+
+  const presetExamplesForLang =
+    lang === 'en' && PRESET_EXAMPLES_EN[cleanWord]
+      ? PRESET_EXAMPLES_EN[cleanWord]
+      : preset?.examples;
 
   const examples =
-    Array.isArray(raw?.examples) && raw!.examples.length > 0
+    Array.isArray(raw?.examples) &&
+    raw!.examples.length > 0 &&
+    !(lang === 'en' && isPresetObjectPassedDirectly && PRESET_EXAMPLES_EN[cleanWord])
       ? raw!.examples.map((ex) => ({
           zh: ex.zh || cleanWord,
           pinyin: ex.pinyin || getPinyinForText(ex.zh || cleanWord),
           ru: ex.ru || '',
         }))
-      : preset?.examples || [
+      : presetExamplesForLang || [
           {
             zh: `我们今天学习“${cleanWord}”。`,
             pinyin: `Wǒmen jīntiān xuéxí "${wordPinyin}".`,
-            ru: `Сегодня мы изучаем «${cleanWord}» (${translation}).`,
+            ru:
+              lang === 'en'
+                ? `Today we are studying "${cleanWord}" (${translation}).`
+                : `Сегодня мы изучаем «${cleanWord}» (${translation}).`,
           },
           {
             zh: `请在字帖中练习写“${cleanWord}”。`,
             pinyin: `Qǐng zài zìtiè zhōng liànxí xiě "${wordPinyin}".`,
-            ru: `Пожалуйста, потренируйтесь писать «${cleanWord}» в прописи.`,
+            ru:
+              lang === 'en'
+                ? `Please practice writing "${cleanWord}" in your calligraphy worksheet.`
+                : `Пожалуйста, потренируйтесь писать «${cleanWord}» в прописи.`,
           },
         ];
 
@@ -1305,6 +1994,9 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
     word: cleanWord,
     pinyin: wordPinyin,
     translation,
+    translation_ru: translationRu,
+    translation_en: translationEn,
+    isManualTranslation: raw?.isManualTranslation,
     examples,
     characters,
     createdAt: raw?.createdAt || Date.now(),
@@ -1314,9 +2006,9 @@ export function normalizeWordItem(raw: Partial<WordItem> | null | undefined, inp
 /**
  * Starter demo set of 3 words for the very first launch of the app.
  */
-export function getInitialDemoWorksheet(): WordItem[] {
+export function getInitialDemoWorksheet(lang: 'ru' | 'en' = 'ru'): WordItem[] {
   return ['你好', '老师', '好'].map((w, i) => ({
-    ...normalizeWordItem(PRESET_WORDS[w], w),
+    ...normalizeWordItem(PRESET_WORDS[w], w, lang),
     id: `demo-${w}-${i}`,
   }));
 }
@@ -1324,7 +2016,7 @@ export function getInitialDemoWorksheet(): WordItem[] {
 /**
  * Returns the 15-word HSK 1 starter vocabulary list (including multi-syllable words) for Games.
  */
-export function getHsk1StarterWords(): WordItem[] {
+export function getHsk1StarterWords(lang: 'ru' | 'en' = 'ru'): WordItem[] {
   const keys = [
     '你好',
     '老师',
@@ -1343,7 +2035,7 @@ export function getHsk1StarterWords(): WordItem[] {
     '好',
   ];
   return keys.map((w, i) => ({
-    ...normalizeWordItem(PRESET_WORDS[w], w),
+    ...normalizeWordItem(PRESET_WORDS[w], w, lang),
     id: `hsk1-${w}-${i}`,
   }));
 }

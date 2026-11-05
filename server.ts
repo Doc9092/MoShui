@@ -9,19 +9,22 @@ import {
   normalizeWordItem,
   isPlaceholderTranslation,
   PRESET_WORDS,
-  COMMON_WORD_TRANSLATIONS,
-  COMMON_CHAR_MEANINGS,
-  KNOWN_CHARACTERS,
+  getLocalWordTranslation,
+  getLocalCharMeaning,
 } from './src/utils/hanziUtils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function translateChineseToRussianFallback(text: string): Promise<string> {
+async function translateChineseFallback(
+  text: string,
+  lang: 'ru' | 'en' = 'ru'
+): Promise<string> {
   const clean = text.trim();
   if (!clean) return '';
+  const targetLang = lang === 'en' ? 'en' : 'ru';
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=ru&dt=t&q=${encodeURIComponent(
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=${targetLang}&dt=t&q=${encodeURIComponent(
       clean
     )}`;
     const response = await fetch(url);
@@ -48,56 +51,56 @@ const WORD_ANALYSIS_SCHEMA = {
   properties: {
     word: {
       type: Type.STRING,
-      description: 'Изучаемое китайское слово или иероглиф (например, 老师 или 好)',
+      description: 'Target Chinese word or character (e.g., 老师 or 好)',
     },
     pinyin: {
       type: Type.STRING,
-      description: 'Пиньинь всего слова с тоновыми знаками (например, lǎoshī)',
+      description: 'Tone-marked pinyin of the whole word (e.g., lǎoshī)',
     },
     translation: {
       type: Type.STRING,
-      description: 'Точный и емкий перевод слова на русский язык',
+      description: 'Concise and accurate translation of the word in the requested target language',
     },
     examples: {
       type: Type.ARRAY,
-      description: 'Ровно 2 практических примера употребления слова в предложениях',
+      description: 'Exactly 2 practical example sentences using the word',
       items: {
         type: Type.OBJECT,
         properties: {
-          zh: { type: Type.STRING, description: 'Предложение на китайском языке' },
-          pinyin: { type: Type.STRING, description: 'Пиньинь предложения с тонами' },
-          ru: { type: Type.STRING, description: 'Перевод предложения на русский язык' },
+          zh: { type: Type.STRING, description: 'Sentence in Chinese' },
+          pinyin: { type: Type.STRING, description: 'Tone-marked pinyin of the sentence' },
+          ru: { type: Type.STRING, description: 'Translation of the sentence in the requested target language' },
         },
         required: ['zh', 'pinyin', 'ru'],
       },
     },
     characters: {
       type: Type.ARRAY,
-      description: 'Детальный посимвольный разбор каждого отдельного иероглифа, входящего в слово, по порядку',
+      description: 'Detailed character-by-character breakdown in sequence',
       items: {
         type: Type.OBJECT,
         properties: {
-          char: { type: Type.STRING, description: 'Отдельный китайский иероглиф (1 символ)' },
-          pinyin: { type: Type.STRING, description: 'Пиньинь этого иероглифа с тоном' },
-          tone: { type: Type.INTEGER, description: 'Номер тона от 1 до 5' },
-          meaning: { type: Type.STRING, description: 'Значение этого отдельного иероглифа на русском' },
+          char: { type: Type.STRING, description: 'Single Chinese character (1 symbol)' },
+          pinyin: { type: Type.STRING, description: 'Tone-marked pinyin of this character' },
+          tone: { type: Type.INTEGER, description: 'Tone number from 1 to 5' },
+          meaning: { type: Type.STRING, description: 'Concise meaning of this character in the requested target language' },
           radical: {
             type: Type.STRING,
-            description: 'Ключ иероглифа с пояснением в скобках, например: 女 (женщина)',
+            description: 'Character radical with explanation in parentheses, e.g., 女 (женщина) or 女 (woman)',
           },
-          strokeCount: { type: Type.INTEGER, description: 'Количество черт в иероглифе' },
+          strokeCount: { type: Type.INTEGER, description: 'Stroke count of the character' },
           graphemes: {
             type: Type.ARRAY,
-            description: 'Структурные компоненты (графемы и ключи), из которых состоит иероглиф',
+            description: 'Structural components (graphemes and radicals) that form the character',
             items: {
               type: Type.OBJECT,
               properties: {
-                char: { type: Type.STRING, description: 'Символ графемы или ключа' },
-                pinyin: { type: Type.STRING, description: 'Пиньинь графемы' },
-                meaning: { type: Type.STRING, description: 'Значение графемы на русском языке' },
+                char: { type: Type.STRING, description: 'Grapheme or radical symbol' },
+                pinyin: { type: Type.STRING, description: 'Pinyin of the grapheme' },
+                meaning: { type: Type.STRING, description: 'Meaning of the grapheme in the requested target language' },
                 type: {
                   type: Type.STRING,
-                  description: 'Тип элемента: radical (ключ) или component (компонент/фонетик)',
+                  description: 'Element type: radical or component',
                 },
               },
               required: ['char', 'pinyin', 'meaning', 'type'],
@@ -105,7 +108,7 @@ const WORD_ANALYSIS_SCHEMA = {
           },
           etymology: {
             type: Type.STRING,
-            description: 'Короткая и яркая мнемоника или этимология иероглифа на русском языке (1-2 предложения)',
+            description: 'Short, memorable mnemonic or etymology in the requested target language (1-2 sentences)',
           },
         },
         required: ['char', 'pinyin', 'tone', 'meaning', 'radical', 'strokeCount', 'graphemes', 'etymology'],
@@ -120,30 +123,30 @@ const BATCH_TRANSLATION_SCHEMA = {
   properties: {
     items: {
       type: Type.ARRAY,
-      description: 'Список переведенных китайских слов (одиночных и многосложных) с пиньинем и значениями входящих иероглифов',
+      description: 'List of translated Chinese words (single characters and multi-character words) with pinyin and character meanings',
       items: {
         type: Type.OBJECT,
         properties: {
           word: {
             type: Type.STRING,
-            description: 'Исходное китайское слово целиком без изменений (например, 老师, 你好, 图书馆 или 好)',
+            description: 'Original Chinese word unchanged (e.g., 老师, 你好, 图书馆, or 好)',
           },
           pinyin: {
             type: Type.STRING,
-            description: 'Пиньинь всего слова с тоновыми знаками (например, lǎoshī)',
+            description: 'Tone-marked pinyin of the whole word (e.g., lǎoshī)',
           },
           translation: {
             type: Type.STRING,
-            description: 'Точный и краткий перевод всего слова на русский язык (например: учитель, преподаватель)',
+            description: 'Concise and accurate translation of the whole word in the requested target language suitable for a calligraphy worksheet',
           },
           characters: {
             type: Type.ARRAY,
-            description: 'Краткое значение каждого отдельного иероглифа в составе слова на русском языке с учетом контекста слова',
+            description: 'Concise meaning of each individual character in the word in the requested target language',
             items: {
               type: Type.OBJECT,
               properties: {
-                char: { type: Type.STRING, description: 'Отдельный иероглиф' },
-                meaning: { type: Type.STRING, description: 'Краткое значение этого иероглифа на русском' },
+                char: { type: Type.STRING, description: 'Single character' },
+                meaning: { type: Type.STRING, description: 'Concise meaning of this character in the requested target language' },
               },
               required: ['char', 'meaning'],
             },
@@ -156,23 +159,22 @@ const BATCH_TRANSLATION_SCHEMA = {
   required: ['items'],
 };
 
-function buildLocalWordTranslationFallback(cleanWord: string): {
+function buildLocalWordTranslationFallback(
+  cleanWord: string,
+  lang: 'ru' | 'en' = 'ru'
+): {
   pinyin: string;
   translation: string;
   charMeanings: Record<string, string>;
 } {
-  const normalized = normalizeWordItem(PRESET_WORDS[cleanWord] || null, cleanWord);
+  const normalized = normalizeWordItem(PRESET_WORDS[cleanWord] || null, cleanWord, lang);
   const charMeanings: Record<string, string> = {};
   for (const chObj of normalized.characters) {
     charMeanings[chObj.char] =
-      KNOWN_CHARACTERS[chObj.char]?.meaning ||
-      COMMON_CHAR_MEANINGS[chObj.char] ||
-      chObj.meaning;
+      getLocalCharMeaning(chObj.char, lang) || chObj.meaning;
   }
   const translation =
-    PRESET_WORDS[cleanWord]?.translation ||
-    COMMON_WORD_TRANSLATIONS[cleanWord] ||
-    normalized.translation;
+    getLocalWordTranslation(cleanWord, lang) || normalized.translation;
 
   return {
     pinyin: normalized.pinyin,
@@ -182,7 +184,8 @@ function buildLocalWordTranslationFallback(cleanWord: string): {
 }
 
 async function enrichMissingTranslationsWithFallback(
-  result: Record<string, { pinyin: string; translation: string; charMeanings: Record<string, string> }>
+  result: Record<string, { pinyin: string; translation: string; charMeanings: Record<string, string> }>,
+  lang: 'ru' | 'en' = 'ru'
 ): Promise<void> {
   const wordsNeedingTranslation = Object.keys(result).filter((w) =>
     isPlaceholderTranslation(result[w]?.translation)
@@ -203,13 +206,13 @@ async function enrichMissingTranslationsWithFallback(
 
   await Promise.all([
     ...wordsNeedingTranslation.map(async (w) => {
-      const tr = await translateChineseToRussianFallback(w);
+      const tr = await translateChineseFallback(w, lang);
       if (tr && !isPlaceholderTranslation(tr)) {
         result[w].translation = tr;
       }
     }),
     ...Array.from(charsNeedingMeaning).map(async (ch) => {
-      const tr = await translateChineseToRussianFallback(ch);
+      const tr = await translateChineseFallback(ch, lang);
       if (tr && !isPlaceholderTranslation(tr)) {
         charTranslationsMap[ch] = tr;
       }
@@ -294,15 +297,22 @@ async function startServer() {
 
   app.post('/api/analyze-chinese', async (req, res) => {
     const rawInput = typeof req.body?.input === 'string' ? req.body.input.trim() : '';
+    const lang: 'ru' | 'en' = req.body?.lang === 'en' ? 'en' : 'ru';
     const chars = extractChineseChars(rawInput);
     const cleanWord = chars.join('');
 
     if (!cleanWord) {
-      res.status(400).json({ error: 'Пожалуйста, введите хотя бы один китайский иероглиф.' });
+      res.status(400).json({
+        error:
+          lang === 'en'
+            ? 'Please enter at least one Chinese character.'
+            : 'Пожалуйста, введите хотя бы один китайский иероглиф.',
+      });
       return;
     }
 
-    const cachedAnalysis = analysisMemoryCache.get(cleanWord);
+    const cacheKey = `${lang}:${cleanWord}`;
+    const cachedAnalysis = analysisMemoryCache.get(cacheKey);
     if (cachedAnalysis) {
       res.json(cachedAnalysis);
       return;
@@ -323,9 +333,16 @@ async function startServer() {
           },
         });
 
-        const prompt = `Проанализируй китайское слово или иероглиф «${cleanWord}» для русскоязычного студента.
+        const prompt =
+          lang === 'en'
+            ? `Analyze the Chinese word or character "${cleanWord}" for an English-speaking student.
+Return:
+1. Overall tone-marked pinyin and a concise English translation suitable for a calligraphy worksheet for "${cleanWord}".
+2. 2 natural example sentences with pinyin and English translation (in the "ru" field).
+3. Character-by-character breakdown in sequence (${chars.join(', ')}): pinyin, tone number (1-5), concise English meaning of the character, radical with English explanation in parentheses, exact stroke count, structural graphemes (type: "radical" or "component") with their pinyin and English meaning, and a clear mnemonic/etymology in English.`
+            : `Проанализируй китайское слово или иероглиф «${cleanWord}» для русскоязычного студента.
 Верни:
-1. Общий пиньинь (с тонами) и точный перевод слова «${cleanWord}» целиком на русский язык.
+1. Общий пиньинь (с тонами) и краткий, точный перевод слова «${cleanWord}» целиком на русский язык.
 2. 2 естественных примера употребления с пиньинем и переводом на русский.
 3. Посимвольный разбор для каждого иероглифа в порядке следования (${chars.join(', ')}): пиньинь, номер тона (1-5), значение знака, иероглифический ключ (радикал), точное число черт, список составных графем (type: "radical" или "component") с их пиньинем и значением на русском, а также понятную мнемонику/этимологию на русском языке.`;
 
@@ -333,8 +350,8 @@ async function startServer() {
 
         if (responseText) {
           const parsed = JSON.parse(responseText.trim());
-          const normalized = normalizeWordItem(parsed, cleanWord);
-          analysisMemoryCache.set(cleanWord, normalized);
+          const normalized = normalizeWordItem(parsed, cleanWord, lang);
+          analysisMemoryCache.set(cacheKey, normalized);
           res.json(normalized);
           return;
         }
@@ -343,29 +360,34 @@ async function startServer() {
       }
     }
 
-    const fallbackItem = normalizeWordItem(PRESET_WORDS[cleanWord] || null, cleanWord);
+    const fallbackItem = normalizeWordItem(PRESET_WORDS[cleanWord] || null, cleanWord, lang);
     if (isPlaceholderTranslation(fallbackItem.translation)) {
-      const tr = await translateChineseToRussianFallback(cleanWord);
+      const tr = await translateChineseFallback(cleanWord, lang);
       if (tr) {
         fallbackItem.translation = tr;
+        if (lang === 'en') fallbackItem.translation_en = tr;
+        else fallbackItem.translation_ru = tr;
       }
     }
     await Promise.all(
       fallbackItem.characters.map(async (chObj) => {
         if (isPlaceholderTranslation(chObj.meaning)) {
-          const chTr = await translateChineseToRussianFallback(chObj.char);
+          const chTr = await translateChineseFallback(chObj.char, lang);
           if (chTr) {
             chObj.meaning = chTr;
+            if (lang === 'en') chObj.meaning_en = chTr;
+            else chObj.meaning_ru = chTr;
           }
         }
       })
     );
-    analysisMemoryCache.set(cleanWord, fallbackItem);
+    analysisMemoryCache.set(cacheKey, fallbackItem);
     res.json(fallbackItem);
   });
 
   app.post('/api/translate-words-batch', async (req, res) => {
     const rawWords: unknown[] = Array.isArray(req.body?.words) ? req.body.words : [];
+    const lang: 'ru' | 'en' = req.body?.lang === 'en' ? 'en' : 'ru';
     const cleanWords = Array.from(
       new Set(
         rawWords
@@ -386,13 +408,14 @@ async function startServer() {
 
     const uncachedWords: string[] = [];
 
-    // Заполняем из кэша или базового локального словаря
+    // Заполняем из кэша или базового локального словаря на выбранном языке
     for (const w of cleanWords) {
-      const cached = batchWordMemoryCache.get(w);
+      const cacheKey = `${lang}:${w}`;
+      const cached = batchWordMemoryCache.get(cacheKey);
       if (cached && !isPlaceholderTranslation(cached.translation)) {
         result[w] = cached;
       } else {
-        result[w] = buildLocalWordTranslationFallback(w);
+        result[w] = buildLocalWordTranslationFallback(w, lang);
         if (isPlaceholderTranslation(result[w].translation)) {
           uncachedWords.push(w);
         }
@@ -414,11 +437,19 @@ async function startServer() {
           },
         });
 
-        const prompt = `Переведи на русский язык следующий список китайских слов (среди них есть как одиночные иероглифы, так и двусложные и многосложные слова): ${uncachedWords.join(', ')}.
+        const prompt =
+          lang === 'en'
+            ? `Translate the following list of Chinese words and characters into concise, accurate English (concise English translation suitable for a calligraphy worksheet): ${uncachedWords.join(', ')}.
+For EACH item in the list (${uncachedWords.map((w) => `"${w}"`).join(', ')}) you MUST return:
+1. word — the exact Chinese word or character from the input list without spaces or changes (e.g., "${uncachedWords[0]}").
+2. pinyin — accurate tone-marked pinyin of the whole word.
+3. translation — a concise English translation suitable for a calligraphy worksheet (e.g., for 老师 — "teacher", for 你好 — "hello", for 图书馆 — "library").
+4. characters — an array of each individual character in the word with its concise English meaning in context.`
+            : `Переведи на краткий, точный русский язык следующий список китайских слов (среди них есть как одиночные иероглифы, так и двусложные и многосложные слова): ${uncachedWords.join(', ')}.
 Для КАЖДОГО элемента из списка (${uncachedWords.map((w) => `"${w}"`).join(', ')}) обязательно верни:
 1. word — само китайское слово целиком точно как во входном списке без пробелов и изменений (например, "${uncachedWords[0]}").
 2. pinyin — точный пиньинь всего слова с тоновыми знаками.
-3. translation — точный, естественный перевод всего слова целиком на русский язык (например, для 老师 — "учитель, преподаватель", для 你好 — "привет, здравствуйте", для 图书馆 — "библиотека").
+3. translation — краткий, точный перевод всего слова целиком на русский язык (например, для 老师 — "учитель, преподаватель", для 你好 — "привет, здравствуйте", для 图书馆 — "библиотека").
 4. characters — массив каждого отдельного иероглифа, входящего в это слово, с его кратким значением на русском языке с учетом контекста слова.`;
 
         const responseText = await generateJsonWithFallback(ai, prompt, BATCH_TRANSLATION_SCHEMA);
@@ -461,10 +492,10 @@ async function startServer() {
       }
     }
 
-    await enrichMissingTranslationsWithFallback(result);
+    await enrichMissingTranslationsWithFallback(result, lang);
     for (const [wKey, val] of Object.entries(result)) {
       if (val && !isPlaceholderTranslation(val.translation)) {
-        batchWordMemoryCache.set(wKey, val);
+        batchWordMemoryCache.set(`${lang}:${wKey}`, val);
       }
     }
     res.json({ translations: result });

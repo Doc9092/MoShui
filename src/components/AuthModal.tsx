@@ -4,6 +4,7 @@ import { X, LogIn, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-re
 import type { TeacherProfile } from '../types/hanzi';
 import { signIn, signUp } from '../services/authStorageService';
 import { MOSHUI_LOGO_SRC } from './Navbar';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -38,7 +40,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       if (mode === 'login') {
         const profile = await signIn(email, password);
-        toast.success(`Добро пожаловать, ${profile.name}!`);
+        toast.success(`${t.authWelcomeToast}, ${profile.name}!`);
         onSuccess(profile);
         onClose();
       } else {
@@ -48,13 +50,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           password,
           schoolOrTitle,
         });
-        toast.success(`Профиль преподавателя «${profile.name}» создан!`);
+        toast.success(`${t.authCreatedToast}: «${profile.name}»!`);
         onSuccess(profile);
         onClose();
       }
     } catch (err) {
-      const errMsg =
-        err instanceof Error ? err.message : 'Произошла ошибка при входе в систему.';
+      const errMsg = err instanceof Error ? err.message : t.authGenericError;
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -75,7 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          aria-label="Закрыть окно авторизации"
+          aria-label={t.authCloseAria}
           className="absolute right-3.5 top-3.5 p-2 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer z-10"
         >
           <X className="w-5 h-5" />
@@ -94,7 +95,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             id="auth-modal-title"
             className="mt-3 font-display text-xl sm:text-2xl font-bold text-[#18181B]"
           >
-            MoShui (<span className="font-chinese">墨水</span>) — Кабинет преподавателя
+            MoShui (<span className="font-chinese">墨水</span>) — {t.authTitle}
           </h2>
         </div>
 
@@ -102,7 +103,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="px-4 sm:px-6 pt-4 sm:pt-5">
           <div
             role="tablist"
-            aria-label="Режим входа или регистрации"
+            aria-label={t.authModeAria}
             className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
           >
             <button
@@ -120,8 +121,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-[#52525B] hover:text-[#18181B]'
               }`}
             >
-              <span className="hidden sm:inline">Вход в систему</span>
-              <span className="sm:hidden">Вход</span>
+              <span className="hidden sm:inline">{t.authTabLoginFull}</span>
+              <span className="sm:hidden">{t.authTabLoginShort}</span>
             </button>
 
             <button
@@ -139,7 +140,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-[#52525B] hover:text-[#18181B]'
               }`}
             >
-              <span>Регистрация</span>
+              <span>{t.authTabRegister}</span>
             </button>
           </div>
         </div>
@@ -163,7 +164,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 htmlFor="teacher-name-input"
                 className="block text-sm font-semibold text-[#18181B] mb-1.5"
               >
-                Имя / Обращение *
+                {t.authLabelName}
               </label>
               <input
                 id="teacher-name-input"
@@ -172,7 +173,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={isSubmitting}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Например: Лилия Лаоши"
+                placeholder={t.authPlaceholderName}
                 className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
               />
             </div>
@@ -183,7 +184,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               htmlFor="teacher-email-input"
               className="block text-sm font-semibold text-[#18181B] mb-1.5"
             >
-              Email *
+              {t.authLabelEmail}
             </label>
             <input
               id="teacher-email-input"
@@ -192,7 +193,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               disabled={isSubmitting}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="teacher@school.edu"
+              placeholder={t.authPlaceholderEmail}
               className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
             />
           </div>
@@ -202,7 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               htmlFor="teacher-password-input"
               className="block text-sm font-semibold text-[#18181B] mb-1.5"
             >
-              Пароль *
+              {t.authLabelPassword}
             </label>
             <div className="relative">
               <input
@@ -213,13 +214,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={isSubmitting}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Минимум 6 символов"
+                placeholder={t.authPlaceholderPassword}
                 className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
               >
                 {showPassword ? (
@@ -237,7 +238,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 htmlFor="teacher-school-input"
                 className="block text-sm font-semibold text-[#18181B] mb-1.5"
               >
-                Название школы / курса (необязательно)
+                {t.authLabelSchool}
               </label>
               <input
                 id="teacher-school-input"
@@ -245,7 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={isSubmitting}
                 value={schoolOrTitle}
                 onChange={(e) => setSchoolOrTitle(e.target.value)}
-                placeholder="Например: Языковой центр «Поднебесная»"
+                placeholder={t.authPlaceholderSchool}
                 className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
               />
             </div>
@@ -262,18 +263,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>
-                    {mode === 'login' ? 'Вход...' : 'Регистрация...'}
+                    {mode === 'login' ? t.authLoadingLogin : t.authLoadingRegister}
                   </span>
                 </>
               ) : mode === 'login' ? (
                 <>
                   <LogIn className="w-5 h-5 text-[#F5D0C8]" />
-                  <span>Войти</span>
+                  <span>{t.authSubmitLogin}</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="w-5 h-5 text-[#F5D0C8]" />
-                  <span>Регистрация</span>
+                  <span>{t.authSubmitRegister}</span>
                 </>
               )}
             </button>
