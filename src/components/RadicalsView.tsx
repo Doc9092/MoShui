@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
 import { Search, Volume2, BookOpen, Plus, Check, Filter } from 'lucide-react';
 import type { RadicalItem, WordItem } from '../types/hanzi';
 import { RADICALS_DATA } from '../utils/radicalsData';
@@ -72,6 +73,7 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
     if (isRadicalInWorksheet(rad.char)) return;
     const item = normalizeWordItem(null, rad.char);
     onAddToWorksheet(item);
+    toast.success(`Ключ «${rad.char}» добавлен в пропись.`);
   };
 
   return (

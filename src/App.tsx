@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import type {
   AppTab,
@@ -422,6 +423,7 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    toast.success(`Резервная копия «${filename}» скачана.`);
   };
 
   const handleImportWorkspaceBackup = async (
@@ -557,6 +559,24 @@ export default function App() {
           </button>
         </div>
       )}
+
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#FAF8F5', // теплый кремовый фон
+            color: '#333333',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+            borderRadius: '8px',
+            border: '1px solid rgba(0,0,0,0.05)',
+            padding: '12px 24px',
+          },
+          success: {
+            iconTheme: { primary: '#4B5563', secondary: '#FAF8F5' },
+          },
+        }}
+      />
     </div>
   );
 }

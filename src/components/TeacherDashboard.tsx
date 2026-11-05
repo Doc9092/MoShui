@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { flushSync } from 'react-dom';
+import { toast } from 'react-hot-toast';
 import {
   Folder,
   FolderPlus,
@@ -177,6 +178,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   const showFeedback = (msg: string) => {
     setActionError(null);
+    toast.success(msg);
     setFeedbackBanner(msg);
     setTimeout(() => {
       setFeedbackBanner((prev) => (prev === msg ? null : prev));
@@ -203,9 +205,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       await downloadWorksheetAsPDF(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
       showFeedback(`Файл «${sheet.title}.pdf» успешно сформирован и скачан.`);
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : 'Не удалось скачать PDF-пропись.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось скачать PDF-пропись.';
+      setActionError(msg);
+      toast.error(msg);
     } finally {
       setExportingSheetId(null);
     }
@@ -221,9 +223,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       await waitForPrintableSheetImages();
       await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheet.title);
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : 'Не удалось открыть окно печати.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось открыть окно печати.';
+      setActionError(msg);
+      toast.error(msg);
       onQuickPrintSavedWorksheet(sheet);
     }
   };
@@ -313,9 +315,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       setNewFolderName('');
       showFeedback(`Папка «${trimmed}» синхронизирована с облаком.`);
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : 'Ошибка при создании папки.'
-      );
+      const msg = err instanceof Error ? err.message : 'Ошибка при создании папки.';
+      setActionError(msg);
+      toast.error(msg);
     } finally {
       setIsMutating(false);
     }
@@ -335,9 +337,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       });
       showFeedback('Профиль преподавателя обновлен в облаке. Ваше имя отобразится в шапке А4.');
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : 'Не удалось обновить профиль преподавателя.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось обновить профиль преподавателя.';
+      setActionError(msg);
+      toast.error(msg);
     } finally {
       setIsMutating(false);
     }
@@ -363,12 +365,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             `Резервная копия успешно восстановлена в облако. Загружено прописей: ${result.importedCount}.`
           );
         } else {
-          setActionError('Не удалось прочитать файл резервной копии JSON. Проверьте формат файла.');
+          const msg = 'Не удалось прочитать файл резервной копии JSON. Проверьте формат файла.';
+          setActionError(msg);
+          toast.error(msg);
         }
       } catch (err) {
-        setActionError(
-          err instanceof Error ? err.message : 'Ошибка восстановления резервной копии.'
-        );
+        const msg = err instanceof Error ? err.message : 'Ошибка восстановления резервной копии.';
+        setActionError(msg);
+        toast.error(msg);
       } finally {
         setIsMutating(false);
       }

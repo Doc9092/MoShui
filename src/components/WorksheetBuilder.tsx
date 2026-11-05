@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import {
   Printer,
   Trash2,
@@ -129,6 +130,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   }, [folders, selectedFolder]);
 
   const showToast = (msg: string) => {
+    toast.success(msg);
     setWorkspaceToast(msg);
     setTimeout(() => {
       setWorkspaceToast((prev) => (prev === msg ? null : prev));
@@ -224,7 +226,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     e.preventDefault();
     const words = parseBatchChineseInput(batchInput);
     if (words.length === 0) {
-      setStatusNote('Введите хотя бы одно китайское слово или иероглиф через запятую или пробел.');
+      const msg = 'Введите хотя бы одно китайское слово или иероглиф через запятую или пробел.';
+      setStatusNote(msg);
+      toast.error(msg);
       return;
     }
 
@@ -243,7 +247,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     }
 
     if (addedItems.length === 0) {
-      setStatusNote('Все указанные слова уже присутствуют в вашей прописи.');
+      const msg = 'Все указанные слова уже присутствуют в вашей прописи.';
+      setStatusNote(msg);
+      toast.error(msg);
       return;
     }
 
@@ -308,9 +314,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       }
 
       onUpdateWorksheetList(updatedList);
-      setStatusNote('Русские переводы и пиньинь успешно обновлены для всех слов.');
+      const okMsg = 'Русские переводы и пиньинь успешно обновлены для всех слов.';
+      setStatusNote(okMsg);
+      toast.success(okMsg);
     } catch {
-      setStatusNote('Не удалось обновить часть переводов. Проверьте соединение.');
+      const errMsg = 'Не удалось обновить часть переводов. Проверьте соединение.';
+      setStatusNote(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsEnrichingAi(false);
     }
@@ -332,6 +342,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   const handleClearAll = () => {
     onUpdateWorksheetList([]);
     setStatusNote('Список прописи очищен.');
+    toast.success('Список прописи очищен.');
   };
 
   const handleDownloadPdf = async () => {
@@ -354,21 +365,28 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Не удалось сформировать PDF-файл.';
       setStatusNote(msg);
+      toast.error(msg);
     } finally {
       setIsExportingPdf(false);
     }
   };
 
   const handlePrintSheet = async () => {
-    const logoImg = document.querySelector('.printable-a4-page img') as HTMLImageElement;
-    if (logoImg && !logoImg.complete) {
-      await new Promise((resolve) => {
-        logoImg.onload = resolve;
-        logoImg.onerror = resolve;
-      });
+    try {
+      const logoImg = document.querySelector('.printable-a4-page img') as HTMLImageElement;
+      if (logoImg && !logoImg.complete) {
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve;
+        });
+      }
+      const sheetTitle = activeSavedWorksheet?.title || config.sheetTitle || 'Пропись MoShui';
+      await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Не удалось открыть окно печати.';
+      setStatusNote(msg);
+      toast.error(msg);
     }
-    const sheetTitle = activeSavedWorksheet?.title || config.sheetTitle || 'Пропись MoShui';
-    await printWorksheetInNewWindow(PRINTABLE_SHEET_ELEMENT_ID, sheetTitle);
   };
 
   const handleExportJson = () => {
@@ -425,9 +443,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         );
       }
     } catch (err) {
-      setStatusNote(
-        err instanceof Error ? err.message : 'Ошибка обновления прописи.'
-      );
+      const msg = err instanceof Error ? err.message : 'Ошибка обновления прописи.';
+      setStatusNote(msg);
+      toast.error(msg);
     } finally {
       setIsSavingToCloud(false);
     }
@@ -443,9 +461,12 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         setSelectedFolder(created.name);
         setNewFolderName('');
         setIsCreatingInlineFolder(false);
+        toast.success(`Папка «${created.name}» создана.`);
       }
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Не удалось создать папку в облаке.');
+      const msg = err instanceof Error ? err.message : 'Не удалось создать папку в облаке.';
+      setSaveError(msg);
+      toast.error(msg);
     }
   };
 
@@ -482,9 +503,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         showToast(`Пропись «${saved.title}» сохранена в папку «${saved.folder}»!`);
       }
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : 'Не удалось сохранить пропись.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось сохранить пропись.';
+      setSaveError(msg);
+      toast.error(msg);
     } finally {
       setIsSavingToCloud(false);
     }

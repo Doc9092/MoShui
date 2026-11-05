@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { X, LogIn, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import type { TeacherProfile } from '../types/hanzi';
 import { signIn, signUp } from '../services/authStorageService';
@@ -37,6 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       if (mode === 'login') {
         const profile = await signIn(email, password);
+        toast.success(`Добро пожаловать, ${profile.name}!`);
         onSuccess(profile);
         onClose();
       } else {
@@ -46,13 +48,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           password,
           schoolOrTitle,
         });
+        toast.success(`Профиль преподавателя «${profile.name}» создан!`);
         onSuccess(profile);
         onClose();
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Произошла ошибка при входе в систему.'
-      );
+      const errMsg =
+        err instanceof Error ? err.message : 'Произошла ошибка при входе в систему.';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }

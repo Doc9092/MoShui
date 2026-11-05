@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import {
   Search,
   Volume2,
@@ -53,7 +54,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   const handleAnalyze = async (rawText: string) => {
     const trimmed = rawText.trim();
     if (!trimmed) {
-      setErrorMessage('Введите китайское слово или иероглиф для разбора.');
+      const msg = 'Введите китайское слово или иероглиф для разбора.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -64,9 +67,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
       onWordChange(analyzed);
       setSearchQuery(analyzed.word);
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : 'Не удалось разобрать введенное слово.'
-      );
+      const msg = err instanceof Error ? err.message : 'Не удалось разобрать введенное слово.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
