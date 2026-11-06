@@ -46,10 +46,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Верхняя шапка сайта с эффектом матового стекла рисовой бумаги */}
-      <header className="sticky top-0 z-30 bg-[#FAF7F2]/85 backdrop-blur-md border-b border-[#E6E0D6] print:hidden">
-        <div className="max-w-[1380px] mx-auto flex items-center justify-between gap-2 sm:gap-3 px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-          {/* Фирменный логотип MoShui (image_0.png) с бесшовным слиянием mix-blend-multiply */}
+      {/* Парящая стеклянная капсула в эстетике Spatial Glass / visionOS */}
+      <header className="sticky top-4 z-40 w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] lg:w-full max-w-6xl mx-auto rounded-full px-3 py-2 md:px-4 md:py-2.5 lg:px-6 lg:py-3 bg-white/65 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.04)] ring-1 ring-black/[0.03] print:hidden">
+        <div className="flex items-center justify-between w-full gap-1.5 lg:gap-4">
+          {/* Фирменный логотип MoShui */}
           <a
             href="#dictionary"
             onClick={(e) => {
@@ -57,36 +57,36 @@ export const Navbar: React.FC<NavbarProps> = ({
               onSelectTab('dictionary');
             }}
             data-testid="navbar-brand-link"
-            className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 min-h-[44px]"
+            className="flex items-center gap-2 lg:gap-3 group shrink-0"
           >
             <img
               src={MOSHUI_LOGO_SRC}
               alt="MoShui 墨水"
-              width={52}
-              height={52}
+              width={46}
+              height={46}
               data-testid="navbar-logo-img"
-              className="w-11 h-11 md:w-12 md:h-12 lg:w-[52px] lg:h-[52px] rounded-full object-contain mix-blend-multiply transition-transform duration-200 group-hover:scale-105 shrink-0"
+              className="w-8 h-8 lg:w-11 lg:h-11 rounded-full object-contain mix-blend-multiply transition-transform duration-200 group-hover:scale-105 shrink-0"
             />
 
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-[#18181B] leading-none">
+            <div className="flex flex-col shrink-0">
+              <div className="flex items-baseline gap-1 lg:gap-1.5 whitespace-nowrap">
+                <span className="font-display text-base lg:text-2xl font-bold tracking-tight text-stone-900 leading-none whitespace-nowrap">
                   MoShui
                 </span>
-                <span className="font-chinese text-sm sm:text-base font-semibold text-[#C83E31]">
+                <span className="font-chinese text-xs lg:text-base font-semibold text-[#C83E31] whitespace-nowrap">
                   墨水
                 </span>
               </div>
-              <span className="mt-0.5 text-xs font-medium text-[#52525B] hidden sm:block whitespace-nowrap">
+              <span className="mt-0.5 text-[11px] font-medium text-stone-500 hidden lg:block whitespace-nowrap">
                 {t.navSubtitle}
               </span>
             </div>
           </a>
 
-          {/* Навигация для планшетов и десктопов (hidden md:flex, кнопки min-h-[44px]) */}
+          {/* Навигация для планшетов и десктопов в виде сегментированного стеклянного контрола */}
           <nav
             aria-label={t.navMainAria}
-            className="hidden md:flex items-center gap-1.5 lg:gap-2 shrink-0"
+            className="hidden md:flex items-center gap-1 bg-stone-200/45 p-1 rounded-full backdrop-blur-md border border-white/60 shrink-0"
           >
             {desktopNavItems.map((item) => {
               const isActive = activeTab === item.id;
@@ -97,20 +97,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-testid={`nav-tab-${item.id}`}
                   onClick={() => onSelectTab(item.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`relative min-h-[44px] py-2 px-3.5 lg:px-4 text-xs lg:text-sm font-medium rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center ${
+                  className={`relative py-1.5 px-3 lg:px-4 text-xs lg:text-sm rounded-full transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer flex items-center ${
                     isActive
-                      ? 'bg-[#18181B] text-[#FAF7F2] font-semibold shadow-md border-b-2 border-[#C83E31]'
-                      : 'text-[#52525B] hover:text-[#18181B] hover:bg-[#EAE3D5]/50'
+                      ? 'bg-white shadow-sm text-stone-900 font-semibold ring-1 ring-stone-900/[0.04]'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-white/50 font-medium'
                   }`}
                 >
-                  <span className="hidden lg:inline">{item.label}</span>
-                  <span className="lg:hidden">{item.shortLabel}</span>
+                  <span className="hidden xl:inline">{item.label}</span>
+                  <span className="xl:hidden">{item.shortLabel}</span>
                   {typeof item.count === 'number' && (
                     <span
-                      className={`ml-1.5 font-mono-tabular text-xs px-1.5 py-0.5 rounded-md font-semibold ${
+                      className={`ml-1.5 font-mono-tabular text-xs px-2 py-0.5 rounded-full font-semibold ${
                         isActive
-                          ? 'bg-[#C83E31] text-white'
-                          : 'bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8]'
+                          ? 'bg-stone-900 text-white'
+                          : 'bg-white/80 text-stone-700 border border-white'
                       }`}
                     >
                       {item.count}
@@ -121,10 +121,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Правая зона: Переключатель языка RU / EN и Личный кабинет преподавателя / Вход */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          {/* Правая зона: Переключатель языка RU / EN и профиль преподавателя как полупрозрачные таблетки */}
+          <div className="flex items-center gap-1.5 lg:gap-3 shrink-0">
             <div
-              className="flex items-center gap-1.5 text-xs sm:text-sm select-none print:hidden"
+              className="flex items-center gap-0.5 lg:gap-1 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 shadow-2xs select-none whitespace-nowrap print:hidden"
               role="group"
               aria-label="Language switcher"
               data-testid="language-switcher"
@@ -134,15 +134,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setLang('ru')}
                 data-testid="lang-btn-ru"
                 aria-pressed={lang === 'ru'}
-                className={`px-1 py-1 cursor-pointer transition-colors ${
+                className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all whitespace-nowrap ${
                   lang === 'ru'
-                    ? 'font-medium text-gray-800'
-                    : 'text-gray-400 hover:text-gray-600'
+                    ? 'font-semibold text-stone-900 bg-white shadow-2xs'
+                    : 'text-stone-400 hover:text-stone-700'
                 }`}
               >
                 RU
               </button>
-              <span className="text-gray-300 select-none" aria-hidden="true">
+              <span className="text-stone-300 select-none" aria-hidden="true">
                 /
               </span>
               <button
@@ -150,10 +150,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setLang('en')}
                 data-testid="lang-btn-en"
                 aria-pressed={lang === 'en'}
-                className={`px-1 py-1 cursor-pointer transition-colors ${
+                className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all whitespace-nowrap ${
                   lang === 'en'
-                    ? 'font-medium text-gray-800'
-                    : 'text-gray-400 hover:text-gray-600'
+                    ? 'font-semibold text-stone-900 bg-white shadow-2xs'
+                    : 'text-stone-400 hover:text-stone-700'
                 }`}
               >
                 EN
@@ -166,24 +166,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onSelectTab('dashboard')}
                 data-testid="navbar-teacher-profile-btn"
                 aria-label={`${t.navTeacherProfileAria}: ${currentTeacher.name}`}
-                className={`inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold rounded-xl border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 lg:gap-2 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm font-semibold rounded-full border transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer shadow-2xs ${
                   activeTab === 'dashboard'
-                    ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-md'
-                    : 'bg-white text-[#18181B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
+                    ? 'bg-gradient-to-b from-stone-800 to-stone-950 text-white border-stone-900 shadow-[0_4px_14px_rgba(0,0,0,0.15)]'
+                    : 'bg-white/50 hover:bg-white/90 text-stone-900 border-white/80'
                 }`}
               >
-                <span className="w-7 h-7 rounded-full bg-[#C83E31] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-[#C83E31] text-white text-[11px] lg:text-xs font-bold flex items-center justify-center shrink-0">
                   {teacherInitials || 'T'}
                 </span>
-                <span className="max-w-[100px] lg:max-w-[140px] truncate hidden sm:inline">
+                <span className="max-w-[90px] lg:max-w-[140px] truncate hidden lg:inline whitespace-nowrap">
                   {currentTeacher.name}
                 </span>
                 <span
                   className={`hidden lg:flex items-center gap-1 ml-0.5 ${
-                    activeTab === 'dashboard' ? 'text-[#FAF7F2]' : 'text-[#C83E31]'
+                    activeTab === 'dashboard' ? 'text-white' : 'text-[#C83E31]'
                   }`}
                 >
-                  <UserCheck className="w-4 h-4" />
+                  <UserCheck className="w-4 h-4 lg:w-5 lg:h-5" />
                 </span>
               </button>
             ) : (
@@ -192,32 +192,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenAuthModal}
                 data-testid="navbar-login-btn"
                 aria-label={t.navLoginAria}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FDF2F0] hover:border-[#F5D0C8] rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1.5 lg:gap-2 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm font-semibold text-stone-800 rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
               >
-                <LogIn className="w-4 h-4 text-[#C83E31]" />
-                <span className="hidden sm:inline">{t.navLoginFull}</span>
-                <span className="sm:hidden">{t.navLoginShort}</span>
+                <LogIn className="w-4 h-4 lg:w-5 lg:h-5 text-[#C83E31] shrink-0" />
+                <span className="hidden lg:inline whitespace-nowrap">{t.navLoginFull}</span>
+                <span className="lg:hidden whitespace-nowrap">{t.navLoginShort}</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* Фиксированная нижняя панель навигации для смартфонов (md:hidden): 4 равномерные колонки */}
+      {/* Фиксированная нижняя стеклянная панель навигации для смартфонов (md:hidden) */}
       <nav
         aria-label={t.navMobileAria}
         data-testid="mobile-bottom-navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF7F2]/85 backdrop-blur-md border-t border-[#E6E0D6] shadow-lg md:hidden px-2 py-1.5 grid grid-cols-4 gap-1 items-center print:hidden"
+        className="fixed bottom-3 left-3 right-3 z-50 bg-white/75 backdrop-blur-2xl border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.04] rounded-3xl md:hidden px-2 py-1.5 grid grid-cols-4 gap-1 items-center print:hidden"
         style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}
       >
         <button
           type="button"
           onClick={() => onSelectTab('dictionary')}
           data-testid="mobile-nav-dictionary"
-          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
+          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-2xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
             activeTab === 'dictionary'
-              ? 'bg-[#18181B] text-[#FAF7F2] font-bold shadow-md'
-              : 'text-[#52525B] hover:text-[#18181B]'
+              ? 'bg-white text-stone-900 font-bold shadow-sm ring-1 ring-stone-900/5'
+              : 'text-stone-500 hover:text-stone-900'
           }`}
         >
           <BookOpen className="w-5 h-5 mb-0.5" />
@@ -228,10 +228,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           type="button"
           onClick={() => onSelectTab('worksheet')}
           data-testid="mobile-nav-worksheet"
-          className={`relative w-full flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
+          className={`relative w-full flex flex-col items-center justify-center py-1 px-2 rounded-2xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
             activeTab === 'worksheet'
-              ? 'bg-[#18181B] text-[#FAF7F2] font-bold shadow-md'
-              : 'text-[#52525B] hover:text-[#18181B]'
+              ? 'bg-white text-stone-900 font-bold shadow-sm ring-1 ring-stone-900/5'
+              : 'text-stone-500 hover:text-stone-900'
           }`}
         >
           <div className="relative">
@@ -252,10 +252,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           type="button"
           onClick={() => onSelectTab('radicals')}
           data-testid="mobile-nav-radicals"
-          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
+          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-2xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
             activeTab === 'radicals'
-              ? 'bg-[#18181B] text-[#FAF7F2] font-bold shadow-md'
-              : 'text-[#52525B] hover:text-[#18181B]'
+              ? 'bg-white text-stone-900 font-bold shadow-sm ring-1 ring-stone-900/5'
+              : 'text-stone-500 hover:text-stone-900'
           }`}
         >
           <Grid className="w-5 h-5 mb-0.5" />
@@ -272,10 +272,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             }
           }}
           data-testid="mobile-nav-dashboard"
-          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
+          className={`w-full flex flex-col items-center justify-center py-1 px-2 rounded-2xl text-xs font-semibold transition-all min-h-[44px] cursor-pointer ${
             activeTab === 'dashboard'
-              ? 'bg-[#18181B] text-[#FAF7F2] font-bold shadow-md'
-              : 'text-[#52525B] hover:text-[#18181B]'
+              ? 'bg-white text-stone-900 font-bold shadow-sm ring-1 ring-stone-900/5'
+              : 'text-stone-500 hover:text-stone-900'
           }`}
         >
           {currentTeacher ? (

@@ -85,7 +85,7 @@ export const translations = {
     // DictionaryView
     dictTitle: 'Интерактивный разбор слов и практика каллиграфии',
     dictSubtitle:
-      'Введите одиночный иероглиф или многосложное слово (от 1 до 4+ знаков), чтобы получить структурную декомпозицию по ключам и графемам, порядок черт и тренажер письма.',
+      'Введите одиночный иероглиф или многосложное слово, чтобы получить структурную декомпозицию по ключам и графемам, порядок черт и тренажер письма.',
     dictSearchLabel: 'Введите иероглиф или слово на китайском',
     dictSearchPlaceholder: 'Введите иероглиф или слово на китайском...',
     dictAnalyzeBtn: 'Разобрать слово',
@@ -485,7 +485,7 @@ export const translations = {
     // DictionaryView
     dictTitle: 'Interactive Word & Calligraphy Practice',
     dictSubtitle:
-      'Enter a single character or multi-syllable word (1 to 4+ characters) for structural radical & grapheme decomposition, stroke order animation, and writing practice.',
+      'Enter a single character or multi-syllable word for structural radical & grapheme decomposition, stroke order animation, and writing practice.',
     dictSearchLabel: 'Enter a Chinese character or word',
     dictSearchPlaceholder: 'Enter a Chinese character or word...',
     dictAnalyzeBtn: 'Analyze Word',

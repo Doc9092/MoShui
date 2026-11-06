@@ -664,29 +664,29 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:m-0 print:p-0 print:bg-white print:shadow-none print:ring-0">
       {/* Верхняя шапка конструктора и панель быстрых действий (скрывается при печати) */}
       <div className="print:hidden space-y-5">
-        <div className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 flex flex-col gap-6">
+        <div className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] p-6 sm:p-8 transition-all duration-300 flex flex-col gap-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="max-w-3xl">
-              <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight text-balance">
                 {t.wsTitle}
               </h1>
-              <p className="mt-2 text-base sm:text-lg text-[#52525B] leading-relaxed">
+              <p className="mt-2 text-base sm:text-lg text-stone-600 leading-relaxed">
                 {t.wsSubtitle}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-[#EAE3D5]">
+          <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-stone-200/60">
             {/* Кнопка сохранения в Личный кабинет преподавателя */}
             <button
               type="button"
               onClick={() => handleOpenSaveModal('new')}
               disabled={worksheetList.length === 0 || isSavingToCloud}
               data-testid="save-to-workspace-button"
-              className="inline-flex items-center gap-2.5 px-5 py-3 h-12 text-sm sm:text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-5 py-3 h-12 text-sm sm:text-base font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isSavingToCloud ? (
                 <Loader2 className="w-5 h-5 animate-spin text-[#F5D0C8]" />
@@ -700,7 +700,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               type="button"
               onClick={handleEnrichTranslationsViaAi}
               disabled={isEnrichingAi || worksheetList.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-3 h-12 text-sm sm:text-base font-semibold text-[#C83E31] bg-[#FDF2F0] border border-[#F5D0C8] hover:bg-[#FCE6E2] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-3 h-12 text-sm sm:text-base font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isEnrichingAi ? (
                 <>
@@ -720,9 +720,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               onClick={handlePrintSheet}
               disabled={worksheetList.length === 0 || isExportingPdf}
               data-testid="print-sheet-button"
-              className="inline-flex items-center gap-2.5 px-6 py-3 h-12 text-base font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-6 py-3 h-12 text-base font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-[#F5D0C8]" />
               <span>{t.wsPrintBtn}</span>
             </button>
 
@@ -731,7 +731,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               onClick={() => void handleDownloadPdf()}
               disabled={worksheetList.length === 0 || isExportingPdf}
               data-testid="download-pdf-button"
-              className="inline-flex items-center gap-2 px-5 py-3 h-12 text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#E6E0D6] hover:bg-[#EAE3D5] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 h-12 text-sm sm:text-base font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isExportingPdf ? (
                 <>
@@ -740,7 +740,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 </>
               ) : (
                 <>
-                  <FileDown className="w-4 h-4 text-[#52525B]" />
+                  <FileDown className="w-4 h-4 text-stone-600" />
                   <span>{t.wsDownloadPdfBtn}</span>
                 </>
               )}
@@ -752,26 +752,26 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         {activeSavedWorksheet && currentTeacher && (
           <div
             data-testid="active-saved-worksheet-banner"
-            className="bg-[#FDF2F0] border border-[#F5D0C8] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            className="bg-white/65 backdrop-blur-2xl border border-white/80 rounded-3xl p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#C83E31] text-white flex items-center justify-center shrink-0 mt-0.5">
-                <Folder className="w-5 h-5" />
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-stone-800 to-stone-950 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                <Folder className="w-5 h-5 text-[#F5D0C8]" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="text-sm font-bold uppercase tracking-wider text-[#C83E31]">
+                  <span className="text-sm font-bold text-[#C83E31]">
                     {t.wsActiveBannerLabel}
                   </span>
-                  <span className="text-base font-bold text-[#18181B]">
+                  <span className="text-base font-bold text-stone-900">
                     {activeSavedWorksheet.title}
                   </span>
-                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-white border border-[#F5D0C8] text-[#C83E31] rounded-md">
+                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-white/80 border border-white text-stone-700 rounded-lg shadow-2xs">
                     {activeSavedWorksheet.folder}
                   </span>
                 </div>
                 {activeSavedWorksheet.description && (
-                  <p className="text-sm text-[#52525B] mt-1">
+                  <p className="text-sm text-stone-600 mt-1">
                     {activeSavedWorksheet.description}
                   </p>
                 )}
@@ -784,12 +784,12 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 onClick={() => void handleQuickUpdateSavedWorksheet()}
                 disabled={worksheetList.length === 0 || isSavingToCloud}
                 data-testid="update-saved-worksheet-button"
-                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 rounded-xl transition-all active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200 cursor-pointer"
               >
                 {isSavingToCloud ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4" />
+                  <Save className="w-4 h-4 text-[#F5D0C8]" />
                 )}
                 <span>{t.wsUpdateSavedBtn}</span>
               </button>
@@ -799,9 +799,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 onClick={() => handleOpenSaveModal('copy')}
                 disabled={worksheetList.length === 0 || isSavingToCloud}
                 data-testid="save-as-copy-button"
-                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 h-11 text-sm font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md disabled:opacity-50 transition-all cursor-pointer"
               >
-                <Copy className="w-4 h-4 text-[#52525B]" />
+                <Copy className="w-4 h-4 text-stone-600" />
                 <span>{t.wsSaveAsCopyBtn}</span>
               </button>
 
@@ -809,7 +809,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <button
                   type="button"
                   onClick={onDetachSavedWorksheet}
-                  className="px-3 py-2.5 text-sm font-medium text-[#71717A] hover:text-[#18181B] transition-colors cursor-pointer"
+                  className="px-3 py-2.5 text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
                   title={t.wsNewDraftTitle}
                 >
                   {t.wsNewDraftBtn}
@@ -824,32 +824,32 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           <div
             role="status"
             data-testid="workspace-save-toast"
-            className="bg-[#F0FDF4] border border-[#BBF7D0] text-[#15803D] rounded-xl px-5 py-4 text-sm font-semibold flex items-center justify-between gap-3"
+            className="bg-emerald-50/80 backdrop-blur-xl border border-emerald-200/80 text-emerald-800 rounded-2xl px-5 py-4 text-sm font-semibold flex items-center justify-between gap-3 shadow-xs"
           >
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-[#15803D] shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
               <span>{workspaceToast}</span>
             </div>
             <button
               type="button"
               onClick={() => setWorkspaceToast(null)}
-              className="text-[#15803D] hover:text-[#14532D] cursor-pointer"
+              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         )}
 
-        {/* Мобильный переключатель экранов (< 768px): «1. Слова и Настройки» | «2. Предпросмотр А4» */}
-        <div className="md:hidden flex items-center p-1.5 bg-[#FAF7F2] rounded-2xl border border-[#EAE3D5]">
+        {/* Мобильный переключатель экранов (< 768px) в стиле сегментированного контрола visionOS */}
+        <div className="md:hidden flex items-center bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md">
           <button
             type="button"
             onClick={() => setMobileTab('editor')}
             data-testid="mobile-worksheet-tab-editor"
-            className={`flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
+            className={`flex-1 py-3 text-xs sm:text-sm transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
               !showPreview
-                ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm font-bold'
-                : 'text-[#52525B] hover:text-[#18181B]'
+                ? 'bg-white shadow-sm rounded-xl text-stone-900 font-semibold'
+                : 'text-stone-600 hover:text-stone-900 font-medium rounded-xl'
             }`}
           >
             <Settings2 className="w-4 h-4 text-[#C83E31]" />
@@ -861,10 +861,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             type="button"
             onClick={() => setMobileTab('preview')}
             data-testid="mobile-worksheet-tab-preview"
-            className={`flex-1 py-3 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
+            className={`flex-1 py-3 text-xs sm:text-sm transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
               showPreview
-                ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm font-bold'
-                : 'text-[#52525B] hover:text-[#18181B]'
+                ? 'bg-white shadow-sm rounded-xl text-stone-900 font-semibold'
+                : 'text-stone-600 hover:text-stone-900 font-medium rounded-xl'
             }`}
           >
             <FileText className="w-4 h-4 text-[#C83E31]" />
@@ -876,7 +876,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
       {/* Главный двухколоночный макет (Side-by-Side) для планшетов (md:) и ПК (lg:) */}
       <div
         data-testid="worksheet-side-by-side-grid"
-        className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start"
+        className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start print:block print:m-0 print:p-0"
       >
         {/* ЛЕВАЯ КОЛОНКА (Настройки и слова): всегда видна на md: и выше, на мобильных — когда !showPreview */}
         <div
@@ -886,9 +886,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           }`}
         >
           {/* Карточка 1: Список слов и быстрый ввод */}
-          <section className="bg-white border border-[#EAE3D5] rounded-2xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 space-y-5">
+          <section className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] p-6 transition-all duration-300 space-y-5">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-bold text-[#18181B] flex items-center gap-2">
+              <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2">
                 <ListPlus className="w-5 h-5 text-[#C83E31]" />
                 <span>
                   {t.wsWordsListHeading} ({worksheetList.length})
@@ -898,7 +898,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#71717A] hover:text-[#C83E31] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-stone-500 hover:text-[#C83E31] transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>{t.wsClearListBtn}</span>
@@ -910,7 +910,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             <form onSubmit={handleBatchAdd} className="space-y-2.5">
               <label
                 htmlFor="batch-words-input"
-                className="block text-sm font-semibold text-[#18181B]"
+                className="block text-sm font-semibold text-stone-900"
               >
                 {t.wsBatchInputLabel}
               </label>
@@ -921,29 +921,29 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   value={batchInput}
                   onChange={(e) => setBatchInput(e.target.value)}
                   placeholder={t.wsBatchInputPlaceholder}
-                  className="flex-1 min-w-0 px-3.5 py-2.5 h-11 text-sm sm:text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] font-hanzi-sans"
+                  className="flex-1 min-w-0 px-3.5 py-2.5 h-11 text-sm sm:text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all font-hanzi-sans"
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 h-11 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl shadow-sm transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 h-11 text-sm font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>{t.wsAddBtn}</span>
                 </button>
               </div>
-              {statusNote && <p className="text-xs sm:text-sm text-[#52525B]">{statusNote}</p>}
+              {statusNote && <p className="text-xs sm:text-sm text-stone-600">{statusNote}</p>}
             </form>
 
             {/* Список добавленных слов с изменением порядка и удалением */}
             <div className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
               {worksheetList.length === 0 ? (
-                <div className="p-5 text-center bg-[#FAF7F2] border border-dashed border-[#EAE3D5] rounded-xl text-sm text-[#71717A] space-y-3">
+                <div className="p-5 text-center bg-white/50 border border-dashed border-stone-300/70 rounded-2xl text-sm text-stone-500 space-y-3">
                   <p>{t.wsQueueEmptyText}</p>
                   {onNavigateToDictionary && (
                     <button
                       type="button"
                       onClick={onNavigateToDictionary}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#18181B] bg-white border border-[#EAE3D5] hover:bg-[#F3EFE6] rounded-lg transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer"
                     >
                       <BookOpen className="w-4 h-4 text-[#C83E31]" />
                       <span>{t.wsGoToDictBtn}</span>
@@ -959,15 +959,15 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   return (
                     <div
                       key={item.id}
-                      className="flex items-start justify-between gap-2.5 p-3.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
+                      className="flex items-start justify-between gap-2.5 p-3.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl shadow-2xs"
                     >
                       <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                        <span className="font-mono-tabular text-xs font-semibold text-[#71717A] w-5 shrink-0 pt-1">
+                        <span className="font-mono-tabular text-xs font-semibold text-stone-400 w-5 shrink-0 pt-1">
                           {idx + 1}.
                         </span>
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex items-baseline gap-2 flex-wrap">
-                            <span className="font-chinese text-xl font-bold text-[#18181B] shrink-0">
+                            <span className="font-chinese text-xl font-bold text-stone-900 shrink-0">
                               {item.word}
                             </span>
                             <span className="text-xs font-mono-tabular font-semibold text-[#C83E31] truncate">
@@ -983,7 +983,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                               handleManualTranslationChange(item.id, e.target.value)
                             }
                             placeholder={t.wsTranslationPlaceholder}
-                            className="w-full px-3 py-1.5 text-xs sm:text-sm bg-white border border-[#EAE3D5] hover:border-[#D6CEB8] focus:border-[#C83E31] rounded-lg text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none transition-colors"
+                            className="w-full px-3 py-1.5 text-xs sm:text-sm bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all"
                           />
                         </div>
                       </div>
@@ -994,7 +994,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           onClick={() => handleMoveItem(idx, 'up')}
                           disabled={idx === 0}
                           aria-label={`${t.wsMoveUpAria} ${item.word}`}
-                          className="p-1.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#EAE3D5]/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-white/80 disabled:opacity-30 rounded-xl transition-colors cursor-pointer"
                         >
                           <ArrowUp className="w-4 h-4" />
                         </button>
@@ -1003,7 +1003,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           onClick={() => handleMoveItem(idx, 'down')}
                           disabled={idx === worksheetList.length - 1}
                           aria-label={`${t.wsMoveDownAria} ${item.word}`}
-                          className="p-1.5 text-[#71717A] hover:text-[#18181B] hover:bg-[#EAE3D5]/70 disabled:opacity-30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-white/80 disabled:opacity-30 rounded-xl transition-colors cursor-pointer"
                         >
                           <ArrowDown className="w-4 h-4" />
                         </button>
@@ -1011,7 +1011,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           type="button"
                           onClick={() => handleRemoveItem(item.id)}
                           aria-label={`${t.wsRemoveWordAria} ${item.word}`}
-                          className="p-1.5 text-[#71717A] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-500 hover:text-[#C83E31] hover:bg-red-50/80 rounded-xl transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1024,8 +1024,8 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
           </section>
 
           {/* Карточка 2: Панель настроек дизайна прописи (WorksheetConfig) */}
-          <section className="bg-white border border-[#EAE3D5] rounded-2xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 space-y-5">
-            <h2 className="text-lg font-bold text-[#18181B] flex items-center gap-2">
+          <section className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] p-6 transition-all duration-300 space-y-5">
+            <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2">
               <Settings2 className="w-5 h-5 text-[#C83E31]" />
               <span>{t.wsLayoutSettingsHeading}</span>
             </h2>
@@ -1034,7 +1034,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             <div className="space-y-1.5">
               <label
                 htmlFor="sheet-title-inline"
-                className="block text-sm font-semibold text-[#18181B]"
+                className="block text-sm font-semibold text-stone-900"
               >
                 {t.wsSheetTitleLabel}
               </label>
@@ -1044,14 +1044,14 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 value={config.sheetTitle}
                 onChange={(e) => onUpdateConfig({ ...config, sheetTitle: e.target.value })}
                 placeholder={t.defaultSheetTitle}
-                className="w-full px-3.5 py-2.5 text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31] font-hanzi-sans"
+                className="w-full px-3.5 py-2.5 text-sm bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all font-hanzi-sans"
               />
             </div>
 
             {/* Режим компоновки строк */}
-            <div className="space-y-2.5 pt-3 border-t border-[#EAE3D5]">
-              <div className="text-sm font-semibold text-[#18181B] flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#71717A]" />
+            <div className="space-y-2.5 pt-3 border-t border-stone-200/60">
+              <div className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-stone-500" />
                 <span>{t.wsLayoutModeLabel}</span>
               </div>
 
@@ -1059,38 +1059,38 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateConfig({ ...config, layoutMode: 'by-character' })}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     config.layoutMode === 'by-character'
-                      ? 'bg-[#FDF2F0] border-[#C83E31] ring-1 ring-[#C83E31]'
-                      : 'bg-[#FAF7F2] border-[#EAE3D5] hover:bg-[#F3EFE6]'
+                      ? 'bg-white border-white shadow-sm ring-1 ring-stone-900/10'
+                      : 'bg-white/40 border-white/60 hover:bg-white/70'
                   }`}
                 >
-                  <div className="text-sm font-bold text-[#18181B]">{t.wsModeATitle}</div>
-                  <div className="mt-1 text-xs text-[#52525B] leading-relaxed">{t.wsModeADesc}</div>
+                  <div className="text-sm font-bold text-stone-900">{t.wsModeATitle}</div>
+                  <div className="mt-1 text-xs text-stone-600 leading-relaxed">{t.wsModeADesc}</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onUpdateConfig({ ...config, layoutMode: 'whole-word' })}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     config.layoutMode === 'whole-word'
-                      ? 'bg-[#FDF2F0] border-[#C83E31] ring-1 ring-[#C83E31]'
-                      : 'bg-[#FAF7F2] border-[#EAE3D5] hover:bg-[#F3EFE6]'
+                      ? 'bg-white border-white shadow-sm ring-1 ring-stone-900/10'
+                      : 'bg-white/40 border-white/60 hover:bg-white/70'
                   }`}
                 >
-                  <div className="text-sm font-bold text-[#18181B]">{t.wsModeBTitle}</div>
-                  <div className="mt-1 text-xs text-[#52525B] leading-relaxed">{t.wsModeBDesc}</div>
+                  <div className="text-sm font-bold text-stone-900">{t.wsModeBTitle}</div>
+                  <div className="mt-1 text-xs text-stone-600 leading-relaxed">{t.wsModeBDesc}</div>
                 </button>
               </div>
             </div>
 
-            {/* Тип сетки */}
-            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
-              <span className="block text-sm font-semibold text-[#18181B] flex items-center gap-2">
-                <Grid className="w-4 h-4 text-[#71717A]" />
+            {/* Тип сетки — сегментированный контрол в стиле iOS / visionOS */}
+            <div className="space-y-2 pt-3 border-t border-stone-200/60">
+              <span className="block text-sm font-semibold text-stone-900 flex items-center gap-2">
+                <Grid className="w-4 h-4 text-stone-500" />
                 <span>{t.wsGridTypeLabel}</span>
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-3 gap-1 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md">
                 {(
                   [
                     { id: 'mizi', label: 'Mizige 米字格' },
@@ -1102,10 +1102,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     key={g.id}
                     type="button"
                     onClick={() => onUpdateConfig({ ...config, gridType: g.id })}
-                    className={`relative group flex-1 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer font-hanzi-sans ${
+                    className={`relative group px-2 py-2 min-h-[40px] text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer font-hanzi-sans ${
                       config.gridType === g.id
-                        ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
-                        : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
+                        ? 'bg-white shadow-sm rounded-xl text-stone-900 font-medium'
+                        : 'text-stone-600 hover:text-stone-900 rounded-xl'
                     }`}
                   >
                     <span>{g.label}</span>
@@ -1113,7 +1113,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     {/* Всплывающая CSS-миниатюра каллиграфической сетки */}
                     <span
                       aria-hidden="true"
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 h-14 p-1.5 bg-[#FAF8F5] shadow-md border border-gray-200/60 rounded-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none z-50 print:hidden flex items-center justify-center"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-14 h-14 p-1.5 bg-white/90 backdrop-blur-xl shadow-lg border border-white rounded-xl opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none z-50 print:hidden flex items-center justify-center"
                     >
                       <span className="relative block w-full h-full bg-white border border-red-300/60 overflow-hidden">
                         {(g.id === 'tianzi' || g.id === 'mizi') && (
@@ -1136,9 +1136,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             </div>
 
             {/* Цвет сетки */}
-            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
-              <span className="block text-sm font-semibold text-[#18181B]">{t.wsGridColorLabel}</span>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2 pt-3 border-t border-stone-200/60">
+              <span className="block text-sm font-semibold text-stone-900">{t.wsGridColorLabel}</span>
+              <div className="flex flex-wrap gap-1.5 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md">
                 {(
                   [
                     { id: 'red', label: t.wsColorRed, swatch: 'bg-[#C83E31]' },
@@ -1150,23 +1150,23 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     key={c.id}
                     type="button"
                     onClick={() => onUpdateConfig({ ...config, gridColor: c.id })}
-                    className={`inline-flex items-center gap-2 px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[38px] text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                       config.gridColor === c.id
-                        ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
-                        : 'bg-white text-[#52525B] border-[#EAE3D5] hover:bg-[#FAF7F2]'
+                        ? 'bg-white shadow-sm rounded-xl text-stone-900 font-medium'
+                        : 'text-stone-600 hover:text-stone-900 rounded-xl'
                     }`}
                   >
-                    <span className={`w-3 h-3 rounded-xs ${c.swatch}`} />
-                    <span>{c.label}</span>
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${c.swatch}`} />
+                    <span className="truncate">{c.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Количество клеток (10 кл = 1 строка, 20 кл = 2 строки, 30 кл = 3 строки по 10 клеток) */}
-            <div className="space-y-2 pt-3 border-t border-[#EAE3D5]">
-              <span className="block text-sm font-semibold text-[#18181B]">{t.wsCellCountLabel}</span>
-              <div className="flex gap-2">
+            <div className="space-y-2 pt-3 border-t border-stone-200/60">
+              <span className="block text-sm font-semibold text-stone-900">{t.wsCellCountLabel}</span>
+              <div className="grid grid-cols-3 gap-1 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md">
                 {([10, 20, 30] as const).map((cellCount) => {
                   const activeTotalCells =
                     config.rowsPerItem === 3 || config.cellsPerRow === 30
@@ -1188,10 +1188,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                           rowsPerItem: nextRowsPerItem,
                         })
                       }
-                      className={`flex-1 py-2.5 px-3 min-h-[42px] text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`py-2 px-3 min-h-[38px] text-xs sm:text-sm transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                         isActive
-                          ? 'bg-[#18181B] text-white rounded-lg'
-                          : 'bg-[#FAF7F2] text-[#18181B] border border-[#E6E0D6] hover:bg-[#EAE3D5] rounded-lg transition-colors'
+                          ? 'bg-white shadow-sm rounded-xl text-stone-900 font-medium'
+                          : 'text-stone-600 hover:text-stone-900 rounded-xl font-medium'
                       }`}
                     >
                       {cellCount} {t.wsCellCountUnit}
@@ -1202,10 +1202,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             </div>
 
             {/* Контуры для обводки (ползунок от 0 до 30 и быстрые кнопки 5, 10, 20, 30, Все клетки) */}
-            <div className="space-y-2.5 pt-3 border-t border-[#EAE3D5]">
+            <div className="space-y-2.5 pt-3 border-t border-stone-200/60">
               <label
                 htmlFor="trace-count-slider"
-                className="flex items-center justify-between text-sm font-semibold text-[#18181B]"
+                className="flex items-center justify-between text-sm font-semibold text-stone-900"
               >
                 <span>{t.wsTraceCountLabel}</span>
                 <span className="font-mono-tabular text-[#C83E31] font-bold">
@@ -1222,7 +1222,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 onChange={(e) =>
                   onUpdateConfig({ ...config, traceCount: parseInt(e.target.value, 10) })
                 }
-                className="w-full accent-[#C83E31] cursor-pointer"
+                className="w-full accent-stone-900 cursor-pointer"
               />
               <div className="flex flex-wrap gap-1.5 pt-0.5">
                 {(
@@ -1241,10 +1241,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                       type="button"
                       data-testid={`trace-preset-btn-${preset.value}`}
                       onClick={() => onUpdateConfig({ ...config, traceCount: preset.value })}
-                      className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-colors cursor-pointer ${
+                      className={`px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                         isActivePreset
-                          ? 'bg-[#18181B] text-white border-[#18181B]'
-                          : 'bg-[#FAF7F2] text-[#18181B] border-[#E6E0D6] hover:bg-[#EAE3D5]'
+                          ? 'bg-white text-stone-900 border-white shadow-sm ring-1 ring-stone-900/10'
+                          : 'bg-white/50 text-stone-600 border-white/80 hover:bg-white/80'
                       }`}
                     >
                       {preset.label}
@@ -1255,9 +1255,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             </div>
 
             {/* Пошаговый порядок черт и Поля "Имя" и "Дата" для ученика */}
-            <div className="space-y-3 pt-3 border-t border-[#EAE3D5]">
+            <div className="space-y-3 pt-3 border-t border-stone-200/60">
               <div className="space-y-2">
-                <span className="block text-sm font-semibold text-[#18181B]">
+                <span className="block text-sm font-semibold text-stone-900">
                   {t.wsStrokeOrderLabel}
                 </span>
                 <button
@@ -1267,10 +1267,10 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     onUpdateConfig({ ...config, showStrokeOrder: !config.showStrokeOrder })
                   }
                   aria-pressed={Boolean(config.showStrokeOrder)}
-                  className={`w-full py-2.5 px-3 min-h-[42px] text-sm font-semibold rounded-xl border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`w-full py-2.5 px-3 min-h-[42px] text-sm font-semibold rounded-2xl border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                     config.showStrokeOrder
-                      ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
-                      : 'bg-[#FAF7F2] text-[#52525B] border-[#EAE3D5]'
+                      ? 'bg-emerald-50/80 text-emerald-800 border-emerald-200/80 shadow-2xs'
+                      : 'bg-white/50 text-stone-600 border-white/80 hover:bg-white/80'
                   }`}
                 >
                   {config.showStrokeOrder ? t.wsStrokeOrderOn : t.wsStrokeOrderOff}
@@ -1280,9 +1280,9 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <label
                 htmlFor="toggle-student-info-checkbox"
                 data-testid="toggle-student-info-label"
-                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#F3EFE6] transition-colors cursor-pointer select-none"
+                className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/55 border border-white/80 hover:bg-white/80 transition-colors cursor-pointer select-none shadow-2xs"
               >
-                <span className="text-sm font-semibold text-[#18181B]">
+                <span className="text-sm font-semibold text-stone-900">
                   {t.wsStudentInfoLabel}
                 </span>
                 <input
@@ -1293,7 +1293,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   onChange={(e) =>
                     onUpdateConfig({ ...config, showStudentInfo: e.target.checked })
                   }
-                  className="w-4 h-4 accent-[#C83E31] rounded cursor-pointer"
+                  className="w-4 h-4 accent-stone-900 rounded cursor-pointer"
                 />
               </label>
             </div>
@@ -1303,7 +1303,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         {/* ПРАВАЯ КОЛОНКА (Превью А4 и экспорт): ВСЕГДА рендерится на экранах md: и выше */}
         <div
           data-testid="worksheet-right-column"
-          className={`md:col-span-7 lg:col-span-8 space-y-4 ${
+          className={`md:col-span-7 lg:col-span-8 space-y-4 print:m-0 print:p-0 print:bg-white print:shadow-none print:ring-0 ${
             showPreview ? 'block' : 'hidden md:block'
           }`}
         >
@@ -1312,30 +1312,33 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             <section
               aria-label={t.wsEmptyStateTitle}
               data-testid="worksheet-empty-state"
-              className="bg-white border border-[#EAE3D5] rounded-2xl p-6 sm:p-8 text-center shadow-[0_8px_30px_rgb(24,24,27,0.04)] print:hidden"
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 p-6 sm:p-8 text-center shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] print:hidden"
             >
               <div className="max-w-lg mx-auto flex flex-col items-center">
-                <h2 className="font-display text-xl font-bold text-[#18181B]">
+                <h2 className="font-display text-xl font-bold text-stone-900">
                   {t.wsEmptyStateTitle}
                 </h2>
-                <p className="mt-1.5 text-sm text-[#52525B] leading-relaxed">
+                <p className="mt-1.5 text-sm text-stone-600 leading-relaxed">
                   {t.wsEmptyStateDesc}
                 </p>
               </div>
             </section>
           )}
 
-          {/* Внешний контейнер-вьюпорт для просмотра чистого белого листа А4 */}
+          {/* Внешний контейнер-вьюпорт для просмотра физического листа А4 в воздушном пространстве */}
           <div
-            className="bg-[#F3EFE6]/80 border border-[#EAE3D5] rounded-2xl p-2 sm:p-5 overflow-x-auto touch-pan-x overscroll-x-contain shadow-inner"
+            className="bg-white/35 backdrop-blur-xl border border-white/70 rounded-3xl p-3 sm:p-6 overflow-x-auto touch-pan-x overscroll-x-contain shadow-[0_12px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-stone-900/[0.03] print:shadow-none print:ring-0 print:m-0 print:p-0 print:rounded-none print:border-none print:bg-white"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
-            <div className="flex items-center justify-end text-xs text-[#52525B] mb-3 px-2 print:hidden">
-              <span className="px-2.5 py-0.5 font-mono-tabular font-semibold text-[#C83E31] bg-white/90 border border-[#EAE3D5] rounded-md">
+            <div className="flex items-center justify-end text-xs text-stone-500 mb-3 px-2 print:hidden">
+              <span className="px-2.5 py-0.5 font-mono-tabular font-semibold text-stone-700 bg-white/80 border border-white rounded-full shadow-2xs">
                 A4
               </span>
             </div>
-            <div style={{ minWidth: '794px' }} className="mx-auto flex justify-center">
+            <div
+              style={{ minWidth: '794px' }}
+              className="mx-auto flex justify-center print:shadow-none print:ring-0 print:m-0 print:rounded-none print:bg-white"
+            >
               <PrintableSheet
                 worksheetList={worksheetList}
                 config={config}
@@ -1346,19 +1349,19 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
         </div>
       </div>
 
-      {/* Модальное окно «Сохранить в Личный кабинет» */}
+      {/* Модальное окно «Сохранить в Личный кабинет» в стиле ультра-матового стекла */}
       {isSaveModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#18181B]/60 backdrop-blur-xs p-4 print:hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/25 backdrop-blur-md p-4 print:hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby="save-worksheet-modal-title"
           data-testid="save-worksheet-modal"
         >
-          <div className="bg-white border border-[#EAE3D5] rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
-            <div className="px-6 py-4 bg-[#18181B] text-[#FAF7F2] flex items-center justify-between">
+          <div className="bg-white/75 backdrop-blur-2xl rounded-3xl border border-white shadow-2xl ring-1 ring-stone-900/[0.04] max-w-lg w-full overflow-hidden">
+            <div className="px-6 py-4 bg-white/50 border-b border-white/70 text-stone-900 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <BookmarkCheck className="w-5 h-5 text-[#F5D0C8]" />
+                <BookmarkCheck className="w-5 h-5 text-[#C83E31]" />
                 <h3 id="save-worksheet-modal-title" className="text-lg font-bold">
                   {saveMode === 'copy'
                     ? t.wsSaveModalCopyTitle
@@ -1371,7 +1374,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 type="button"
                 disabled={isSavingToCloud}
                 onClick={() => setIsSaveModalOpen(false)}
-                className="p-1.5 text-[#A1A1AA] hover:text-white rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 rounded-full bg-white/60 hover:bg-white text-stone-500 hover:text-stone-900 border border-white/80 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1381,7 +1384,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               {saveError && (
                 <div
                   role="alert"
-                  className="p-3.5 bg-[#FDF2F0] border border-[#F5D0C8] rounded-xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
+                  className="p-3.5 bg-red-50/80 border border-red-200/80 rounded-2xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
                 >
                   <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#C83E31]" />
                   <span>{saveError}</span>
@@ -1391,7 +1394,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <div>
                 <label
                   htmlFor="save-worksheet-title"
-                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                  className="block text-sm font-semibold text-stone-900 mb-1.5"
                 >
                   {t.wsSaveModalSheetTitleLabel}
                 </label>
@@ -1404,7 +1407,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   value={sheetTitleInput}
                   onChange={(e) => setSheetTitleInput(e.target.value)}
                   placeholder={t.wsSaveModalSheetTitlePlaceholder}
-                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
+                  className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all"
                 />
               </div>
 
@@ -1412,7 +1415,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="save-worksheet-folder"
-                    className="block text-sm font-semibold text-[#18181B]"
+                    className="block text-sm font-semibold text-stone-900"
                   >
                     {t.wsSaveModalFolderLabel}
                   </label>
@@ -1435,13 +1438,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                       value={newFolderName}
                       onChange={(e) => setNewFolderName(e.target.value)}
                       placeholder={t.wsNewFolderPlaceholder}
-                      className="flex-1 px-4 py-2.5 text-sm bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
+                      className="flex-1 px-4 py-2.5 text-sm bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all"
                     />
                     <button
                       type="button"
                       disabled={isSavingToCloud}
                       onClick={() => void handleCreateInlineFolderSubmit()}
-                      className="px-4 py-2.5 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] rounded-xl cursor-pointer"
+                      className="px-4 py-2.5 text-sm font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-sm cursor-pointer"
                     >
                       {t.wsAddBtn}
                     </button>
@@ -1453,7 +1456,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                     disabled={isSavingToCloud}
                     value={selectedFolder}
                     onChange={(e) => setSelectedFolder(e.target.value)}
-                    className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31]"
+                    className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all"
                   >
                     {folders.map((f) => (
                       <option key={f.id} value={f.name}>
@@ -1468,7 +1471,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               <div>
                 <label
                   htmlFor="save-worksheet-description"
-                  className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                  className="block text-sm font-semibold text-stone-900 mb-1.5"
                 >
                   {t.wsSaveModalDescLabel}
                 </label>
@@ -1480,13 +1483,13 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   value={descriptionInput}
                   onChange={(e) => setDescriptionInput(e.target.value)}
                   placeholder={t.wsSaveModalDescPlaceholder}
-                  className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] focus:outline-none focus:bg-white focus:border-[#C83E31] resize-none"
+                  className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all resize-none"
                 />
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#FAF7F2] border border-[#EAE3D5] text-sm text-[#52525B] flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-white/60 border border-white/80 text-sm text-stone-600 flex items-center justify-between">
                 <span>{t.wsSaveModalWordsCount}</span>
-                <span className="font-mono-tabular font-bold text-[#18181B]">
+                <span className="font-mono-tabular font-bold text-stone-900">
                   {worksheetList.length} ({worksheetList.map((w) => w.word).join(', ')})
                 </span>
               </div>
@@ -1496,7 +1499,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   type="button"
                   disabled={isSavingToCloud}
                   onClick={() => setIsSaveModalOpen(false)}
-                  className="px-5 py-3 text-sm font-semibold text-[#52525B] hover:text-[#18181B] bg-[#FAF7F2] hover:bg-[#F3EFE6] rounded-xl transition-colors cursor-pointer"
+                  className="px-5 py-3 text-sm font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer"
                 >
                   {t.wsCancelBtn}
                 </button>
@@ -1504,7 +1507,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
                   type="submit"
                   disabled={isSavingToCloud}
                   data-testid="confirm-save-worksheet-button"
-                  className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 transition-all duration-200 cursor-pointer"
                 >
                   {isSavingToCloud ? (
                     <>
@@ -1526,12 +1529,12 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
 
       {/* Мобильная плавающая панель быстрых действий (Печать и Скачать PDF) над нижней навигацией */}
       {worksheetList.length > 0 && (
-        <div className="md:hidden fixed bottom-16 left-3 right-3 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border border-[#E6E0D6] rounded-2xl p-2 shadow-lg flex items-center gap-2 print:hidden">
+        <div className="md:hidden fixed bottom-16 left-3 right-3 z-40 bg-white/75 backdrop-blur-2xl border border-white/80 rounded-3xl p-2 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-stone-900/[0.04] flex items-center gap-2 print:hidden">
           <button
             type="button"
             onClick={handlePrintSheet}
             disabled={isExportingPdf}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#C83E31] hover:bg-[#B03226] disabled:opacity-50 rounded-xl shadow-sm transition-all cursor-pointer"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white disabled:opacity-50 rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] transition-all cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>{t.wsPrintBtn}</span>
@@ -1540,7 +1543,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
             type="button"
             onClick={() => void handleDownloadPdf()}
             disabled={isExportingPdf}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#E6E0D6] hover:bg-[#EAE3D5] disabled:opacity-50 rounded-xl transition-colors cursor-pointer"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-stone-800 bg-white/80 hover:bg-white border border-white disabled:opacity-50 rounded-2xl shadow-xs transition-all cursor-pointer"
           >
             {isExportingPdf ? (
               <>
@@ -1549,7 +1552,7 @@ export const WorksheetBuilder: React.FC<WorksheetBuilderProps> = ({
               </>
             ) : (
               <>
-                <FileDown className="w-4 h-4 text-[#52525B]" />
+                <FileDown className="w-4 h-4 text-stone-600" />
                 <span>{t.wsDownloadPdfBtn}</span>
               </>
             )}

@@ -89,14 +89,14 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Шапка и фильтры справочника ключей */}
-      <section className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-6 sm:p-8 space-y-6">
+      {/* Шапка и фильтры справочника ключей в эстетике Spatial Glass */}
+      <section className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 p-6 sm:p-8 space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
           <div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight text-balance">
               {t.radTitle}
             </h1>
-            <p className="mt-2 text-base sm:text-lg text-[#52525B] leading-relaxed">
+            <p className="mt-2 text-base sm:text-lg text-stone-600 leading-relaxed">
               {t.radSubtitlePrefix} {RADICALS_DATA.length} {t.radSubtitleSuffix}
             </p>
           </div>
@@ -106,41 +106,43 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
             <label htmlFor="radical-search-input" className="sr-only">
               {t.radSearchLabel}
             </label>
-            <Search className="w-5 h-5 text-[#71717A] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-5 h-5 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               id="radical-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.radSearchPlaceholder}
-              className="w-full h-12 pl-11 pr-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31]"
+              className="w-full h-12 pl-11 pr-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all"
             />
           </div>
         </div>
 
-        {/* Фильтр по количеству черт в одну строку со свайпом */}
-        <div className="flex items-center gap-2 pt-4 border-t border-[#EAE3D5] overflow-x-auto flex-nowrap no-scrollbar py-1">
-          <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#71717A] mr-1 shrink-0">
+        {/* Фильтр по количеству черт в стиле visionOS */}
+        <div className="flex items-center gap-2 pt-4 border-t border-stone-200/60 overflow-x-auto flex-nowrap no-scrollbar py-1">
+          <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-stone-500 mr-1 shrink-0">
             <Filter className="w-4 h-4 text-[#C83E31]" />
             <span>{t.radFilterLabel}</span>
           </span>
-          {strokeFilters.map((f) => {
-            const isActive = strokeFilter === f.id;
-            return (
-              <button
-                key={String(f.id)}
-                type="button"
-                onClick={() => setStrokeFilter(f.id)}
-                className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl border transition-all whitespace-nowrap shrink-0 cursor-pointer min-h-[42px] ${
-                  isActive
-                    ? 'bg-[#18181B] text-[#FAF7F2] border-[#18181B] shadow-xs'
-                    : 'bg-[#FAF7F2] text-[#18181B] border-[#EAE3D5] hover:border-[#C83E31]/40'
-                }`}
-              >
-                {f.label}
-              </button>
-            );
-          })}
+          <div className="inline-flex items-center gap-1 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md">
+            {strokeFilters.map((f) => {
+              const isActive = strokeFilter === f.id;
+              return (
+                <button
+                  key={String(f.id)}
+                  type="button"
+                  onClick={() => setStrokeFilter(f.id)}
+                  className={`px-3.5 py-2 text-xs sm:text-sm transition-all whitespace-nowrap shrink-0 cursor-pointer min-h-[38px] ${
+                    isActive
+                      ? 'bg-white shadow-sm rounded-xl text-stone-900 font-medium'
+                      : 'rounded-xl text-stone-600 hover:text-stone-900 hover:bg-white/50 font-medium'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -148,12 +150,12 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
       {selectedRadical && (
         <section
           aria-label={`${t.radSelectedAria} ${selectedRadical.char}`}
-          className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
+          className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center gap-6">
             {/* Квадратный штамп-печать выбранного ключа */}
-            <div className="w-24 h-24 bg-[#FDF2F0]/60 border-2 border-[#C83E31]/50 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-2xs">
-              <span className="font-chinese text-5xl font-bold text-[#18181B]">
+            <div className="w-24 h-24 bg-white/80 border border-white rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-inner ring-1 ring-[#C83E31]/30">
+              <span className="font-chinese text-5xl font-bold text-stone-900">
                 {selectedRadical.char}
               </span>
               {selectedRadical.variant && (
@@ -164,7 +166,7 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2.5 text-sm text-[#71717A] font-mono-tabular">
+              <div className="flex flex-wrap items-center gap-2.5 text-sm text-stone-500 font-mono-tabular">
                 <span>
                   {t.radKangxiNumber}
                   {selectedRadical.number}
@@ -178,7 +180,7 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
                     <span aria-hidden="true">·</span>
                     <span>
                       {t.radInCharVariant}{' '}
-                      <span className="font-chinese font-bold text-[#18181B]">
+                      <span className="font-chinese font-bold text-stone-900">
                         {selectedRadical.variant}
                       </span>
                     </span>
@@ -187,24 +189,24 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
               </div>
 
               <div className="mt-1.5 flex items-baseline gap-3.5">
-                <h2 className="text-2xl font-bold text-[#18181B]">
+                <h2 className="text-2xl font-bold text-stone-900">
                   {lang === 'en'
                     ? selectedRadical.meaning_en || selectedRadical.meaning
                     : selectedRadical.meaning}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-lg text-base font-mono-tabular font-semibold bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8]">
+                <span className="px-2.5 py-0.5 rounded-xl text-base font-mono-tabular font-semibold bg-white/80 text-[#C83E31] border border-white shadow-2xs">
                   [{selectedRadical.pinyin}]
                 </span>
               </div>
 
-              <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-sm text-[#52525B]">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-sm text-stone-600">
                 <span>{t.radExamplesLabel}</span>
                 {selectedRadical.examples.map((exChar) => (
                   <button
                     key={exChar}
                     type="button"
                     onClick={() => onPracticeRadical(exChar)}
-                    className="font-chinese text-base font-bold text-[#18181B] hover:text-[#C83E31] underline decoration-[#D6CEB8] underline-offset-4 cursor-pointer px-1.5"
+                    className="font-chinese text-base font-bold text-stone-900 hover:text-[#C83E31] underline decoration-stone-300 underline-offset-4 cursor-pointer px-1.5"
                   >
                     {exChar}
                   </button>
@@ -213,12 +215,12 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
             </div>
           </div>
 
-          {/* 3 обязательные кнопки действий при выборе ключа (h-12 для удобства на планшетах) */}
+          {/* 3 обязательные кнопки действий при выборе ключа */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               type="button"
               onClick={() => speakChinese(selectedRadical.char)}
-              className="inline-flex items-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] hover:bg-[#EAE3D5]/60 rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Volume2 className="w-5 h-5 text-[#C83E31]" />
               <span>{t.radSpeakBtn}</span>
@@ -227,7 +229,7 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
             <button
               type="button"
               onClick={() => onPracticeRadical(selectedRadical.char)}
-              className="inline-flex items-center gap-2 px-5 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] active:scale-[0.98] rounded-xl shadow-sm transition-all whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer"
             >
               <BookOpen className="w-5 h-5" />
               <span>{t.radPracticeBtn}</span>
@@ -237,15 +239,15 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
               type="button"
               onClick={() => handleAddRadicalToWorksheet(selectedRadical)}
               disabled={isRadicalInWorksheet(selectedRadical.char)}
-              className={`inline-flex items-center gap-2 px-5 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-2 px-5 py-3 h-12 min-h-[48px] text-sm sm:text-base font-semibold rounded-2xl transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer ${
                 isRadicalInWorksheet(selectedRadical.char)
-                  ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]'
-                  : 'bg-[#C83E31] text-white hover:bg-[#B03226] shadow-sm'
+                  ? 'bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 shadow-2xs'
+                  : 'bg-white/80 hover:bg-white text-[#C83E31] border border-white shadow-xs hover:shadow-md'
               }`}
             >
               {isRadicalInWorksheet(selectedRadical.char) ? (
                 <>
-                  <Check className="w-5 h-5 text-[#15803D]" />
+                  <Check className="w-5 h-5 text-emerald-700" />
                   <span>{t.radInWorksheetBtn}</span>
                 </>
               ) : (
@@ -261,13 +263,13 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
 
       {/* Сетка ключей, сгруппированная по числу черт */}
       {groupedByStrokes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] p-12 text-center flex flex-col items-center">
+        <div className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] p-12 text-center flex flex-col items-center">
           <img
             src={MOSHUI_LOGO_SRC}
             alt="MoShui 墨水"
             className="h-20 w-20 object-contain rounded-full mix-blend-multiply opacity-85 mb-4"
           />
-          <p className="text-base text-[#52525B]">
+          <p className="text-base text-stone-600">
             {t.radNotFoundPrefix} «{searchQuery}» {t.radNotFoundSuffix}
           </p>
         </div>
@@ -276,13 +278,13 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
           {groupedByStrokes.map(([strokes, items]) => (
             <section
               key={strokes}
-              className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-6 sm:p-7 space-y-5"
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 p-6 sm:p-7 space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-[#EAE3D5] pb-3.5">
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#18181B]">
+              <div className="flex items-center justify-between border-b border-stone-200/60 pb-3.5">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-stone-900">
                   {formatStrokeGroupTitle(strokes)}
                 </h3>
-                <span className="text-xs px-2.5 py-1 rounded-md bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] font-mono-tabular font-semibold">
+                <span className="text-xs px-2.5 py-1 rounded-xl bg-white/80 text-[#C83E31] border border-white font-mono-tabular font-semibold shadow-2xs">
                   {t.radGroupCount} {items.length}
                 </span>
               </div>
@@ -296,44 +298,44 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
                     <div
                       key={rad.number}
                       onClick={() => setSelectedRadical(rad)}
-                      className={`p-3 sm:p-4 rounded-xl border transition-all duration-200 flex flex-col justify-between gap-2.5 cursor-pointer hover:-translate-y-0.5 hover:border-[#C83E31]/50 ${
+                      className={`p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-2.5 cursor-pointer hover:-translate-y-0.5 ${
                         isSelected
-                          ? 'bg-[#FDF2F0]/60 border-[#C83E31] ring-1 ring-[#C83E31] shadow-xs'
-                          : 'bg-[#FAF7F2]/80 border-[#EAE3D5] hover:bg-white'
+                          ? 'bg-white border-stone-900/20 ring-2 ring-[#C83E31]/50 shadow-md'
+                          : 'bg-white/65 border-white/80 hover:bg-white shadow-2xs hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-mono-tabular text-[11px] sm:text-xs text-[#71717A]">
+                        <span className="font-mono-tabular text-[11px] sm:text-xs text-stone-500">
                           №{rad.number}
                         </span>
                         {rad.variant && (
-                          <span className="font-chinese text-xs font-semibold text-[#C83E31] px-1.5 py-0.5 rounded bg-[#FDF2F0] border border-[#F5D0C8]/70">
+                          <span className="font-chinese text-xs font-semibold text-[#C83E31] px-1.5 py-0.5 rounded-lg bg-[#FDF2F0]/80 border border-[#F5D0C8]/70">
                             {rad.variant}
                           </span>
                         )}
                       </div>
 
                       <div className="py-1 flex flex-col items-center text-center min-w-0">
-                        <span className="font-chinese text-3xl sm:text-4xl font-bold text-[#18181B] leading-tight">
+                        <span className="font-chinese text-3xl sm:text-4xl font-bold text-stone-900 leading-tight">
                           {rad.char}
                         </span>
                         <div className="mt-1.5 text-xs sm:text-sm font-mono-tabular font-semibold text-[#C83E31] truncate w-full">
                           {rad.pinyin}
                         </div>
-                        <div className="text-xs sm:text-sm font-medium text-[#18181B] truncate w-full">
+                        <div className="text-xs sm:text-sm font-medium text-stone-800 truncate w-full">
                           {lang === 'en' ? rad.meaning_en || rad.meaning : rad.meaning}
                         </div>
                       </div>
 
                       <div
-                        className="pt-2 border-t border-[#EAE3D5] flex items-center justify-between gap-1"
+                        className="pt-2 border-t border-stone-200/60 flex items-center justify-between gap-1"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           type="button"
                           onClick={() => speakChinese(rad.char)}
                           aria-label={`${t.radSpeakBtn} ${rad.char}`}
-                          className="p-1.5 text-xs font-medium text-[#52525B] hover:text-[#18181B] hover:bg-[#EAE3D5]/60 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 rounded-lg transition-colors cursor-pointer"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                         </button>
@@ -341,7 +343,7 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
                           type="button"
                           onClick={() => onPracticeRadical(rad.char)}
                           title={t.radCardPracticeTitle}
-                          className="p-1.5 text-xs font-semibold text-[#18181B] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer truncate"
+                          className="p-1.5 text-xs font-semibold text-stone-900 hover:text-[#C83E31] hover:bg-[#FDF2F0]/70 rounded-lg transition-colors cursor-pointer truncate"
                         >
                           <BookOpen className="w-3.5 h-3.5 text-[#C83E31] sm:hidden" />
                           <span className="hidden sm:inline">{t.radCardAnalyzeBtn}</span>
@@ -353,8 +355,8 @@ export const RadicalsView: React.FC<RadicalsViewProps> = ({
                           aria-label={inSheet ? t.radCardAlreadyAria : t.radCardAddAria}
                           className={`p-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0 ${
                             inSheet
-                              ? 'text-[#15803D] bg-[#F0FDF4]'
-                              : 'text-[#C83E31] hover:bg-[#FDF2F0]'
+                              ? 'text-emerald-700 bg-emerald-50'
+                              : 'text-[#C83E31] hover:bg-[#FDF2F0]/80'
                           }`}
                         >
                           {inSheet ? (

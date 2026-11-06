@@ -41,18 +41,18 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="guide-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/30 backdrop-blur-xs p-4 overflow-y-auto print:hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/25 backdrop-blur-md p-4 overflow-y-auto print:hidden"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#FAF8F5] max-w-2xl w-full p-6 md:p-8 rounded-2xl border border-stone-200 shadow-xl relative my-auto"
+        className="bg-white/75 backdrop-blur-2xl max-w-2xl w-full p-6 md:p-8 rounded-3xl border border-white shadow-2xl ring-1 ring-stone-900/[0.04] relative my-auto"
       >
         {/* Кнопка закрытия (крестик в правом верхнем углу) */}
         <button
           type="button"
           onClick={onClose}
           aria-label={t.gotItBtn}
-          className="absolute right-4 top-4 p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-200/50 rounded-xl transition-colors cursor-pointer"
+          className="absolute right-4 top-4 p-2 rounded-full bg-white/60 hover:bg-white text-stone-500 hover:text-stone-900 border border-white/80 shadow-2xs transition-all cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -60,7 +60,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         {/* Заголовок инструкции */}
         <h2
           id="guide-modal-title"
-          className="text-xl md:text-2xl font-serif font-bold text-[#18181B] pr-8"
+          className="text-xl md:text-2xl font-serif font-bold text-stone-900 pr-8"
         >
           {t.guideTitle}
         </h2>
@@ -72,17 +72,17 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
             return (
               <div
                 key={index}
-                className="bg-white p-4 rounded-xl border border-stone-200/60 shadow-[0_2px_10px_rgb(24,24,27,0.02)] flex flex-col gap-2.5"
+                className="bg-white/75 backdrop-blur-xl p-4 rounded-2xl border border-white/90 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.05)] ring-1 ring-stone-900/[0.03] flex flex-col gap-2.5"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#FDF2F0] border border-[#F5D0C8] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-white border border-stone-200/70 shadow-2xs flex items-center justify-center shrink-0">
                     <IconComponent className="w-4 h-4 text-[#C83E31]" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-[#18181B]">
+                  <h3 className="text-sm sm:text-base font-bold text-stone-900">
                     {step.title}
                   </h3>
                 </div>
-                <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed">
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                   {step.desc}
                 </p>
               </div>
@@ -91,11 +91,11 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Блок с советом по печати */}
-        <div className="bg-stone-100/80 p-4 rounded-xl border border-stone-200/80 text-sm flex items-start gap-3">
+        <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/90 ring-1 ring-stone-900/[0.03] text-sm flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-[#C83E31] shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <div className="font-semibold text-[#18181B]">{t.printTipTitle}</div>
-            <p className="text-[#52525B] leading-relaxed text-xs sm:text-sm">
+            <div className="font-semibold text-stone-900">{t.printTipTitle}</div>
+            <p className="text-stone-600 leading-relaxed text-xs sm:text-sm">
               {t.printTipDesc}
             </p>
           </div>
@@ -106,7 +106,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#18181B] hover:bg-[#27272A] text-[#FAF8F5] text-sm font-semibold transition-colors shadow-xs cursor-pointer"
+            className="inline-flex items-center justify-center px-7 py-3 rounded-2xl bg-gradient-to-b from-stone-800 to-stone-950 text-white text-sm font-semibold shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer"
           >
             {t.gotItBtn}
           </button>

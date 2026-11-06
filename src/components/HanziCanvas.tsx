@@ -228,10 +228,10 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
 
   return (
     <div className="flex flex-col items-center w-full">
-      {/* Двойная рамка настольного планшета мастера каллиграфии (рисовая бумага + киноварная сетка Мицзыгэ) */}
-      <div className="border-2 border-[#D6CEB8] p-3 rounded-2xl bg-[#FFFEFA] shadow-inner mx-auto">
+      {/* Стеклянная рамка настольного планшета мастера каллиграфии + киноварная сетка Мицзыгэ */}
+      <div className="border border-white/90 p-3 rounded-3xl bg-white/75 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-stone-900/5 mx-auto">
         <div
-          className="relative bg-white border-2 border-[#C83E31]/80 rounded-xl shadow-2xs overflow-hidden mx-auto select-none touch-none worksheet-cell-container"
+          className="relative bg-white border-2 border-[#C83E31]/80 rounded-2xl shadow-2xs overflow-hidden mx-auto select-none touch-none worksheet-cell-container"
           style={{
             width: size,
             height: size,
@@ -334,16 +334,16 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
         </div>
       </div>
 
-      {/* Панель управления под холстом: крупные кнопки (h-12) для пальцев и стилуса */}
+      {/* Панель управления под холстом: тактильные кнопки в эстетике Spatial Glass */}
       <div className="mt-4 grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center gap-2.5 w-full max-w-[320px] sm:max-w-none">
         <button
           type="button"
           onClick={handleAnimate}
           disabled={isFallbackGlyph}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-2xl transition-all duration-200 whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
             mode === 'animate' && !isFallbackGlyph
-              ? 'bg-[#18181B] text-[#FAF7F2] shadow-sm'
-              : 'bg-[#FAF7F2] text-[#18181B] border border-[#EAE3D5] hover:bg-[#EAE3D5]/60'
+              ? 'bg-gradient-to-b from-stone-800 to-stone-950 text-white shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0'
+              : 'bg-white/80 hover:bg-white text-stone-800 border border-white shadow-xs hover:shadow-md'
           }`}
         >
           <Play className="w-4 h-4" />
@@ -354,10 +354,10 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           type="button"
           onClick={handleStartQuiz}
           disabled={isFallbackGlyph}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-semibold rounded-2xl transition-all duration-200 whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
             mode === 'quiz' && !isFallbackGlyph
-              ? 'bg-[#C83E31] text-white shadow-sm'
-              : 'bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] hover:bg-[#F5D0C8]/50'
+              ? 'bg-gradient-to-b from-stone-800 to-stone-950 text-white shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0'
+              : 'bg-white/80 hover:bg-white text-[#C83E31] border border-white shadow-xs hover:shadow-md'
           }`}
         >
           <PenTool className="w-4 h-4" />
@@ -367,17 +367,17 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
         <button
           type="button"
           onClick={handleToggleOutline}
-          className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-medium text-[#18181B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FAF7F2] transition-all whitespace-nowrap cursor-pointer"
+          className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-3 h-12 min-h-[48px] text-sm font-medium bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all whitespace-nowrap cursor-pointer"
           aria-pressed={showOutline}
         >
           {showOutline ? (
             <>
-              <EyeOff className="w-4 h-4 text-[#71717A]" />
+              <EyeOff className="w-4 h-4 text-stone-500" />
               <span>{t.canvasHideOutlineBtn}</span>
             </>
           ) : (
             <>
-              <Eye className="w-4 h-4 text-[#71717A]" />
+              <Eye className="w-4 h-4 text-stone-500" />
               <span>{t.canvasShowOutlineBtn}</span>
             </>
           )}
@@ -389,7 +389,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
             onClick={handleStartQuiz}
             title={t.canvasResetTitle}
             aria-label={t.canvasResetAria}
-            className="col-span-2 sm:col-span-1 inline-flex items-center justify-center p-3 h-12 min-h-[48px] text-sm font-medium text-[#52525B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FAF7F2] transition-all cursor-pointer"
+            className="col-span-2 sm:col-span-1 inline-flex items-center justify-center p-3 h-12 min-h-[48px] text-sm font-medium bg-white/80 hover:bg-white text-stone-700 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4 mr-1.5 sm:mr-0" />
             <span className="sm:hidden">{t.canvasResetBtn}</span>
@@ -399,19 +399,19 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
 
       {/* Статусная строка обратной связи */}
       <div
-        className={`mt-3 w-full max-w-[300px] text-center px-4 py-2.5 rounded-xl text-sm leading-relaxed border ${
+        className={`mt-3 w-full max-w-[300px] text-center px-4 py-2.5 rounded-2xl text-sm leading-relaxed border backdrop-blur-md ${
           feedback.type === 'success'
-            ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#15803D]'
+            ? 'bg-emerald-50/85 border-emerald-200/80 text-emerald-700'
             : feedback.type === 'mistake'
-            ? 'bg-[#FDF2F0] border-[#F5D0C8] text-[#C83E31]'
-            : 'bg-[#FAF7F2] border-[#EAE3D5] text-[#52525B]'
+            ? 'bg-[#FDF2F0]/90 border-[#F5D0C8] text-[#C83E31]'
+            : 'bg-white/75 border-white/90 text-stone-600 shadow-2xs'
         }`}
         role="status"
         aria-live="polite"
       >
         <div className="flex items-center justify-center gap-2">
           {feedback.type === 'success' && (
-            <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           {feedback.type === 'mistake' && (
             <AlertCircle className="w-4 h-4 text-[#C83E31] shrink-0" />
@@ -419,7 +419,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({ char, size = 240 }) =>
           <span>{feedback.message}</span>
         </div>
         {mode === 'quiz' && mistakeCount > 0 && (
-          <div className="mt-1 text-xs text-[#71717A] font-mono-tabular">
+          <div className="mt-1 text-xs text-stone-500 font-mono-tabular">
             {t.canvasMistakesTotal}: {mistakeCount}
           </div>
         )}

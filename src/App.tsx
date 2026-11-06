@@ -512,7 +512,24 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#18181B]">
+    <div className="relative isolate min-h-screen flex flex-col bg-[#ECEAE4] text-[#18181B] selection:bg-stone-800 selection:text-white print:bg-white">
+      {/* Многослойный «эфирный» пространственный фон с 3 цветовыми пятнами (Ambient Orbs) и текстурой шума */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-[#ECEAE4] print:hidden"
+      >
+        <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-stone-300/40 blur-[120px]" />
+        <div className="absolute top-[20%] -right-[15%] w-[50%] h-[70%] rounded-full bg-amber-100/30 blur-[120px]" />
+        <div className="absolute -bottom-[20%] left-[10%] w-[70%] h-[60%] rounded-full bg-stone-200/40 blur-[130px]" />
+        <div
+          className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
+          }}
+        />
+      </div>
+
       <Navbar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
@@ -521,7 +538,7 @@ function AppContent() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="flex-1 max-w-[1380px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 pb-24 md:pb-12 print:p-0 print:max-w-none">
+      <main className="flex-1 max-w-[1380px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-24 md:pb-12 print:p-0 print:m-0 print:max-w-none print:bg-white print:shadow-none print:ring-0">
         {activeTab === 'dictionary' && (
           <DictionaryView
             currentWord={currentWord}
@@ -599,8 +616,10 @@ function AppContent() {
         onSuccess={handleAuthSuccess}
       />
 
-      <footer className="w-full text-center py-6 mt-auto text-sm text-gray-400/70 print:hidden">
-        {t.footerCopyright}
+      <footer className="w-full max-w-6xl mx-auto px-4 mb-20 md:mb-6 mt-auto print:hidden">
+        <div className="bg-white/40 backdrop-blur-lg rounded-3xl border border-white/60 py-4 px-6 text-center text-sm text-stone-500 shadow-[0_8px_32px_rgba(0,0,0,0.02)]">
+          {t.footerCopyright}
+        </div>
       </footer>
 
       {/* Уведомление о доступности новой версии PWA */}
@@ -609,14 +628,14 @@ function AppContent() {
           role="status"
           aria-live="polite"
           data-testid="pwa-update-toast"
-          className="fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 z-50 print:hidden flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#18181B] text-[#FAF7F2] shadow-xl border border-[#C83E31]/40 text-xs sm:text-sm font-medium max-w-[92vw]"
+          className="fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 z-50 print:hidden flex items-center gap-3 px-5 py-3.5 rounded-full bg-white/80 backdrop-blur-2xl text-stone-900 shadow-2xl border border-white ring-1 ring-stone-900/5 text-xs sm:text-sm font-medium max-w-[92vw]"
         >
           <span>{t.pwaNewVersion}</span>
           <button
             type="button"
             onClick={() => void updateServiceWorker(true)}
             data-testid="pwa-update-btn"
-            className="px-3 py-1.5 rounded-xl bg-[#C83E31] hover:bg-[#B23327] text-white font-semibold transition-colors cursor-pointer shrink-0"
+            className="px-4 py-1.5 rounded-full bg-gradient-to-b from-stone-800 to-stone-950 text-white font-semibold shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shrink-0"
           >
             {t.pwaUpdateBtn}
           </button>
@@ -624,7 +643,7 @@ function AppContent() {
             type="button"
             onClick={() => setNeedRefresh(false)}
             aria-label={t.pwaHideAria}
-            className="px-2 py-1 rounded-lg text-[#FAF7F2]/70 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="px-2 py-1 rounded-full text-stone-500 hover:text-stone-900 transition-colors cursor-pointer shrink-0"
           >
             ✕
           </button>
@@ -636,15 +655,17 @@ function AppContent() {
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#FAF8F5', // теплый кремовый фон
-            color: '#333333',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-            borderRadius: '8px',
-            border: '1px solid rgba(0,0,0,0.05)',
+            background: 'rgba(255, 255, 255, 0.82)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            color: '#1C1917',
+            boxShadow: '0 12px 32px -8px rgba(0, 0, 0, 0.08)',
+            borderRadius: '18px',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
             padding: '12px 24px',
           },
           success: {
-            iconTheme: { primary: '#4B5563', secondary: '#FAF8F5' },
+            iconTheme: { primary: '#1C1917', secondary: '#FFFFFF' },
           },
         }}
       />

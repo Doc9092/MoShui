@@ -534,6 +534,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
       id="printable-sheet-area"
       data-testid="printable-a4-sheet"
       data-strokes-ready={allStrokesLoaded ? 'true' : 'false'}
+      className="print:shadow-none print:ring-0 print:m-0 print:rounded-none print:bg-white"
       style={{
         width: '794px',
         margin: '0 auto',
@@ -563,7 +564,7 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
           <div
             key={pageIdx}
             data-testid={`printable-a4-page-${pageIdx}`}
-            className="printable-a4-page bg-white shadow-md mb-8 last:mb-0 mx-auto"
+            className="printable-a4-page bg-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)] ring-1 ring-stone-900/5 rounded-sm mb-8 last:mb-0 mx-auto print:shadow-none print:ring-0 print:m-0 print:rounded-none print:bg-white"
             style={{
               width: '794px',
               minHeight: '1123px',
@@ -574,8 +575,6 @@ export const PrintableSheet: React.FC<PrintableSheetProps> = ({
               fontFamily: '"Noto Serif SC", "KaiTi", sans-serif',
               WebkitFontSmoothing: 'antialiased',
               textRendering: 'geometricPrecision',
-              border: '1px solid #E2E8F0',
-              borderRadius: '8px',
               pageBreakAfter: isLastPage ? 'auto' : 'always',
               breakAfter: isLastPage ? 'auto' : 'page',
               display: 'flex',

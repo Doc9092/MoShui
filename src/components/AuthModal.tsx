@@ -11,7 +11,6 @@ import {
   Mail,
   ArrowLeft,
   KeyRound,
-  Check,
 } from 'lucide-react';
 import type { TeacherProfile } from '../types/hanzi';
 import {
@@ -138,25 +137,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#18181B]/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto print:hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/25 backdrop-blur-md p-3 sm:p-4 overflow-y-auto print:hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="relative bg-white border border-[#EAE3D5] rounded-2xl shadow-xl w-[95vw] max-w-md overflow-hidden my-auto">
+      <div className="relative bg-white/75 backdrop-blur-2xl rounded-3xl border border-white shadow-2xl ring-1 ring-stone-900/[0.04] w-[95vw] max-w-md overflow-hidden my-auto">
         {/* Кнопка закрытия в правом верхнем углу */}
         <button
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
           aria-label={t.authCloseAria}
-          className="absolute right-3.5 top-3.5 p-2 text-[#71717A] hover:text-[#18181B] hover:bg-[#FAF7F2] disabled:opacity-50 rounded-xl transition-colors cursor-pointer z-10"
+          className="absolute right-4 top-4 p-2 rounded-full bg-white/60 hover:bg-white text-stone-500 hover:text-stone-900 border border-white/80 shadow-2xs disabled:opacity-50 transition-all cursor-pointer z-10"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Брендированная шапка с крупным логотипом по центру */}
-        <div className="px-4 sm:px-6 pt-6 pb-4 border-b border-[#EAE3D5] text-center bg-[#FAF7F2]">
+        <div className="px-4 sm:px-6 pt-6 pb-4 border-b border-white/60 text-center bg-white/40">
           <img
             src={MOSHUI_LOGO_SRC}
             alt="MoShui 墨水"
@@ -166,7 +165,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           />
           <h2
             id="auth-modal-title"
-            className="mt-3 font-display text-xl sm:text-2xl font-bold text-[#18181B]"
+            className="mt-3 font-display text-xl sm:text-2xl font-bold text-stone-900"
           >
             {mode === 'forgot_password' ? (
               t.resetPasswordTitle
@@ -180,13 +179,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </h2>
         </div>
 
-        {/* Переключатель вкладок: Вход / Регистрация (только для режимов login и register) */}
+        {/* Переключатель вкладок в стиле iOS / visionOS */}
         {(mode === 'login' || mode === 'register') && (
           <div className="px-4 sm:px-6 pt-4 sm:pt-5">
             <div
               role="tablist"
               aria-label={t.authModeAria}
-              className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl"
+              className="grid grid-cols-2 gap-1 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md"
             >
               <button
                 role="tab"
@@ -197,10 +196,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setMode('login');
                   setError(null);
                 }}
-                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
+                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm transition-all whitespace-nowrap text-center cursor-pointer ${
                   mode === 'login'
-                    ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
-                    : 'text-[#52525B] hover:text-[#18181B]'
+                    ? 'bg-white shadow-sm rounded-xl text-stone-900 font-semibold'
+                    : 'text-stone-600 hover:text-stone-900 font-medium rounded-xl'
                 }`}
               >
                 <span className="hidden sm:inline">{t.authTabLoginFull}</span>
@@ -216,10 +215,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setMode('register');
                   setError(null);
                 }}
-                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap text-center cursor-pointer ${
+                className={`py-2.5 px-2 sm:px-4 text-xs sm:text-sm transition-all whitespace-nowrap text-center cursor-pointer ${
                   mode === 'register'
-                    ? 'bg-[#18181B] text-[#FAF7F2] shadow-xs font-bold'
-                    : 'text-[#52525B] hover:text-[#18181B]'
+                    ? 'bg-white shadow-sm rounded-xl text-stone-900 font-semibold'
+                    : 'text-stone-600 hover:text-stone-900 font-medium rounded-xl'
                 }`}
               >
                 <span>{t.authTabRegister}</span>
@@ -234,7 +233,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div
               role="alert"
               data-testid="auth-error-banner"
-              className="p-3.5 bg-[#FDF2F0] border border-[#F5D0C8] rounded-xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
+              className="p-3.5 bg-red-50/80 backdrop-blur-md border border-red-200/80 rounded-2xl flex items-start gap-2.5 text-sm font-medium text-[#C83E31]"
             >
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#C83E31]" />
               <span>{error}</span>
@@ -245,7 +244,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-name-input"
-                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                className="block text-sm font-semibold text-stone-900 mb-1.5"
               >
                 {t.authLabelName}
               </label>
@@ -257,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t.authPlaceholderName}
-                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all disabled:opacity-60"
               />
             </div>
           )}
@@ -266,7 +265,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-email-input"
-                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                className="block text-sm font-semibold text-stone-900 mb-1.5"
               >
                 {t.authLabelEmail}
               </label>
@@ -278,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t.authPlaceholderEmail}
-                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all disabled:opacity-60"
               />
             </div>
           )}
@@ -287,7 +286,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-password-input"
-                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                className="block text-sm font-semibold text-stone-900 mb-1.5"
               >
                 {t.authLabelPassword}
               </label>
@@ -301,13 +300,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t.authPlaceholderPassword}
-                  className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                  className="w-full px-4 py-3 pr-10 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all disabled:opacity-60"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -326,7 +325,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       setMode('forgot_password');
                       setError(null);
                     }}
-                    className="text-xs sm:text-sm font-medium text-[#71717A] hover:text-[#C83E31] transition-colors cursor-pointer"
+                    className="text-xs sm:text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
                   >
                     {t.forgotPassword}
                   </button>
@@ -339,7 +338,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-new-password-input"
-                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                className="block text-sm font-semibold text-stone-900 mb-1.5"
               >
                 {t.newPasswordTitle}
               </label>
@@ -353,13 +352,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder={t.authPlaceholderPassword}
-                  className="w-full px-4 py-3 pr-10 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                  className="w-full px-4 py-3 pr-10 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all disabled:opacity-60"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? t.authHidePasswordAria : t.authShowPasswordAria}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -375,7 +374,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label
                 htmlFor="teacher-school-input"
-                className="block text-sm font-semibold text-[#18181B] mb-1.5"
+                className="block text-sm font-semibold text-stone-900 mb-1.5"
               >
                 {t.authLabelSchool}
               </label>
@@ -386,7 +385,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={schoolOrTitle}
                 onChange={(e) => setSchoolOrTitle(e.target.value)}
                 placeholder={t.authPlaceholderSchool}
-                className="w-full px-4 py-3 text-base bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] disabled:opacity-60"
+                className="w-full px-4 py-3 text-base bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all disabled:opacity-60"
               />
             </div>
           )}
@@ -396,7 +395,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="submit"
               disabled={isSubmitting}
               data-testid="auth-submit-button"
-              className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 h-12 text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] disabled:opacity-60 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 h-12 text-base font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -442,7 +441,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setMode('login');
                   setError(null);
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-semibold text-[#52525B] hover:text-[#18181B] bg-[#FAF7F2] hover:bg-[#F3EFE6] border border-[#EAE3D5] rounded-xl transition-colors cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>{t.backToLogin}</span>

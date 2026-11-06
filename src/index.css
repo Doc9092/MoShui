@@ -11,14 +11,14 @@
 @layer base {
   html {
     font-size: 16px;
-    background-color: #FAF7F2;
+    background-color: #ECEAE4;
     color: #18181B;
   }
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', 'Noto Serif SC', system-ui, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
-    background-color: #FAF7F2;
+    background-color: #ECEAE4;
     color: #18181B;
   }
 }
@@ -69,10 +69,12 @@
     size: A4 portrait;
     margin: 0;
   }
+  html,
   body {
     background: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
+    padding: 0 !important;
   }
   .printable-a4-page {
     page-break-after: always;
@@ -81,6 +83,7 @@
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
+    background: #ffffff !important;
   }
   .printable-a4-page:last-child {
     page-break-after: auto;

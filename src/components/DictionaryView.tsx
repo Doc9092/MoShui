@@ -119,13 +119,13 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Секция поиска в эстетике Warm Oriental Minimalism */}
-      <section className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-6 sm:p-8">
+      {/* Секция поиска в эстетике Spatial Glass / Ethereal Minimalism */}
+      <section className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 p-6 sm:p-8">
         <div className="max-w-4xl">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B] tracking-tight text-balance">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight text-balance">
             {t.dictTitle}
           </h1>
-          <p className="mt-2.5 text-base sm:text-lg text-[#52525B] leading-relaxed">
+          <p className="mt-2.5 text-base sm:text-lg text-stone-600 leading-relaxed">
             {t.dictSubtitle}
           </p>
 
@@ -134,20 +134,20 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               <label htmlFor="chinese-search-input" className="sr-only">
                 {t.dictSearchLabel}
               </label>
-              <Search className="w-5 h-5 text-[#71717A] absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-5 h-5 text-stone-400 absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 id="chinese-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.dictSearchPlaceholder}
-                className="w-full h-12 sm:h-14 pl-11 sm:pl-13 pr-4 sm:pr-6 text-base sm:text-xl bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:bg-white focus:border-[#C83E31] focus:ring-2 focus:ring-[#C83E31]/15 transition-all font-hanzi-sans"
+                className="w-full h-12 sm:h-14 pl-11 sm:pl-13 pr-4 sm:pr-6 text-base sm:text-xl bg-white/70 focus:bg-white rounded-2xl border border-white/90 shadow-inner text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/40 transition-all font-hanzi-sans"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full sm:w-auto h-12 sm:h-14 inline-flex items-center justify-center gap-2 px-6 sm:px-7 min-h-[48px] text-base font-semibold text-white bg-[#18181B] hover:bg-[#27272A] active:scale-[0.98] rounded-xl disabled:opacity-60 transition-all whitespace-nowrap shrink-0 cursor-pointer shadow-sm"
+              className="w-full sm:w-auto h-12 sm:h-14 inline-flex items-center justify-center gap-2 px-6 sm:px-7 min-h-[48px] text-base font-semibold bg-gradient-to-b from-stone-800 to-stone-950 text-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -176,7 +176,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         <section
           aria-label={t.dictEmptyAria}
           data-testid="dictionary-empty-state"
-          className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 p-8 sm:p-16 text-center"
+          className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 p-8 sm:p-16 text-center"
         >
           <div className="max-w-lg mx-auto flex flex-col items-center">
             <img
@@ -185,10 +185,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               data-testid="dictionary-empty-logo"
               className="h-[97px] w-[97px] sm:h-[116px] sm:w-[116px] object-contain rounded-full mix-blend-multiply opacity-85 mb-4 sm:mb-5"
             />
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-[#18181B]">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-stone-900">
               {t.dictEmptyTitle}
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-[#52525B] leading-relaxed">
+            <p className="mt-2 text-sm sm:text-base text-stone-600 leading-relaxed">
               {t.dictEmptySubtitle}
             </p>
           </div>
@@ -197,14 +197,14 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         /* Карточка результата: Шапка всего слова */
         <section
           aria-label={`${t.dictWordSectionAria} ${currentWord.word}`}
-          className="bg-white rounded-2xl border border-[#EAE3D5] shadow-[0_8px_30px_rgb(24,24,27,0.04)] hover:shadow-[0_12px_40px_rgb(24,24,27,0.07)] transition-all duration-300 overflow-hidden"
+          className="bg-white/60 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] ring-1 ring-stone-900/[0.04] transition-all duration-300 overflow-hidden"
         >
-          <div className="p-5 sm:p-8 border-b border-[#EAE3D5] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
+          <div className="p-5 sm:p-8 border-b border-stone-200/60 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 sm:gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
               {/* Крупное отображение слова в стиле каллиграфического свитка */}
-              <div className="inline-flex items-center justify-center px-5 py-4 sm:px-6 sm:py-5 bg-[#FAF7F2] border-2 border-[#D6CEB8] rounded-2xl shrink-0 self-start sm:self-auto shadow-inner">
+              <div className="inline-flex items-center justify-center px-5 py-4 sm:px-6 sm:py-5 bg-white/80 border border-white rounded-2xl shrink-0 self-start sm:self-auto shadow-inner ring-1 ring-stone-900/5">
                 <span
-                  className="font-chinese text-4xl sm:text-6xl font-bold tracking-wider text-[#18181B] select-all"
+                  className="font-chinese text-4xl sm:text-6xl font-bold tracking-wider text-stone-900 select-all"
                   data-testid="word-header-hanzi"
                 >
                   {currentWord.word}
@@ -223,7 +223,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     type="button"
                     onClick={() => speakChinese(currentWord.word)}
                     aria-label={`${t.dictSpeakWordAria} ${currentWord.word}`}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] text-xs sm:text-sm font-semibold text-[#C83E31] bg-[#FDF2F0] border border-[#F5D0C8] hover:bg-[#F5D0C8]/50 rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] text-xs sm:text-sm font-semibold text-[#C83E31] bg-white/80 hover:bg-white border border-white rounded-2xl shadow-xs hover:shadow-md transition-all whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#C83E31]" />
                     <span>{t.dictListenBtn}</span>
@@ -231,14 +231,14 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 </div>
 
                 <p
-                  className="mt-1.5 sm:mt-2.5 text-lg sm:text-2xl font-semibold text-[#18181B]"
+                  className="mt-1.5 sm:mt-2.5 text-lg sm:text-2xl font-semibold text-stone-900"
                   data-testid="word-header-translation"
                 >
                   {currentWord.translation}
                 </p>
 
                 {/* Метаданные слова */}
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[#71717A] font-mono-tabular">
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-stone-500 font-mono-tabular">
                   <span>
                     {t.dictMetaChars}: {currentWord.characters.length}
                   </span>
@@ -285,15 +285,15 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   onAddToWorksheet(fullWordItem);
                 }}
                 disabled={isAlreadyInWorksheet}
-                className={`inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 h-12 min-h-[48px] text-sm sm:text-base font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 h-12 min-h-[48px] text-sm sm:text-base font-semibold rounded-2xl transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isAlreadyInWorksheet
-                    ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] cursor-default'
-                    : 'bg-[#C83E31] text-white hover:bg-[#B03226] shadow-sm'
+                    ? 'bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 cursor-default shadow-2xs'
+                    : 'bg-gradient-to-b from-stone-800 to-stone-950 text-white shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5 active:translate-y-0'
                 }`}
               >
                 {isAlreadyInWorksheet ? (
                   <>
-                    <Check className="w-5 h-5 text-[#15803D]" />
+                    <Check className="w-5 h-5 text-emerald-700" />
                     <span>{t.dictAddedBtn}</span>
                   </>
                 ) : (
@@ -308,7 +308,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 <button
                   type="button"
                   onClick={onNavigateToWorksheet}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-3 sm:px-5 h-12 min-h-[48px] text-sm font-semibold text-[#18181B] bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl hover:bg-[#EAE3D5]/50 transition-all whitespace-nowrap cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 sm:px-5 h-12 min-h-[48px] text-sm font-semibold bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all whitespace-nowrap cursor-pointer"
                 >
                   <span>{t.dictOpenWorksheetBtn}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -317,14 +317,14 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             </div>
           </div>
 
-          {/* Переключатель иероглифов для многосложных слов с горизонтальной прокруткой */}
+          {/* Переключатель иероглифов для многосложных слов (сегментированный переключатель в стиле visionOS) */}
           {currentWord.characters.length > 1 && (
-            <div className="px-4 sm:px-8 py-3.5 sm:py-4 bg-[#FAF7F2] border-b border-[#EAE3D5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#52525B] shrink-0">
+            <div className="px-4 sm:px-8 py-3.5 sm:py-4 bg-white/40 border-b border-stone-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-stone-600 shrink-0">
                 <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-[#C83E31]" />
                 <span>
                   {t.dictCharBreakdownLabel} «
-                  <span className="font-chinese font-bold text-[#18181B]">{currentWord.word}</span>
+                  <span className="font-chinese font-bold text-stone-900">{currentWord.word}</span>
                   »:
                 </span>
               </div>
@@ -332,7 +332,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               <div
                 role="tablist"
                 aria-label={t.dictCharsInWordAria}
-                className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar py-1 w-full sm:w-auto"
+                className="flex items-center gap-1.5 bg-stone-200/50 p-1 rounded-2xl backdrop-blur-md overflow-x-auto whitespace-nowrap no-scrollbar w-full sm:w-auto"
               >
                 {currentWord.characters.map((charObj, idx) => {
                   const isSelected = idx === selectedCharIndex;
@@ -343,10 +343,10 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       type="button"
                       aria-selected={isSelected}
                       onClick={() => setSelectedCharIndex(idx)}
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-sm sm:text-base font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                      className={`inline-flex items-center gap-2 px-4 py-2 min-h-[40px] rounded-xl text-sm sm:text-base transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                         isSelected
-                          ? 'bg-[#18181B] text-[#FAF7F2] shadow-md'
-                          : 'bg-white text-[#18181B] border border-[#EAE3D5] hover:border-[#C83E31]/50'
+                          ? 'bg-white shadow-sm text-stone-900 font-medium'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
                       }`}
                     >
                       <span className="font-mono-tabular text-xs sm:text-sm opacity-70">
@@ -363,18 +363,18 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             </div>
           )}
 
-          {/* Основная 2-зонная рабочая область посимвольного разбора (на планшетах md:grid-cols-12) */}
+          {/* Основная 2-зонная рабочая область посимвольного разбора */}
           {activeChar && (
             <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
               {/* Левая колонка: Настольный планшет каллиграфа с HanziWriter */}
-              <div className="md:col-span-5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-2xl p-5 sm:p-6 flex flex-col items-center">
+              <div className="md:col-span-5 bg-white/55 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 flex flex-col items-center shadow-xs ring-1 ring-stone-900/[0.03]">
                 <div className="w-full flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
                       {t.dictTrainerLabel}
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="font-chinese text-2xl font-bold text-[#18181B]">
+                      <span className="font-chinese text-2xl font-bold text-stone-900">
                         {activeChar.char}
                       </span>
                       <span className="text-base font-mono-tabular text-[#C83E31] font-semibold">
@@ -384,13 +384,13 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         type="button"
                         onClick={() => speakChinese(activeChar.char)}
                         aria-label={`${t.dictSpeakCharAria} ${activeChar.char}`}
-                        className="p-1.5 text-[#52525B] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-stone-600 hover:text-[#C83E31] hover:bg-white/80 rounded-xl transition-colors cursor-pointer"
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <span className="px-3 py-1 bg-white border border-[#EAE3D5] rounded-lg text-xs font-mono-tabular font-semibold text-[#52525B]">
+                  <span className="px-3 py-1 bg-white/80 border border-white rounded-xl text-xs font-mono-tabular font-semibold text-stone-600 shadow-2xs">
                     {t.dictMetaStrokes}: {activeChar.strokeCount}
                   </span>
                 </div>
@@ -401,25 +401,25 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
               {/* Правая колонка: Структурная декомпозиция, печати-штампы ключей, мнемоника и примеры */}
               <div className="md:col-span-7 space-y-6">
                 {/* Значение и традиционная печать иероглифического ключа */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-[#EAE3D5]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-stone-200/60">
                   <div>
-                    <div className="text-sm font-medium text-[#71717A]">
+                    <div className="text-sm font-medium text-stone-500">
                       {t.dictCharMeaningLabel} «
-                      <span className="font-chinese font-bold text-[#18181B]">
+                      <span className="font-chinese font-bold text-stone-900">
                         {activeChar.char}
                       </span>
                       »
                     </div>
-                    <div className="mt-2 text-lg font-semibold text-[#18181B]">
+                    <div className="mt-2 text-lg font-semibold text-stone-900">
                       {activeChar.meaning}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm font-medium text-[#71717A]">
+                    <div className="text-sm font-medium text-stone-500">
                       {t.dictRadicalStampLabel}
                     </div>
-                    <div className="mt-2 inline-flex items-center gap-3 px-3.5 py-2 border border-[#C83E31]/40 bg-[#FDF2F0]/50 rounded-lg">
+                    <div className="mt-2 inline-flex items-center gap-3 px-3.5 py-2 border border-[#C83E31]/30 bg-white/80 rounded-2xl shadow-2xs">
                       <span className="font-chinese text-lg font-bold text-[#C83E31]">
                         {activeChar.radical}
                       </span>
@@ -427,14 +427,14 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   </div>
                 </div>
 
-                {/* Составные графемы и компоненты в виде традиционных квадратных печатей */}
-                <div className="pb-6 border-b border-[#EAE3D5]">
+                {/* Составные графемы и компоненты */}
+                <div className="pb-6 border-b border-stone-200/60">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5">
+                    <h2 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2.5">
                       <BookOpen className="w-5 h-5 text-[#C83E31]" />
                       <span>{t.dictStructuralTitle}</span>
                     </h2>
-                    <span className="text-xs px-2.5 py-1 rounded-md bg-[#FDF2F0] text-[#C83E31] border border-[#F5D0C8] font-mono-tabular font-semibold">
+                    <span className="text-xs px-2.5 py-1 rounded-xl bg-white/80 text-[#C83E31] border border-white font-mono-tabular font-semibold shadow-2xs">
                       {t.dictElementsCount}: {activeChar.graphemes.length}
                     </span>
                   </div>
@@ -443,16 +443,15 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     {activeChar.graphemes.map((g, gIdx) => (
                       <div
                         key={`${g.char}-${gIdx}`}
-                        className="flex items-center justify-between p-4 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl hover:border-[#C83E31]/40 transition-colors"
+                        className="flex items-center justify-between p-4 bg-white/70 border border-white/90 rounded-2xl shadow-2xs hover:bg-white transition-all"
                       >
                         <div className="flex items-center gap-3.5 min-w-0">
-                          {/* Традиционный квадратный штамп-печать для графемы */}
-                          <span className="w-12 h-12 flex items-center justify-center border border-[#C83E31]/40 bg-[#FDF2F0]/50 rounded-lg font-chinese text-2xl font-bold text-[#C83E31] shrink-0 shadow-2xs">
+                          <span className="w-12 h-12 flex items-center justify-center border border-[#C83E31]/30 bg-[#FDF2F0]/60 rounded-xl font-chinese text-2xl font-bold text-[#C83E31] shrink-0 shadow-2xs">
                             {g.char}
                           </span>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 text-sm text-[#71717A]">
-                              <span className="font-semibold text-[#18181B] font-mono-tabular">
+                            <div className="flex items-center gap-2 text-sm text-stone-500">
+                              <span className="font-semibold text-stone-900 font-mono-tabular">
                                 {g.pinyin}
                               </span>
                               <span aria-hidden="true">·</span>
@@ -460,7 +459,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                                 {g.type === 'radical' ? t.dictTypeRadical : t.dictTypeComponent}
                               </span>
                             </div>
-                            <div className="text-base font-medium text-[#18181B] truncate">
+                            <div className="text-base font-medium text-stone-900 truncate">
                               {g.meaning}
                             </div>
                           </div>
@@ -470,7 +469,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                           type="button"
                           onClick={() => speakChinese(g.char)}
                           aria-label={`${t.dictSpeakGraphemeAria} ${g.char}`}
-                          className="p-2.5 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#52525B] hover:text-[#C83E31] hover:bg-[#FDF2F0] rounded-xl transition-colors shrink-0 cursor-pointer"
+                          className="p-2.5 min-w-[40px] min-h-[40px] flex items-center justify-center text-stone-600 hover:text-[#C83E31] hover:bg-stone-100/80 rounded-xl transition-colors shrink-0 cursor-pointer"
                         >
                           <Volume2 className="w-4 h-4" />
                         </button>
@@ -480,19 +479,19 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                 </div>
 
                 {/* Этимология и мнемоника */}
-                <div className="pb-6 border-b border-[#EAE3D5]">
-                  <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5 mb-3">
+                <div className="pb-6 border-b border-stone-200/60">
+                  <h2 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2.5 mb-3">
                     <Lightbulb className="w-5 h-5 text-amber-600" />
                     <span>{t.dictEtymologyTitle}</span>
                   </h2>
-                  <p className="text-base text-[#18181B] leading-relaxed bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl p-5">
+                  <p className="text-base text-stone-800 leading-relaxed bg-white/70 border border-white/90 rounded-2xl p-5 shadow-2xs">
                     {activeChar.etymology}
                   </p>
                 </div>
 
                 {/* Примеры употребления слова в предложениях */}
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#18181B] flex items-center gap-2.5 mb-4">
+                  <h2 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2.5 mb-4">
                     <MessageSquareQuote className="w-5 h-5 text-[#C83E31]" />
                     <span>
                       {t.dictExamplesTitle} «
@@ -504,23 +503,23 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                     {currentWord.examples.map((ex, exIdx) => (
                       <div
                         key={exIdx}
-                        className="p-5 bg-[#FAF7F2] border border-[#EAE3D5] rounded-xl flex items-start justify-between gap-4"
+                        className="p-5 bg-white/70 border border-white/90 rounded-2xl shadow-2xs flex items-start justify-between gap-4"
                       >
                         <div className="space-y-1.5">
-                          <div className="font-chinese text-lg font-semibold text-[#18181B]">
+                          <div className="font-chinese text-lg font-semibold text-stone-900">
                             {ex.zh}
                           </div>
                           <div className="text-sm font-mono-tabular text-[#C83E31] font-medium">
                             {ex.pinyin}
                           </div>
-                          <div className="text-base text-[#52525B]">{ex.ru}</div>
+                          <div className="text-base text-stone-600">{ex.ru}</div>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => speakChinese(ex.zh)}
                           aria-label={`${t.dictSpeakExampleAria}: ${ex.zh}`}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[42px] text-sm font-medium text-[#18181B] bg-white border border-[#EAE3D5] rounded-xl hover:bg-[#FDF2F0] hover:border-[#F5D0C8] transition-colors shrink-0 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[42px] text-sm font-medium bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all shrink-0 cursor-pointer"
                         >
                           <Volume2 className="w-4 h-4 text-[#C83E31]" />
                           <span>{t.dictListenBtn}</span>
@@ -538,21 +537,21 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
       {/* Раздел «О проекте и контакты» (About & Support) — только на странице Словарь и Практика */}
       <section
         aria-label={t.aboutTitle}
-        className="w-full border-t border-stone-200/60 bg-[#FAF8F5] rounded-2xl print:hidden"
+        className="w-full bg-white/40 backdrop-blur-lg rounded-3xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] print:hidden"
       >
-        <div className="py-8 px-4 max-w-4xl mx-auto space-y-6">
+        <div className="py-8 px-6 max-w-4xl mx-auto space-y-6">
           <div className="space-y-3 text-center sm:text-left">
-            <h2 className="text-base sm:text-lg font-serif font-semibold text-[#18181B] tracking-tight">
+            <h2 className="text-base sm:text-lg font-serif font-semibold text-stone-900 tracking-tight">
               {t.aboutTitle}
             </h2>
-            <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed max-w-2xl">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl">
               {t.aboutDescription}
             </p>
             <div className="pt-1">
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-stone-300/80 text-stone-700 hover:bg-stone-100 hover:text-stone-900 transition-colors shadow-2xs text-sm font-medium cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all text-sm font-medium cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-[#C83E31] shrink-0" />
                 <span>{t.howItWorksBtn}</span>
@@ -562,8 +561,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
             {/* 1. Telegram-канал Лилии */}
-            <div className="p-4 rounded-2xl bg-white/80 border border-[#EAE3D5]/80 flex flex-col justify-between gap-3 shadow-[0_2px_12px_rgb(24,24,27,0.02)]">
-              <span className="text-xs sm:text-sm font-medium text-[#52525B]">
+            <div className="p-5 rounded-2xl bg-white/60 backdrop-blur-md border border-white/80 flex flex-col justify-between gap-3 shadow-2xs">
+              <span className="text-xs sm:text-sm font-medium text-stone-600">
                 {t.authorChannelLabel}
               </span>
               <div>
@@ -571,24 +570,24 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                   href="https://t.me/lia_iakubova_chinese"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium text-[#27272A] bg-[#FAF8F5] border border-[#E4DDD0] hover:border-[#A1A1AA] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md text-xs sm:text-sm font-medium transition-all duration-200"
                 >
                   <Send className="w-3.5 h-3.5 text-[#C83E31] shrink-0" />
                   <span>{t.authorChannelBtn}</span>
-                  <ExternalLink className="w-3 h-3 text-[#71717A] shrink-0" />
+                  <ExternalLink className="w-3 h-3 text-stone-400 shrink-0" />
                 </a>
               </div>
             </div>
 
             {/* 2. Почта технической поддержки */}
-            <div className="p-4 rounded-2xl bg-white/80 border border-[#EAE3D5]/80 flex flex-col justify-between gap-3 shadow-[0_2px_12px_rgb(24,24,27,0.02)]">
-              <span className="text-xs sm:text-sm font-medium text-[#52525B]">
+            <div className="p-5 rounded-2xl bg-white/60 backdrop-blur-md border border-white/80 flex flex-col justify-between gap-3 shadow-2xs">
+              <span className="text-xs sm:text-sm font-medium text-stone-600">
                 {t.supportLabel}
               </span>
               <div>
                 <a
                   href="mailto:dda-job@yandex.ru"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium text-[#27272A] bg-[#FAF8F5] border border-[#E4DDD0] hover:border-[#A1A1AA] hover:text-[#18181B] hover:bg-[#F3EFE6] transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md text-xs sm:text-sm font-medium transition-all duration-200"
                 >
                   <Mail className="w-3.5 h-3.5 text-[#C83E31] shrink-0" />
                   <span>dda-job@yandex.ru</span>
