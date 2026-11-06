@@ -30,6 +30,24 @@ export const translations = {
     authorChannelLabel: 'Telegram-канал автора и преподавателя китайского (Лилия):',
     authorChannelBtn: 'Перейти в @lia_iakubova_chinese',
     supportLabel: 'Техническая поддержка и вопросы:',
+    howItWorksBtn: 'Как пользоваться конструктором (Инструкция)',
+    guideTitle: 'Как создать учебную пропись за 4 шага',
+    step1Title: '1. Введите иероглифы',
+    step1Desc:
+      'Впишите китайские иероглифы в текстовое поле. Пиньинь и схема порядка черт сгенерируются автоматически.',
+    step2Title: '2. Заполните перевод',
+    step2Desc:
+      'Используйте кнопку автоперевода через ИИ или отредактируйте значения и пиньинь вручную для каждой строки.',
+    step3Title: '3. Настройте макет и сетку',
+    step3Desc:
+      'Выберите тип каллиграфической сетки (Мицзыгэ, Тяньцзыгэ, Коуцзыгэ), задайте заголовок листа А4 и количество бледных контуров для обводки.',
+    step4Title: '4. Сохраните или распечатайте',
+    step4Desc:
+      'Сохраните шаблон в свой профиль, чтобы вернуться к нему позже, или сразу отправьте на печать / сохраните в PDF.',
+    printTipTitle: 'Важный совет для идеальной печати:',
+    printTipDesc:
+      'В окне печати браузера обязательно поставьте галочку «Печать фона» (Фоновая графика) и установите масштаб 100%, чтобы линии сетки и контуры иероглифов отобразились четко.',
+    gotItBtn: 'Понятно, к работе',
 
     // AuthModal
     authCloseAria: 'Закрыть окно авторизации',
@@ -412,6 +430,24 @@ export const translations = {
     authorChannelLabel: "Chinese Teacher & Co-creator's Telegram Channel (Lilia):",
     authorChannelBtn: 'Visit @lia_iakubova_chinese',
     supportLabel: 'Technical Support & Inquiries:',
+    howItWorksBtn: 'How to Use the Builder (Guide)',
+    guideTitle: 'How to Create a Worksheet in 4 Steps',
+    step1Title: '1. Enter Characters',
+    step1Desc:
+      'Type or paste Chinese characters into the input field. Pinyin and stroke order diagrams are generated automatically.',
+    step2Title: '2. Add Translations',
+    step2Desc:
+      'Use the AI auto-translate button or manually edit the translation and Pinyin for each row.',
+    step3Title: '3. Customize Layout & Grid',
+    step3Desc:
+      'Choose your grid style (Mizige, Tianzige, Kouzige), set a custom A4 header, and adjust the number of faded tracing guides.',
+    step4Title: '4. Save or Print',
+    step4Desc:
+      'Save the template to your account for future lessons, or click Print / Save as PDF.',
+    printTipTitle: 'Pro Tip for Perfect Printing:',
+    printTipDesc:
+      "In your browser's print dialog, make sure to enable 'Background graphics' and set Scale to 100% so the grid lines and tracing guides print clearly.",
+    gotItBtn: 'Got it',
 
     // AuthModal
     authCloseAria: 'Close authentication modal',

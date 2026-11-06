@@ -23,6 +23,7 @@ import {
 import { analyzeChineseInput } from '../services/geminiService';
 import { speakChinese } from '../services/audioService';
 import { HanziCanvas } from './HanziCanvas';
+import { GuideModal } from './GuideModal';
 import { useLanguage } from '../context/LanguageContext';
 
 interface DictionaryViewProps {
@@ -45,6 +46,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCharIndex, setSelectedCharIndex] = useState<number>(0);
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const currentWordRef = React.useRef<WordItem | null>(currentWord);
   currentWordRef.current = currentWord;
   const prevLangRef = React.useRef<'ru' | 'en'>(lang);
@@ -539,13 +541,23 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
         className="w-full border-t border-stone-200/60 bg-[#FAF8F5] rounded-2xl print:hidden"
       >
         <div className="py-8 px-4 max-w-4xl mx-auto space-y-6">
-          <div className="space-y-2 text-center sm:text-left">
+          <div className="space-y-3 text-center sm:text-left">
             <h2 className="text-base sm:text-lg font-serif font-semibold text-[#18181B] tracking-tight">
               {t.aboutTitle}
             </h2>
             <p className="text-xs sm:text-sm text-[#52525B] leading-relaxed max-w-2xl">
               {t.aboutDescription}
             </p>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-stone-300/80 text-stone-700 hover:bg-stone-100 hover:text-stone-900 transition-colors shadow-2xs text-sm font-medium cursor-pointer"
+              >
+                <BookOpen className="w-4 h-4 text-[#C83E31] shrink-0" />
+                <span>{t.howItWorksBtn}</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
@@ -586,6 +598,8 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
           </div>
         </div>
       </section>
+
+      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>
   );
 };
