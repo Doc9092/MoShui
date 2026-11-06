@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   UserCheck,
   LogIn,
   BookOpen,
   FileText,
   Grid,
+  HelpCircle,
 } from 'lucide-react';
 import type { AppTab, TeacherProfile } from '../types/hanzi';
 import { useLanguage } from '../context/LanguageContext';
+import { GuideModal } from './GuideModal';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -28,11 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuthModal,
 }) => {
   const { lang, setLang, t } = useLanguage();
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
 
-  const desktopNavItems: { id: AppTab; label: string; shortLabel: string; count?: number }[] = [
-    { id: 'dictionary', label: t.navDictionaryLong, shortLabel: t.navDictionaryShort },
-    { id: 'worksheet', label: t.navWorksheetLong, shortLabel: t.navWorksheetShort, count: worksheetCount },
-    { id: 'radicals', label: t.navRadicalsLong, shortLabel: t.navRadicalsShort },
+  const desktopNavItems: { id: AppTab; label: string; count?: number }[] = [
+    { id: 'dictionary', label: t.navDictionary },
+    { id: 'worksheet', label: t.navBuilder, count: worksheetCount },
+    { id: 'radicals', label: t.navRadicals },
   ];
 
   const teacherInitials = currentTeacher
@@ -97,14 +100,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-testid={`nav-tab-${item.id}`}
                   onClick={() => onSelectTab(item.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`relative py-1.5 px-3 lg:px-4 text-xs lg:text-sm rounded-full transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer flex items-center ${
+                  className={`relative py-1.5 px-2.5 lg:px-4 text-xs lg:text-sm rounded-full transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer flex items-center ${
                     isActive
                       ? 'bg-white shadow-sm text-stone-900 font-semibold ring-1 ring-stone-900/[0.04]'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/50 font-medium'
                   }`}
                 >
-                  <span className="hidden xl:inline">{item.label}</span>
-                  <span className="xl:hidden">{item.shortLabel}</span>
+                  <span className="whitespace-nowrap">{item.label}</span>
                   {typeof item.count === 'number' && (
                     <span
                       className={`ml-1.5 font-mono-tabular text-xs px-2 py-0.5 rounded-full font-semibold ${
@@ -121,10 +123,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Правая зона: Переключатель языка RU / EN и профиль преподавателя как полупрозрачные таблетки */}
-          <div className="flex items-center gap-1.5 lg:gap-3 shrink-0">
+          {/* Правая зона: Переключатель языка RU / EN, круглая кнопка ? (Инструкция) и профиль преподавателя */}
+          <div className="flex items-center gap-1.5 lg:gap-2.5 shrink-0">
             <div
-              className="flex items-center gap-0.5 lg:gap-1 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 shadow-2xs select-none whitespace-nowrap print:hidden"
+              className="flex items-center gap-0.5 lg:gap-1 px-2 py-1.5 lg:px-3.5 lg:py-2 text-xs lg:text-sm rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 shadow-2xs select-none whitespace-nowrap print:hidden"
               role="group"
               aria-label="Language switcher"
               data-testid="language-switcher"
@@ -160,6 +162,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
+            {/* Круглая кнопка инструкции с пиктограммой ? без подписи */}
+            <button
+              type="button"
+              onClick={() => setIsGuideOpen(true)}
+              aria-label={t.howItWorksBtn}
+              title={t.howItWorksBtn}
+              data-testid="navbar-guide-btn"
+              className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-white/50 hover:bg-white/90 border border-white/80 text-stone-700 hover:text-[#C83E31] flex items-center justify-center transition-all duration-300 shadow-2xs shrink-0 cursor-pointer print:hidden"
+            >
+              <HelpCircle className="w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+            </button>
+
             {currentTeacher ? (
               <button
                 type="button"
@@ -175,8 +189,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-[#C83E31] text-white text-[11px] lg:text-xs font-bold flex items-center justify-center shrink-0">
                   {teacherInitials || 'T'}
                 </span>
-                <span className="max-w-[90px] lg:max-w-[140px] truncate hidden lg:inline whitespace-nowrap">
-                  {currentTeacher.name}
+                <span className="max-w-[90px] lg:max-w-[140px] truncate hidden sm:inline whitespace-nowrap">
+                  {currentTeacher.name || t.navDashboardShort}
                 </span>
                 <span
                   className={`hidden lg:flex items-center gap-1 ml-0.5 ${
@@ -195,8 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="inline-flex items-center gap-1.5 lg:gap-2 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm font-semibold text-stone-800 rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
               >
                 <LogIn className="w-4 h-4 lg:w-5 lg:h-5 text-[#C83E31] shrink-0" />
-                <span className="hidden lg:inline whitespace-nowrap">{t.navLoginFull}</span>
-                <span className="lg:hidden whitespace-nowrap">{t.navLoginShort}</span>
+                <span className="whitespace-nowrap">{t.navAuth}</span>
               </button>
             )}
           </div>
@@ -286,6 +299,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>{t.navDashboardShort}</span>
         </button>
       </nav>
+
+      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </>
   );
 };

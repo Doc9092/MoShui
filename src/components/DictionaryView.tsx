@@ -23,7 +23,6 @@ import {
 import { analyzeChineseInput } from '../services/geminiService';
 import { speakChinese } from '../services/audioService';
 import { HanziCanvas } from './HanziCanvas';
-import { GuideModal } from './GuideModal';
 import { useLanguage } from '../context/LanguageContext';
 
 interface DictionaryViewProps {
@@ -46,7 +45,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCharIndex, setSelectedCharIndex] = useState<number>(0);
-  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const currentWordRef = React.useRef<WordItem | null>(currentWord);
   currentWordRef.current = currentWord;
   const prevLangRef = React.useRef<'ru' | 'en'>(lang);
@@ -547,16 +545,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl">
               {t.aboutDescription}
             </p>
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setIsGuideOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/80 hover:bg-white text-stone-800 border border-white rounded-2xl shadow-xs hover:shadow-md transition-all text-sm font-medium cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4 text-[#C83E31] shrink-0" />
-                <span>{t.howItWorksBtn}</span>
-              </button>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
@@ -597,8 +585,6 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
           </div>
         </div>
       </section>
-
-      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>
   );
 };
