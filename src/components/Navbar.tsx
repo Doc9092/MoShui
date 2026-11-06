@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  User,
   UserCheck,
   LogIn,
   BookOpen,
@@ -189,8 +190,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-[#C83E31] text-white text-[11px] lg:text-xs font-bold flex items-center justify-center shrink-0">
                   {teacherInitials || 'T'}
                 </span>
-                <span className="max-w-[90px] lg:max-w-[140px] truncate hidden sm:inline whitespace-nowrap">
-                  {currentTeacher.name || t.navDashboardShort}
+                <span className="max-w-[110px] lg:max-w-[140px] truncate hidden sm:inline-block whitespace-nowrap">
+                  {currentTeacher.name || t.navProfile}
+                </span>
+                <span className="inline-block sm:hidden whitespace-nowrap">
+                  {currentTeacher ? t.navProfile : t.navLogin}
                 </span>
                 <span
                   className={`hidden lg:flex items-center gap-1 ml-0.5 ${
@@ -206,10 +210,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenAuthModal}
                 data-testid="navbar-login-btn"
                 aria-label={t.navLoginAria}
-                className="inline-flex items-center gap-1.5 lg:gap-2 px-2 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm font-semibold text-stone-800 rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1.5 lg:gap-2 px-2.5 py-1.5 lg:px-4 lg:py-2 text-xs lg:text-sm font-semibold text-stone-800 rounded-full bg-white/50 hover:bg-white/90 border border-white/80 transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
               >
-                <LogIn className="w-4 h-4 lg:w-5 lg:h-5 text-[#C83E31] shrink-0" />
-                <span className="whitespace-nowrap">{t.navAuth}</span>
+                <User size={18} className="shrink-0 text-[#C83E31] w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                <span className="hidden sm:inline-block whitespace-nowrap">{t.navAuth}</span>
+                <span className="inline-block sm:hidden whitespace-nowrap">
+                  {currentTeacher ? t.navProfile : t.navLogin}
+                </span>
               </button>
             )}
           </div>
